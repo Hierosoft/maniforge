@@ -631,6 +631,13 @@
   #define MESH_MAX_Y (Y_MAX_POS - (MESH_INSET))
 #endif
 
+#if ENABLED(AUTO_BED_LEVELING_UBL)
+  #define UBL_MESH_MIN_X (X_MIN_POS + UBL_MESH_INSET)
+  #define UBL_MESH_MAX_X (X_MAX_POS - (UBL_MESH_INSET))
+  #define UBL_MESH_MIN_Y (Y_MIN_POS + UBL_MESH_INSET)
+  #define UBL_MESH_MAX_Y (Y_MAX_POS - (UBL_MESH_INSET))
+#endif
+
 // @section extras
 
 // Arc interpretation settings:
@@ -1036,7 +1043,7 @@
 #define I2C_SLAVE_ADDRESS  0 // Set a value from 8 to 127 to act as a slave
 
 /**
- * Add M43 command for pins info and testing
+ * Add M43, M44 and M45 commands for pins info and testing
  */
 //#define PINS_DEBUGGING
 
