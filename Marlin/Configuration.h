@@ -678,7 +678,7 @@
 // extra connectors. Leave undefined any used for non-endstop and non-probe purposes.
 // #define USE_XMIN_PLUG
 // #define USE_YMIN_PLUG
-#define USE_ZMIN_PLUG // specified in BLTouch Smart V3.1 manual
+// #define USE_ZMIN_PLUG // specified in BLTouch Smart V3.1 manual
 #define USE_XMAX_PLUG
 #define USE_YMAX_PLUG
 //#define USE_ZMAX_PLUG
@@ -799,7 +799,7 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 88.888889, 88.888889, 400, 500, 500 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 88.888889, 88.888889, 400, 96.275, 96.275 }
 /*
 > The Replicator 2 and 2x use 18 tooth GT2 pulleys, 1/16 microstepping, and 200 steps/rev steppers. That makes the proper steps/mm value 88.888889.
 > Note that Makerbot used ~88.56 steps/mm in their defaults, which is the value you get if you calculate from the belt+pulley pitch diameter from the Gates GT2 specs. But this is the value you use for calculating belt length required in a closed loop, not for steps/mm. The 88.88... number is more accurate.
@@ -912,7 +912,7 @@
 // #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN  // specified in BLTouch Smart V3.1 manual
 
 // Force the use of the probe for Z-axis homing
-//#define USE_PROBE_FOR_Z_HOMING
+#define USE_PROBE_FOR_Z_HOMING
 
 /**
  * Z_MIN_PROBE_PIN
@@ -929,7 +929,9 @@
  *      - normally-closed switches to GND and D32.
  *      - normally-open switches to 5V and D32.
  */
-//#define Z_MIN_PROBE_PIN 32 // Pin 32 is the RAMPS default
+// #define Z_MIN_PROBE_PIN 32 // Pin 32 is the RAMPS default
+// ^ already defined as P0_10 in Marlin\src\pins\lpc1768\pins_BTT_SKR_V1_4.h
+//   (and Marlin\src\pins\lpc1769\pins\BTT_SKR_V1_4_TURBO.h includes it).
 
 /**
  * Probe Type
@@ -1058,7 +1060,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { -70, 0, 0 } // These values are for a specific custom cooling block (z=+3.65 when not deployed).
+#define NOZZLE_TO_PROBE_OFFSET { -70, 0, 0 } // These values are for a specific custom cooling block (z=+3.65 when not deployed; 6.07 using dial and 0.1mm feeler guage).
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
@@ -1068,11 +1070,11 @@
 #define XY_PROBE_FEEDRATE (133*60)
 
 // Feedrate (mm/min) for the first approach when double-probing (MULTIPLE_PROBING == 2)
-#define Z_PROBE_FEEDRATE_FAST 4*60/5
+#define Z_PROBE_FEEDRATE_FAST 4*60
 // based on HOMING_FEEDRATE_MM_M formerly HOMING_FEEDRATE_Z
 
 // Feedrate (mm/min) for the "accurate" probe of each point
-#define Z_PROBE_FEEDRATE_SLOW (Z_PROBE_FEEDRATE_FAST / 2)
+#define Z_PROBE_FEEDRATE_SLOW (Z_PROBE_FEEDRATE_FAST / 5)
 
 /**
  * Probe Activation Switch
@@ -1166,7 +1168,7 @@
 // Require minimum nozzle and/or bed temperature for probing
 #define PREHEAT_BEFORE_PROBING
 #if ENABLED(PREHEAT_BEFORE_PROBING)
-  #define PROBING_NOZZLE_TEMP 40   // (°C) Only applies to E0 at this time
+  #define PROBING_NOZZLE_TEMP 150   // (°C) Only applies to E0 at this time
   #define PROBING_BED_TEMP     60
 #endif
 
