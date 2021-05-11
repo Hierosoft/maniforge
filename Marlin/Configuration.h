@@ -131,7 +131,8 @@
 #endif
 
 // Name displayed in the LCD "Ready" message and Info menu
-#define CUSTOM_MACHINE_NAME "BTT SKR V1.4 Turbo R2X"
+#define CUSTOM_MACHINE_NAME "Axle Media R2X 14T"
+// max length TFT24:        "                     "
 
 // Printer's unique ID, used by some programs to differentiate between machines.
 // Choose your own or use a service like https://www.uuidgenerator.net/version4
@@ -442,8 +443,8 @@
 #define TEMP_HYSTERESIS              3  // (°C) Temperature proximity considered "close enough" to the target
 
 #define TEMP_BED_RESIDENCY_TIME     10  // (seconds) Time to wait for bed to "settle" in M190
-#define TEMP_BED_WINDOW              1  // (°C) Temperature proximity for the "temperature reached" timer
-#define TEMP_BED_HYSTERESIS          3  // (°C) Temperature proximity considered "close enough" to the target
+#define TEMP_BED_WINDOW              3  // (°C) Temperature proximity for the "temperature reached" timer
+#define TEMP_BED_HYSTERESIS          8  // (°C) Temperature proximity considered "close enough" to the target
 
 #define TEMP_CHAMBER_RESIDENCY_TIME 10  // (seconds) Time to wait for chamber to "settle" in M191
 #define TEMP_CHAMBER_WINDOW          1  // (°C) Temperature proximity for the "temperature reached" timer
@@ -620,7 +621,7 @@
  * *** IT IS HIGHLY RECOMMENDED TO LEAVE THIS OPTION ENABLED! ***
  */
 #define PREVENT_COLD_EXTRUSION
-#define EXTRUDE_MINTEMP 170
+#define EXTRUDE_MINTEMP 205
 
 /**
  * Prevent a single extrusion longer than EXTRUDE_MAXLENGTH.
@@ -799,8 +800,11 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 88.888889, 88.888889, 400, 96.275, 96.275 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 88.888889, 88.888889, 400, 91.46125, 91.46125 }
 /*
+Extrusion:
+- Used factory setting 96.275 then calibrated it (it extruded 95/100 mm, so result is 91.46125)
+Movement:
 > The Replicator 2 and 2x use 18 tooth GT2 pulleys, 1/16 microstepping, and 200 steps/rev steppers. That makes the proper steps/mm value 88.888889.
 > Note that Makerbot used ~88.56 steps/mm in their defaults, which is the value you get if you calculate from the belt+pulley pitch diameter from the Gates GT2 specs. But this is the value you use for calculating belt length required in a closed loop, not for steps/mm. The 88.88... number is more accurate.
 > by Ryan Carlyle Mar 2 '16 at 20:15
