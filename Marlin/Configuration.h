@@ -1064,11 +1064,11 @@ Movement:
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { -70, 0, 0 } // These values are for a specific custom cooling block (z=+3.65 when not deployed; 6.07 using dial and 0.1mm feeler guage).
+#define NOZZLE_TO_PROBE_OFFSET { -36, 0, 0 } // These values are for a specific custom cooling block (z=+3.65 when not deployed; 6.07 using dial and 0.1mm feeler guage).
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
-#define PROBING_MARGIN 10
+#define PROBING_MARGIN 24
 
 // X and Y axis travel speed (mm/min) between probes
 #define XY_PROBE_FEEDRATE (133*60)
@@ -1207,8 +1207,8 @@ Movement:
 // @section extruder
 
 // For direct drive extruder v9 set to true, for geared extruder set to false.
-#define INVERT_E0_DIR true
-#define INVERT_E1_DIR false
+#define INVERT_E0_DIR false
+#define INVERT_E1_DIR true
 #define INVERT_E2_DIR false
 #define INVERT_E3_DIR false
 #define INVERT_E4_DIR false
@@ -1242,8 +1242,9 @@ Movement:
 // @section machine
 
 // The size of the printable area
-#define X_BED_SIZE 222
-#define Y_BED_SIZE 130
+
+#define X_BED_SIZE 236
+#define Y_BED_SIZE 129
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0
