@@ -7,7 +7,7 @@ See https://github.com/poikilos/r2x_14t for updates.
 All branches are from the Poikilos fork: <https://github.com/poikilos/Marlin>, but only on the following branch:
 - Marlin: bugfix-2.0.x-replicator2x (based on the bugfix-2.0.x branch)
   - Made via:
-  ```
+```
 git clone https://github.com/poikilos/Marlin
 cd Marlin
 git checkout bugfix-2.0.x
@@ -65,7 +65,6 @@ Solution: The nozzle is likely too hot or too close to the bed while printing. S
 ### Issue: The 3D printer doesn't work with OctoPrint or some other network 3D printing host.
 Solution: Ensure that the UUID is set in the firmware settings (contact Axle Media for assistance).
 
-
 ### Issue: The part (center) fan doesn't come on.
 Solution: Unless the fan is faulty, obstructed or disconnected, the fan should come on at the height you specified when you sliced the model and produced the g-code file. Slicer software often defaults to not enable the fan right away, as having too much part cooling during the initial layer(s) can reduce adhesion to the bed. Also, auto cooling may enabled, which sets the fan speed based on the pattern of extrusion.
 
@@ -88,6 +87,7 @@ Solution: The bed was probably just taking too long to heat. This is a safety fe
 Solution: The flow rate may need to be adjusted even though the extrusion has been calibrated. Even after calibrating the z steps per mm, the Teaching Tech calibration cube printed with .5 thick walls using a .4mm nozzle, so a flow rate of as low as 80% may be necessary (The height of the cube was correct [27.4 of 27.2, but that is within the error rate with a layer height of .32], so z steps per mm were not the problem). The calibration test using a 1.0mm nozzle suggests 90% is appropriate, and printing that way yielded walls very close to 1.0mm. Setting the flow for the the top and bottom layers to 100% reduces gaps.
 
 ### Issue: On startup, the screen says, "Err: MAXTEMP: E1" "PRINTER HALTED" "Please Reset"
+Solution: If the bed is hot and the temperature reading is correct, the expected heating delay in the Marlin firmware must change to a calculation slightly higher than using a stopwatch. In other cases, the bed thermistor or bed thermistor connection has failed.
 
 ## Hardware Guide
 - The 3D printed parts are printed in Inland PLA+ except the matte parts which are in Overture PLA Pro (190-220 C). PLA+ and PLA Pro are chemically equivalent (PLA modified with TPU, generally). However, depending on the source vegetation and processing, PLA can differ in finish and temperature range. Higher temperature PLA+ is used for the cooler.
@@ -98,17 +98,17 @@ Solution: The flow rate may need to be adjusted even though the extrusion has be
   - The 3D printed bezel is attached using (4) slotted countersunk #4 x 7/16 sheet metal screws.
 - To accommodate the unusual heater cartridges from the Replicator 2X, the screw heads are filed to a smaller diameter, the washers are filed down on one side, and the heater cartridge shafts in the heater blocks are drilled out larger. If a heater cartridge must be replaced, switching to a standard heater block with standard hardware and no modifications is preferable. When the type of heater cartridge, heater block, or insulation changes, perform PID tuning again and place the new values in the firmware.
   - Performing it on the bed for 60C resulted in temperature shutdowns, so tried cooling to 30C then running again at 105 (; Marlin-20-specific G-code is from https://all3dp.com/2/3d-printer-pid-tuning/):
-    ```
+```
 M303EBED S105 C6
 ```
   result:
-  ```
+```
   #define DEFAULT_bedKp 33.3357
   #define DEFAULT_bedKi 4.0417
   #define DEFAULT_bedKd 68.7382
 ```
   formerly (for 60C):
-  ```
+```
   #define DEFAULT_bedKp 56.49
   #define DEFAULT_bedKi 2.49
   #define DEFAULT_bedKd 853.97
@@ -279,7 +279,7 @@ the appropriate disk
 ...*** [upload] COM5\firmware.bin: No such file or directory
 ```
 - (How to do a nozzle wipe before every print - Gcode Scripts part 2)[https://www.youtube.com/watch?v=6csbJ5965Bk] Nov 30, 2016 by Maker's Muse
-  ```
+```
 G1 Y-3.0 F500.0 ; move out of print volume
 G1 X60.0 E9 F500.0 ; start purge
 G1 X100 E12.5 F500.0 ; finish purge line
