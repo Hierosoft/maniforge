@@ -1,5 +1,5 @@
 # R2X 14T
-The R2X 14T is a mod by Jake Gustafson for the *MakerBot Replicator 2X* (possibly compatible with clones such as FlashForge Creator Pro). The name "Axle Media" is a registered fictitious name in Pennsylvania and should be only used if the mod is done by Jake Gustafson.
+The R2X 14T is a mod by Jake Gustafson ("Poikilos") for the *MakerBot Replicator 2X* (possibly compatible with clones such as FlashForge Creator Pro). The name "Axle Media" is a registered fictitious name in Pennsylvania and should be only used if the mod is done by Jake Gustafson.
 
 The mod utilizes the BIGTREETECH SKR V1.4 Turbo and most of the hardware from the MakerBot Replicator 2X. The fork of Marlin 2.0 ([https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x](https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x)) only contains changes to platformio.ini, Configuration.h, and Configuration_adv.h.
 
@@ -26,6 +26,9 @@ The main goal was to improve bed adhesion and eliminate skipping on the extruder
 - Copperhead throats
     - requires: new standard-style threaded heater blocks (which also hold thermistors without modifications and provide more room for cooling ducts); new dual-extruder threaded motor mount block (“cold block”; hand machined from a large heatsink so that block and fins are a continuous piece of metal).
         - requires: drilling out the heater blocks to hold the large MakerBot heater cartridges (switching to standard heater cartridges is also possible)
+
+### Optional Add-ons
+- [Simplified & Enhanced Air Scrubber for 3M Filter such as for MakerBot Replicator 2X](https://www.thingiverse.com/thing:4871456) by Poikilos
 
 ## Slicer Settings
 
