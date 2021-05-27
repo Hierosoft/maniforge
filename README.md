@@ -27,8 +27,11 @@ The main goal was to improve bed adhesion and eliminate skipping on the extruder
     - requires: new standard-style threaded heater blocks (which also hold thermistors without modifications and provide more room for cooling ducts); new dual-extruder threaded motor mount block (“cold block”; hand machined from a large heatsink so that block and fins are a continuous piece of metal).
         - requires: drilling out the heater blocks to hold the large MakerBot heater cartridges (switching to standard heater cartridges is also possible)
 
+For more details, see the Service Manual: [manual.md](https://github.com/poikilos/r2x_14t/blob/main/manual.md).
+
 ### Optional Add-ons
 - [Simplified & Enhanced Air Scrubber for 3M Filter such as for MakerBot Replicator 2X](https://www.thingiverse.com/thing:4871456) by Poikilos
+
 
 ## Slicer Settings
 
