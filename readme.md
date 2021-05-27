@@ -18,7 +18,7 @@ The main goal was to improve bed adhesion and eliminate skipping on the extruder
     - requires: new mainboard (The BTT SKR V1.4 Turbo mainboard allows using improved stepper drivers and slicer software)
         - requires: thermistors
             - requires: drilling holes for the thermistors (or getting new heater blocks in this case); drilling a hole in the bed for the thermistor, and a 2.5mm hole close enough so the screw head or washer holds the thermistor wires enough to keep the thermistor in place, then tapping the the 2.5 mm hole using a 3mm tap.
-        - provides: all new electronics (forums indicate the stock mosfets on the Mightyboard aren’t that great and that people often replace them)
+        - provides: all new electronics (forums indicate the stock mosfets on the Mightyboard aren’t that great and that people often replace them) other than the endstops and motors.
 - FilaPrint bed surface:
     - provides: heat-responsive bed surface (Adhesion increases when hot; ABS parts detach easily when cooled to around 70 C and self-detach at a lower temperature — PLA+ detach easily around 35 C then self-detach around 25 C)
 - BLTouch Smart V3.1
