@@ -3,7 +3,7 @@ The R2X 14T is a mod by Jake Gustafson ("Poikilos") for the *MakerBot Replicator
 
 The mod utilizes the BIGTREETECH SKR V1.4 Turbo and most of the hardware from the MakerBot Replicator 2X. The fork of Marlin 2.0 ([https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x](https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x)) only contains changes to platformio.ini, Configuration.h, and Configuration_adv.h.
 
-For usage and further details, see the Service Manual: [documentation/Manual.md](https://github.com/poikilos/r2x_14t/blob/main/documentation/Manual.md).
+For usage and further details, see the Service Manual: [documentation/manual.md](https://github.com/poikilos/r2x_14t/blob/main/documentation/manual.md).
 
 ## Project Status
 
