@@ -9,6 +9,8 @@ For usage and further details, see the Service Manual: [documentation/manual.md]
 
 Using a later version of the bugfix branch on the upstream repository is desirable, while utilizing the platformio.ini, Configuration.h, and Configuration\_adv.h from the fork. Updating will provide M154 position auto-report, which the BIGTREETECH TFT35 (and other models) can utilize (the setting must be enabled in _both_ the Marlin Configuration.h and in the TFT firmware configuration file as per the [BTT Touchscreen readme](https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware)).
 
+Updates to platformio.ini, Configuration.h and Configuration_adv.h that work with later commits of the Marlin bugfix-2.x.x branch will go here. For a fully-tested version or for earlier commit history, see <https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x_t14>.
+
 ## Hardware Changes
 
 The main goal was to improve bed adhesion and eliminate skipping on the extruders and z axis. The solutions used are:
