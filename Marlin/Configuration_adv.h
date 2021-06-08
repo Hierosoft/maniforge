@@ -258,8 +258,8 @@
    * and/or decrease WATCH_TEMP_INCREASE. WATCH_TEMP_INCREASE should not be set
    * below 2.
    */
-  #define WATCH_TEMP_PERIOD  20               // Seconds
-  #define WATCH_TEMP_INCREASE 8               // Degrees Celsius
+  #define WATCH_TEMP_PERIOD  25               // Seconds
+  #define WATCH_TEMP_INCREASE 7               // Degrees Celsius
 #endif
 
 /**
@@ -272,8 +272,10 @@
   /**
    * As described above, except for the bed (M140/M190/M303).
    */
+  // Based on approximate stopwatch readings, the Replicator 2X bed heats at 1C per 8s to up to about 27s at first!
+  // When the bed first starts heating, it is very slow, even if you reset it and start around 35C.
   #define WATCH_BED_TEMP_PERIOD                60 // Seconds
-  #define WATCH_BED_TEMP_INCREASE               8 // Degrees Celsius
+  #define WATCH_BED_TEMP_INCREASE               4 // Degrees Celsius
 #endif
 
 /**
@@ -912,7 +914,7 @@
 #define AXIS_RELATIVE_MODES { false, false, false, false }
 
 // Add a Duplicate option for well-separated conjoined nozzles
-//#define MULTI_NOZZLE_DUPLICATION
+#define MULTI_NOZZLE_DUPLICATION
 
 // By default pololu step drivers require an active high signal. However, some high power drivers require an active low signal as step.
 #define INVERT_X_STEP_PIN false
