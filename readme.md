@@ -1,7 +1,7 @@
 # R2X 14T
 The R2X 14T is a mod by Jake Gustafson ("Poikilos") for the *MakerBot Replicator 2X* (possibly compatible with clones such as FlashForge Creator Pro). The name "Axle Media" is a registered fictitious name in Pennsylvania and should be only used if the mod is done by Jake Gustafson.
 
-The mod utilizes the BIGTREETECH SKR V1.4 Turbo and most of the hardware from the MakerBot Replicator 2X. The fork of Marlin 2.0 ([https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x](https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x)) only contains changes to platformio.ini, Configuration.h, and Configuration_adv.h.
+The mod utilizes the BIGTREETECH SKR V1.4 Turbo and most of the hardware from the MakerBot Replicator 2X. The fork of Marlin 2.0 ([https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x_t14](https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x_t14)) only contains changes to platformio.ini, Configuration.h, and Configuration_adv.h.
 
 For usage and further details, see the Service Manual: [documentation/manual.md](https://github.com/poikilos/r2x_14t/blob/main/documentation/manual.md).
 
