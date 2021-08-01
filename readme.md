@@ -12,6 +12,8 @@ Using a later version of the bugfix branch on the upstream repository is desirab
 
 Updates to platformio.ini, Configuration.h and Configuration_adv.h that work with later commits of the Marlin bugfix-2.x.x branch will go here. For a fully-tested version or for earlier commit history, see <https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x_t14>.
 
+For information on past and possible future changes to the factory design, see [contributing.md](contributing.md).
+
 
 ## Hardware Changes
 
@@ -45,6 +47,8 @@ Temperatures: For printing ABS, a bed temperature of 105 C recommended by the Fi
 
 Bed Adhesion: Ensure you load the saved mesh in the start G-code for mesh bed leveling (this may not be necessary since the firmware is set to load it at startup). Using regular ABS (tested MakerBot that was sitting out) with the FilaPrint surface requires about 150% overextrusion on the first layer for large models and 200% (or 150% and a raft) for small models. The PrusaSlicer (or Slic3r) raft detaches well for ABS (but not so well as Cura’s when using PLA+).
 
+For more information, see "First-time setup" in [documentation/manual.md](documentation/manual.md#first-time-setup).
+
 ### Bed Adhesion
 I was able to get bed adhesion with higher extrusion for the first layer, even without a raft.
 
@@ -53,9 +57,12 @@ The first layer extrusion that worked is 150%.
 
 For smaller models such as Benchy, I either need to use 200% for the 1st layer or a raft. Using that much overextrusion for the first layer will require turning up the elephant's foot compensation and I may make a profile for small models.
 
+For more information, see "Bed Adhesion" in [documentation/manual.md](documentation/manual.md#bed-adhesion).
 
-## Making Sneaky Firmware Overextrusion Optional
-The Makerbot Replicator 2X had hardware overextrusion--it had 96.275 steps per mm in the Mightyboard firmware but on the new BTT SKR V1.4 Turbo mainboard I started there and calibrated it to 91.46125. To gain back that overextrusion for ABS, I'm experimenting with a 1.05 extrusion multiplier for the whole print since they may have found that to help with ABS errors and set the z-steps sneakily (unless 96.275 steps per mm was merely an error on their part).
 
 ## Profiles
-See "First-time Setup" in [documentation/manual.md](documentation/manual.md).
+See "First-time Setup" in [documentation/manual.md](documentation/manual.md#first-time-setup).
+
+
+## Making Modifications
+To make modifications that differ from the current state of the r2x_14t project or to understand the inner workings, See [contributing.md](contributing.md).

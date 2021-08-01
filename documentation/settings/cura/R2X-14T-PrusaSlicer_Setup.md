@@ -25,8 +25,8 @@ To add an additional printer instead, complete all of the steps in the "Add it a
   - Filament Diameter: 1.75
 - Click "Next
 - For "Nozzle and Bed Temperatures" you can choose whatever is convenient and override it in material settings. For the recommended bed temperature, see the materials chart that came with your FilaPrint bed surface. For now, set:
-  - For ABS: Extrusion:220C, Bed:110C
-  - For PLA: Extrusion:210C, Bed:90C (92 is recommended for FilaPrint)
+  - For ABS: Extrusion:220C, Bed:110C (For FilaPrint, FilaFarm recommends 105C)
+  - For PLA: Extrusion:210C, Bed:90C (For FilaPrint, FilaFarm recommends 92C)
 - Click "Next"
 - For Filament Profiles, choose "(All)" printers and "(All)" types, then click "All" under Profile.
 - Click "Next"
