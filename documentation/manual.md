@@ -2,6 +2,7 @@
 (R2X 14T is a mod by Jake Gustafson for the MakerBot Replicator 2X)
 
 See https://github.com/poikilos/r2x_14t for updates.
+- Open md files using the web interface above for best results. Otherwise, use a printed version or view the file in Notepad++, Geany, or a Markdown editor.
 
 
 ## Firmware
@@ -193,7 +194,7 @@ The settings/cura directory contains documentation and exported files ready for 
 The csv file "settings/cura/profiles/Fast ABS .2.csv" contains the same information as "settings/cura/profiles/4.9.1/Fast ABS .2.curaprofile" but works with the csv profiles plugin from Cura so the file should work on any version of Cura.
 - To get Cura plugins, click "Marketplace" near the top right in Cura.
 
-See a detailed description of material and printer settings in [documentation/settings/cura/printer-Cura-r2x-14t.md](settings/cura/printer-Cura-r2x-14t.md). There is no feature to import or export printer instances in Cura, so the document outlines all of the settings you would enter when creating a new generic FFF printer in Cura.
+See a detailed description of material and printer settings in [documentation/settings/cura/printer-Cura-r2x-14t.md](settings/cura/printer-Cura-r2x-14t.md). There is no feature to import or export printer instances in Cura, so the document outlines all of the settings you would enter when creating a new "Custom FFF Printer" in Cura.
 
 ### PrusaSlicer
 - Copy the config/PrusaSlicer directory to %APPDATA% (or .config on Linux)
@@ -203,6 +204,49 @@ See a detailed description of material and printer settings in [documentation/se
 If you only need one printer, rename your `%APPDATA%/cura` directory then copy the `config/cura` directory to `%APPDATA%/` (or to `.config/` on Linux)
 
 Otherwise, follow the instructions in [documentation/settings/cura/R2X-14T-Cura_Setup.md](settings/cura/R2X-14T-Cura_Setup.md) to import the profiles and add a custom printer.
+
+## Troubleshooting Print Quality
+Software is usually the solution to print quality, and the techniques vary and improve constantly. Therefore, search for the following symptoms by name if you have them:
+- ringing or ghosting
+  - Ensure you use a dampening (but not springy) set of feet, otherwise explore software or firmware solutions including acceleration calibration.
+- layer shifting
+- poor layer adhesion
+
+Additional issues that are more clearly solved are in subsections below.
+
+### Bed Adhesion
+A FilaPrint surface or carbon-silicone based grid surface has the advantage of excellent adhesion when hot and detach easily when cool and most objects and materials self-detach when cooler (around 45 C depending on the material).
+- FilaPrint may wear out from years of use it must be replaced. However, you can use a bed texture in PrusaSlicer (see bottom surface quality) to avoid bad spots.
+- There is a rather oversized tempered glass silicone grid bed available for the Creality CR-6, but cutting it is difficult to impossible without special machinery. It fits but goes past the edges of the heated bed surface, making it difficult to secure).
+  Example: [Haoun Creality CR-6 SE Glass Bed Tempered Glass Build Plate for CR-6 SE 3D Printer Heated Bed Printing Surface, 245mm x 255mm x 4mm A2308KVF17Y](https://www.amazon.com/gp/product/B08QMWB9T3/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1) on Amazon.
+
+Run the bed leveling process again in the "First-time Setup" section. If the problem still occurs, try a solution from one of the following sections
+
+#### Add Overextrusion to the First Layer
+These settings are already in the provided appdata and profiles.
+- Cura: set "Initial Layer Flow" to 200%
+
+To avoid "elephant's foot" (expansion that makes the first few layers oversized), enable:
+- PrusaSlicer: Set "Elephant's Foot compensation" to `0.2`
+- Cura: Set "Initial Layer Horizontal Expansion" (not "Horizontal Expansion") to `-0.2`
+
+### Bottom Surface Quality
+The FilaPrint provides a nearly perfect finish on the bottom. If there are bad spots on the surface, you can apply a bed texture.
+
+#### Apply a Bed Texture
+- For an example of how to make bed texture, see the FilaPrint directory. You can apply a different photo other than the r2x_14t project's FilaPrint/combined-perspective.jpg (the "after" photo below) to the plane in the blend file using Blender then render again. Then shift the image to leave a gap as shown in the FilaPrint/bed-texture-usable-236x153.png file (the "after" photo below):
+
+Before:
+![a photo of the print bed](../FilaPrint/combined-perspective.jpg)
+- This is a processed photo, combined by using two different photos to remove the parts blocking the bed.
+
+After:
+![A rendered then shifted photo](../FilaPrint/bed-texture-usable-236x153.png)
+- Shift the image such as using GIMP to leave the same gap that is shown above. If a way to avoid shifting it and cropping off part of it is discovered, that will be documented.
+- After importing the PrusaSlicer profile or creating it (See [documentation/settings/cura/R2X-14T-PrusaSlicer_Setup.md](settings/cura/R2X-14T-PrusaSlicer_Setup.md)), Load the texture:
+  - Go to the "Printer Settings" tab.
+  - Under "size and coordinates" click "Set"
+  - Under "Texture" click "Load" and choose the image you created using the steps above.
 
 
 ## Tasks
