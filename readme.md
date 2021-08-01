@@ -5,11 +5,13 @@ The mod utilizes the BIGTREETECH SKR V1.4 Turbo and most of the hardware from th
 
 For usage and further details, see the Service Manual: [documentation/manual.md](https://github.com/poikilos/r2x_14t/blob/main/documentation/manual.md).
 
+
 ## Project Status
 
 Using a later version of the bugfix branch on the upstream repository is desirable, while utilizing the platformio.ini, Configuration.h, and Configuration\_adv.h from the fork. Updating will provide M154 position auto-report, which the BIGTREETECH TFT35 (and other models) can utilize (the setting must be enabled in _both_ the Marlin Configuration.h and in the TFT firmware configuration file as per the [BTT Touchscreen readme](https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware)).
 
 Updates to platformio.ini, Configuration.h and Configuration_adv.h that work with later commits of the Marlin bugfix-2.x.x branch will go here. For a fully-tested version or for earlier commit history, see <https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x_t14>.
+
 
 ## Hardware Changes
 
@@ -51,7 +53,9 @@ The first layer extrusion that worked is 150%.
 
 For smaller models such as Benchy, I either need to use 200% for the 1st layer or a raft. Using that much overextrusion for the first layer will require turning up the elephant's foot compensation and I may make a profile for small models.
 
+
 ## Making Sneaky Firmware Overextrusion Optional
 The Makerbot Replicator 2X had hardware overextrusion--it had 96.275 steps per mm in the Mightyboard firmware but on the new BTT SKR V1.4 Turbo mainboard I started there and calibrated it to 91.46125. To gain back that overextrusion for ABS, I'm experimenting with a 1.05 extrusion multiplier for the whole print since they may have found that to help with ABS errors and set the z-steps sneakily (unless 96.275 steps per mm was merely an error on their part).
 
-I'll provide profiles for Cura and PrusaSlicer.
+## Profiles
+See "First-time Setup" in [documentation/manual.md](documentation/manual.md).

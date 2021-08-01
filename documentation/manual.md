@@ -181,17 +181,26 @@ eSUN and Inland PLA+ are the same material by different brands (so is MatterHack
 - Add the back motor bracket that includes a wire guide. Zip tie the wiring harness to the wire guide.
 
 ## First-time setup
+
+Perform the following steps on the 3D printer's screen after moving it:
 - Auto Home
 - Change the Z Probe Offset (it changes in realtime in Marlin 2.0.x-bugfix) until the nozzle touches a 0.1mm feeler gauge (or piece of common U.S. printer paper with slight resistance to sliding).
 - Level Bed
 - Control, Store Memory (or in Pronterface via USB, or in touch menu's terminal, run M500) to save the mesh to EEPROM.
+
+The settings/cura directory contains documentation and exported files ready for import.
+
+The csv file "settings/cura/profiles/Fast ABS .2.csv" contains the same information as "settings/cura/profiles/4.9.1/Fast ABS .2.curaprofile" but works with the csv profiles plugin from Cura so the file should work on any version of Cura.
+- To get Cura plugins, click "Marketplace" near the top right in Cura.
+
+See a detailed description of material and printer settings in [documentation/settings/cura/printer-Cura-r2x-14t.md](settings/cura/printer-Cura-r2x-14t.md). There is no feature to import or export printer instances in Cura, so the document outlines all of the settings you would enter when creating a new generic FFF printer in Cura.
 
 ### PrusaSlicer
 - Copy the config/PrusaSlicer directory to %APPDATA% (or .config on Linux)
 - Install PrusaSlicer (The version should match the one in the `version =` line in the included [config/PrusaSlicer/PrusaSlicer.ini](../config/PrusaSlicer/PrusaSlicer.ini).
 
 ### Cura
-If you only need one printer, rename your %% directory then copy the config/cura directory to %APPDATA% (or .config on Linux)
+If you only need one printer, rename your `%APPDATA%/cura` directory then copy the `config/cura` directory to `%APPDATA%/` (or to `.config/` on Linux)
 
 Otherwise, follow the instructions in [documentation/settings/cura/R2X-14T-Cura_Setup.md](settings/cura/R2X-14T-Cura_Setup.md) to import the profiles and add a custom printer.
 
