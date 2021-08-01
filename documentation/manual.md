@@ -2,7 +2,7 @@
 (R2X 14T is a mod by Jake Gustafson for the MakerBot Replicator 2X)
 
 See https://github.com/poikilos/r2x_14t for updates.
-- Open md files using the web interface above for best results. Otherwise, use a printed version or view the file in Notepad++, Geany, or a Markdown editor.
+- Open md files using the web interface above for best results (Otherwise, use a printed version or view the file in Notepad++, Geany, or a Markdown editor).
 
 
 ## Firmware
