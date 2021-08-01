@@ -18,7 +18,7 @@ git checkout bugfix-2.0.x-replicator2x
 ```
 - Marlin-bugfix-2.0.x: kept for backup but unchanged
 - The only changes are to Configuration.h, Configuration_adv.h, and platformio.ini.
-  - For improvements over the factory design (including a different E steps per mm setting) see [contributing.md](../contruting.md#making-sneaky-firmware-overextrusion-optional).
+  - For improvements over the factory design (including a different E steps per mm setting) see [contributing.md](../contributing.md#making-sneaky-firmware-overextrusion-optional).
 
 
 ## Usage
@@ -245,7 +245,7 @@ Before:
 After:
 ![A rendered then shifted photo](../FilaPrint/bed-texture-usable-236x153.png)
 - Shift the image such as using GIMP to leave the same gap that is shown above. If a way to avoid shifting it and cropping off part of it is discovered, that will be documented.
-- After importing the PrusaSlicer profile or creating it (See [documentation/settings/cura/R2X-14T-PrusaSlicer_Setup.md](settings/cura/R2X-14T-PrusaSlicer_Setup.md)), Load the texture:
+- After importing the PrusaSlicer profile or creating it (See [documentation/settings/PrusaSlicer/R2X-14T-PrusaSlicer_Setup.md](settings/PrusaSlicer/R2X-14T-PrusaSlicer_Setup.md)), Load the texture:
   - Go to the "Printer Settings" tab.
   - Under "size and coordinates" click "Set"
   - Under "Texture" click "Load" and choose the image you created using the steps above.
