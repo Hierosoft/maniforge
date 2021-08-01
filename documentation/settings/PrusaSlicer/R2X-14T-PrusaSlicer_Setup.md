@@ -44,6 +44,7 @@ Next you must detach the printer definition from the Generic FFF Printer to be a
   - Navigate to `%APPDATA%` (or ~/.config on GNU+Linux systems).
   - Open your printer's ini file such as `PrusaSlicer/printer/Axle Media R2X 14T.ini`
   - Change `inherits = ` to `inherits = Original Prusa i3 MK3S`.
+  - Ensure that the `printer_notes` variable is set to nothing (`printer_notes =`) so that it doesn't contain "PRINTER_HAS_BOWDEN" which is a value in the field used by the filament-specific Start G-code in various filament profiles to behave differently.
 - Open PrusaSlicer
 - Go to the "Printer Settings" tab
   - In "General", set:
@@ -81,6 +82,3 @@ Based on 1.75dia, $21.99/kg, Spool Weight 1000g, 1.04 g/cm^3, Cura calculates:
 - If you repeat the steps for each filament you want (especially clearing the "Compatible printers condition" field), you can hide the rest:
   - Go to the "Printer Settings" tab. In "Dependencies", click "Detach from system present".
 
-Based on the above, Cura calculates:
-- Filament length: ~ 400 m
-- Cost per Meter: ~ 0.06 $/m

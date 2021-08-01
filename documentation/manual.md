@@ -181,8 +181,8 @@ eSUN and Inland PLA+ are the same material by different brands (so is MatterHack
 - Tighten all 4 screws in any order, preferably outside (1st and 4th) first.
 - Add the back motor bracket that includes a wire guide. Zip tie the wiring harness to the wire guide.
 
-## First-time setup
 
+## First-time setup
 Perform the following steps on the 3D printer's screen after moving it:
 - Auto Home
 - Change the Z Probe Offset (it changes in realtime in Marlin 2.0.x-bugfix) until the nozzle touches a 0.1mm feeler gauge (or piece of common U.S. printer paper with slight resistance to sliding).
@@ -194,7 +194,9 @@ The settings/cura directory contains documentation and exported files ready for 
 The csv file "settings/cura/profiles/Fast ABS .2.csv" contains the same information as "settings/cura/profiles/4.9.1/Fast ABS .2.curaprofile" but works with the csv profiles plugin from Cura so the file should work on any version of Cura.
 - To get Cura plugins, click "Marketplace" near the top right in Cura.
 
-See a detailed description of material and printer settings in [documentation/settings/cura/printer-Cura-r2x-14t.md](settings/cura/printer-Cura-r2x-14t.md). There is no feature to import or export printer instances in Cura, so the document outlines all of the settings you would enter when creating a new "Custom FFF Printer" in Cura.
+See a detailed description of material and printer settings in the settings directory.
+- For Cura see [documentation/settings/cura/R2X-14T-Cura_Setup.md](settings/cura/R2X-14T-Cura_Setup.md). There is no feature to import or export printer instances in Cura, so the document outlines all of the settings you would enter when creating a new "Custom FFF Printer" in Cura.
+- For PrusaSlicer see [documentation/settings/PrusaSlicer/R2X-14T-PrusaSlicer_Setup.md](settings/PrusaSlicer/R2X-14T-PrusaSlicer_Setup.md).
 
 ### PrusaSlicer
 - Copy the config/PrusaSlicer directory to %APPDATA% (or .config on Linux)
@@ -238,7 +240,7 @@ The FilaPrint provides a nearly perfect finish on the bottom. If there are bad s
 
 Before:
 ![a photo of the print bed](../FilaPrint/combined-perspective.jpg)
-- This is a processed photo, combined by using two different photos to remove the parts blocking the bed.
+- This is a processed photo combined from two different photos to remove the parts blocking the bed.
 
 After:
 ![A rendered then shifted photo](../FilaPrint/bed-texture-usable-236x153.png)
