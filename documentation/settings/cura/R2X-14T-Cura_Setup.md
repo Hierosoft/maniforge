@@ -1,7 +1,7 @@
 ### Cura Setup
 
 #### Add the printer
-If you only need one printer, overwrite your cura directory in %APPDATA% (or in .config in GNU+Linux systems) with the included config/cura directory (See [readme.md](../../readme.md)).
+If you only need one printer, overwrite your cura directory in %APPDATA% (or in .config in GNU+Linux systems) with the included config/cura directory (See [readme.md](../../../readme.md)).
 
 To add an additional printer instead, complete all of the steps in the "Add it as an additional printer" section.
 
