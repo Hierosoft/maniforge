@@ -1,7 +1,7 @@
 ### PrusaSlicer Setup
 
 #### Add the printer
-If you only need one printer, overwrite your PrusaSlicer directory in %APPDATA% (or in .config in GNU+Linux systems) with the included config/PrusaSlicer directory (See [readme.md](../readme.md)).
+If you only need one printer, overwrite your PrusaSlicer directory in %APPDATA% (or in .config in GNU+Linux systems) with the included config/PrusaSlicer directory (See [readme.md](../../readme.md)).
 - Next, choose the path to the print bed texture if necessary: See "Apply a Bed Texture" in the [manual](../../manual.md).
 
 To add an additional printer instead, complete all of the steps in the "Add it as an additional printer" section.
