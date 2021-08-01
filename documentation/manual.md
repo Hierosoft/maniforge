@@ -3,6 +3,7 @@
 
 See https://github.com/poikilos/r2x_14t for updates.
 
+
 ## Firmware
 All branches are from the Poikilos fork: <https://github.com/poikilos/Marlin>, but only on the following branch:
 - Marlin: bugfix-2.0.x-replicator2x (based on the bugfix-2.0.x branch)
@@ -17,6 +18,7 @@ git checkout bugfix-2.0.x-replicator2x
 - Marlin-bugfix-2.0.x: kept for backup but unchanged
 - The only changes are to Configuration.h, Configuration_adv.h, and platformio.ini.
   - See the readme for why the the E steps per mm setting differs from the Mightyboard's default.
+
 
 ## Usage
 
@@ -89,6 +91,7 @@ Solution: The flow rate may need to be adjusted even though the extrusion has be
 ### Issue: On startup, the screen says, "Err: MAXTEMP: E1" "PRINTER HALTED" "Please Reset"
 Solution: If the bed is hot and the temperature reading is correct, the expected heating delay in the Marlin firmware must change to a calculation slightly higher than using a stopwatch. In other cases, the bed thermistor or bed thermistor connection has failed.
 
+
 ## Hardware Guide
 - The 3D printed parts are printed in Inland PLA+ except the matte parts which are in Overture PLA Pro (190-220 C). PLA+ and PLA Pro are chemically equivalent (PLA modified with TPU, generally). However, depending on the source vegetation and processing, PLA can differ in finish and temperature range. Higher temperature PLA+ is used for the cooler.
 - The Zheng Shuo AC power switch is rated for 10A since the stock 24V AC adapter is rated for 9.16. The switch was added since the btt mainboard doesn't have a power switch (It does have a software-driven power supply controller which could be connected to a relay).
@@ -124,12 +127,15 @@ M303EBED S105 C6
   - The mainboard fan is connected to the last fan port using a custom cable that includes a buck converter (LM2596 DC-DC HW-411). The buck converter is tuned to provide a reasonable level of speed and lower noise than when running at 24V (it is one of the loudest fans tested at that voltage). The fastest available fan was used since it is used at less than 24V: JH DC brushless fan. It still makes a slight low whistling noise that can be dampened by placing sound absorbers under the 3D printer. The fan can be replaced with a quieter fan if necessary.
 - The air scrubber requires a 12V DC adapter (the plug size is "5.5mm x 2.5mm"--due to the large 2.5mm pin size, not all 12V adapters will fit, but a pin size adapter could be made or used--The more common pin/inner diameter (I.D.) is 2.1mm).
 
+
 ## Consumables Guide
 - The Air Scrubber requires a 3M Organic Vapor Cartridge (such as 6001PB1-1).
 - When using PLA+, note that different formulations have different properties. The eSUN, Inland, and LD brands are the same filament; Matterhackers "Natural PLA" is also the same (https://www.reddit.com/r/3Dprinting/comments/4ytnet/are_inland_esun_and_matterhackers_pla_all_rebadges/). This filament (by any of the brands in this list) seems to adhere to the bed and flow the best (Overture PLA Pro doesn't extrude easily; 3D Printlife Pro PLA has an inconsistent flow rate due to width variance or other reasons).
 
+
 ## Stock Hardware
 - A fully-enclosed chamber is not necessary since PLA and PLA+ and other plastics require significant cooling. Attach the hood and door (and any panels not attached) for printing with ABS.
+
 
 ## Maintenance Guide
 ### Replacing a Nozzle
@@ -137,6 +143,7 @@ M303EBED S105 C6
 - First perform a cold pull: Heat the nozzle to the maximum temperature of the filament for 5 minutes, reduce the temperature to near the glass transition point or 150 C, press the red filament release lever, and forcibly remove the filament.
 - Always stabilize the heater block while turning the nozzle. Avoid damaging the thermistor wires: The right one comes from the front of the right heater block and the left one comes from the rear of the left heater block.
 - The nozzle will be very hot, so avoid injury or fire by obtaining a deep 7mm socket for a socket wrench or otherwise ensuring that the hotend will be captured safely while it cools. With the nozzle at 150 C, remove it and install the new one. Ensure the nozzle is hot while tightening so that it doesn't become loose under heat.
+
 
 ## Materials Guide
 eSUN and Inland PLA+ are the same material by different brands (so is MatterHackers PLA-N--See [a related thread on Reddit](https://www.reddit.com/r/3Dprinting/comments/4ytnet/are_inland_esun_and_matterhackers_pla_all_rebadges/)). They are preferable over matte filaments, since:
@@ -178,6 +185,15 @@ eSUN and Inland PLA+ are the same material by different brands (so is MatterHack
 - Change the Z Probe Offset (it changes in realtime in Marlin 2.0.x-bugfix) until the nozzle touches a 0.1mm feeler gauge (or piece of common U.S. printer paper with slight resistance to sliding).
 - Level Bed
 - Control, Store Memory (or in Pronterface via USB, or in touch menu's terminal, run M500) to save the mesh to EEPROM.
+
+### PrusaSlicer
+- Copy the config/PrusaSlicer directory to %APPDATA% (or .config on Linux)
+- Install PrusaSlicer (The version should match the one in the `version =` line in the included [config/PrusaSlicer/PrusaSlicer.ini](../config/PrusaSlicer/PrusaSlicer.ini).
+
+### Cura
+If you only need one printer, rename your %% directory then copy the config/cura directory to %APPDATA% (or .config on Linux)
+
+Otherwise, follow the instructions in [documentation/settings/cura/R2X-14T-Cura_Setup.md](settings/cura/R2X-14T-Cura_Setup.md) to import the profiles and add a custom printer.
 
 
 ## Tasks
