@@ -10,8 +10,8 @@ To add an additional printer instead, complete all of the steps in the "Add it a
   - Printers, Add
     - Add a non-networked printer
     - In the "Custom" category choose "Custom FFF Printer" then click Add.
-    - Paste the contents of [documentations/settings/cura/start.gcode](start.gcode) into the "Start G-code" field.
-    - Paste the contents of [documentations/settings/cura/end.gcode](end.gcode) into the "End G-code" field.
+    - Paste the contents of [documentation/settings/cura/start.gcode](start.gcode) into the "Start G-code" field.
+    - Paste the contents of [documentation/settings/cura/end.gcode](end.gcode) into the "End G-code" field.
     - Fill out the additional sections using the information below:
 
 Printer Settings:

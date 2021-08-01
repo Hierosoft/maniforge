@@ -57,8 +57,8 @@ Next you must detach the printer definition from the Generic FFF Printer to be a
   - In "Extruder 2" set all of the settings from "Extruder 1" above plus:
     - Extruder offset: x:34 y:0
   - In "Custom G-code":
-    - For "Start G-code" paste the contents of [start.gcode](start.gcode)
-    - For "End G-code" paste the contents of [end.gcode](end.gcode)
+    - For "Start G-code" paste the contents of [documentation/settings/PrusaSlicer/start.gcode](start.gcode)
+    - For "End G-code" paste the contents of [documentation/settings/PrusaSlicer/end.gcode](end.gcode)
 
 Now you can add new filaments or tweak the settings for direct drive, such as:
 - Go to "Filament Settings"
