@@ -4,7 +4,7 @@
 - Brand: Makerbot
 - Material Type: ABS
 - Color: [charcoal gray] Generic
-- Density: 1.04 g/cm^2
+- Density: 1.04 g/cm^3
 - Diameter: 1.75 mm
 - Filament Cost: $21.99
 - Filament weight: 1000 g
