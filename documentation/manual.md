@@ -211,6 +211,7 @@ Otherwise, follow the instructions in [documentation/settings/cura/R2X-14T-Cura_
 Software is usually the solution to print quality, and the techniques vary and improve constantly. Therefore, search for the following symptoms by name if you have them:
 - ringing or ghosting
   - Ensure you use a dampening (but not springy) set of feet, otherwise explore software or firmware solutions including acceleration calibration.
+  - If the problem persists, the higher timing accuracy of Klipper may be necessary. Klipper has a minimal firmware and the server actually sends the step commands directly. Requiring Klipper isn't expected because it is more of a benefit to 8-bit boards since that is more of a contrast to a PC than is a high-performance board such as BTT SKR V1.4 Turbo.
 - layer shifting
 - poor layer adhesion
 
