@@ -82,3 +82,14 @@ Based on 1.75dia, $21.99/kg, Spool Weight 1000g, 1.04 g/cm^3, Cura calculates:
 - If you repeat the steps for each filament you want (especially clearing the "Compatible printers condition" field), you can hide the rest:
   - Go to the "Printer Settings" tab. In "Dependencies", click "Detach from system present".
 
+If you are connecting to an OctoPrint server:
+(Around version 2.3, PrusaSlicer moved connection settings to a "physical printer", so you must add one as follows)
+- Go to "Printer Settings" click the cog icon right of the printer combo box, then in the "Physical Printer" box, set:
+  - Descriptive name for the printer: R2X 14T
+  - In the combo box below the Description you typed, choose the R2X 14T printer profile.
+  - Print Host upload:
+    - Host Type: OctoPrint
+    - For the Hostname, type the correct location, usually `http://` then a hostname (the hostname must be defined on your router or other gateway) or ip address followed by `:5000` for OctoPrint
+    - API Key: Generate one for PrusaSlicer and the specific computer using the OctoPrint web interface (wrench button, Application Keys), then copy it and paste it into the API Key box in PrusaSlicer.
+      - The "Test" button should work after entering this correctly.
+    - After you get the "Test" button to say that the connection works correctly, press OK.
