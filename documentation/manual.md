@@ -197,10 +197,14 @@ The csv file "settings/cura/profiles/Fast ABS .2.csv" contains the same informat
 See a detailed description of material and printer settings in the settings directory.
 - For Cura see [documentation/settings/cura/R2X-14T-Cura_Setup.md](settings/cura/R2X-14T-Cura_Setup.md). There is no feature to import or export printer instances in Cura, so the document outlines all of the settings you would enter when creating a new "Custom FFF Printer" in Cura.
 - For PrusaSlicer see [documentation/settings/PrusaSlicer/R2X-14T-PrusaSlicer_Setup.md](settings/PrusaSlicer/R2X-14T-PrusaSlicer_Setup.md).
+- For customizing PrusaSlicer start & end gcode, see "PrusaSlicer" below.
 
 ### PrusaSlicer
 - Copy the config/PrusaSlicer directory to %APPDATA% (or .config on Linux)
 - Install PrusaSlicer (The version should match the one in the `version =` line in the included [config/PrusaSlicer/PrusaSlicer.ini](../config/PrusaSlicer/PrusaSlicer.ini).
+- Getting support: Most Slic3r tutorials apply to PrusaSlicer. It is a fork of Slic3r, but PrusaSlicer is maintained and released more frequently. Both have strong community support, and PrusaSlicer has corporate support. Though direct assistance may only be available for Prusa 3D printer owners, the [PrusaSlicer GitHub repo](https://github.com/prusa3d/PrusaSlicer) is active. Reporting issues on the Issues section after searching it and ensuring the issue doesn't already exist there is the proper way to report bugs.
+- Customizing start & end g-code: [Slic3r placeholders](https://github.com/prusa3d/PrusaSlicer/wiki/Slic3r-placeholders-(a-copy-of-the-mauk.cc-page))
+
 
 ### Cura
 If you only need one printer, rename your `%APPDATA%/cura` directory then copy the `config/cura` directory to `%APPDATA%/` (or to `.config/` on Linux)
