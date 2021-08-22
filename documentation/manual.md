@@ -39,13 +39,22 @@ Solution: If the nozzles touch the bed during homing, press reset to stop the mo
 In Touch mode:
 - Go to Menu, Movement, Bed Level, P Offset (ensure "ON" instead of "OFF").
 - Wait for the bed and nozzle to heat up--then the touch sensor to touch the bed.
-- Get a shim (such as a feeler gauge leaf) the size shown on the screen or change the value to match your shim.
-- Use the up and down arrows (usually down) until the nozzle touches the shim. The small movements may be imperceptible until they get close to the shim: Press rapidly if necessary but avoid long press since that is the guesture that causes it to ask to switch to Marlin mode.
+- Get a shim (such as a feeler gauge leaf) the size shown on the screen or change the value to match your shim. Otherwise, use a piece of printer paper.
+- Use the up and down arrows (usually down) until the nozzle touches the shim (or there is slight drag when moving the printer paper). The small movements may be imperceptible until they get close to the shim: Press rapidly if necessary but avoid long press since that is the gesture that causes it to ask to switch to Marlin mode.
 - Press Next, Save, OK.
 
 
 Or, in Marlin mode:
-- , go to Configuration, Advanced Settings, Probe Offsets, Z Probe Wizard (The Z Probe Offset isn't the same as that and is more difficult).
+- Go to Configuration, Advanced Settings, Probe Offsets, Z Probe Wizard (The Probe Z Offset isn't the same as that and is more difficult).
+
+Or, in Marlin by setting "Probe Z Offset" directly:
+- Movement, Auto Home
+- Movement, Move Axis, Move Z, dial it to 0.0
+- Go to Configuration, Advanced Settings, Probe Z Offset
+  - Get a shim (such as a feeler gauge leaf) the size shown on the screen or change the value to match your shim. Otherwise, use a piece of printer paper.
+  - Use the up and down arrows (usually down) until the nozzle touches the shim (or there is slight drag when moving the printer paper). The small movements may be imperceptible until they get close to the shim
+  - Click the dial to confirm the value.
+  - Scroll down to "Store Settings" and click the dial.
 
 ### Issue: What is the meaning of "Marlin 2.0.x-bugfix"?
 Solution: We are using the bugfix branch since it has the latest fixes and Marlin releases are far apart. The bugfix branch is recommended by the hardware documentation.
@@ -59,7 +68,8 @@ Solutions:
     - Go back to Main, then Configuration, Store Settings (you will hear 2 ominous beeps upon success).
   - In touch mode:
     - Menu, Movement, Bed Level, ABL, Start. It will take several minutes.
-    - When it is complete and beeps 4 times rapidly, press OK when asked to store the mesh to EEPROM.
+    - When it is complete it beeps 3 times rapidly.
+    - Press OK after that when it asks to store the mesh to EEPROM.
 - Replace the bed: In the case that the bed is a FilaPrint bed and 5 years old or more, replace the surface with a new FilaPrint bed surface or borosilicate glass with patterned silicone. Either type of bed will become sticky when hot and release the printed part when cool in most cases (See also: "The print adheres too well"). To potentially avoid buying a new bed surface, re-slice the model to print on a part of the bed that isn't as worn.
 
 ### Issue: The print adheres too well.
