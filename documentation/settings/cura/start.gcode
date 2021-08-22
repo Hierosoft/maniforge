@@ -1,7 +1,31 @@
+; Cura variable reference:
+; <http://files.fieldofview.com/cura/Replacement_Patterns.html>
 ; Below is code from the BLTouch Smart V3.1 manual
 ; (except with Cura variables)
 ;M106 S255 ; fan
-M190 S{print_bed_temperature} ; bed temp
+; M190 S{print_bed_temperature} ; bed temp
+; ^ M190 S(print_bed_temperature) deprecated
+
+; INFO: The bed temperature is only correct when the other extruder is disabled in Cura!
+
+; Comma is the subscript operator--See
+; <https://community.ultimaker.com/topic/31181-dual-extruder-start-script-gcode-placeholders/>.
+; M190 S{material_bed_temperature_layer_0, adhesion_extruder_nr}
+; ^ M190 S(material_bed_temperature_layer_0, adhesion_extruder_nr)
+; M190 S{material_bed_temperature_layer_0, extruder_nr}
+; ^ M190 S(material_bed_temperature_layer_0, extruder_nr)
+M190 S{material_bed_temperature_layer_0, initial_extruder_nr}
+; ^ M190 S(material_bed_temperature_layer_0, initial_extruder_nr)
+
+; adhesion_extruder_nr: {adhesion_extruder_nr}
+; extruder_nr: {extruder_nr}
+; initial_extruder_nr: {initial_extruder_nr}
+; ^ initial_extruder_nr is "Application-defined" according to fieldofview.com.
+
+; M190 S{default_material_bed_temperature}
+; ^ M190 S(default_material_bed_temperature)
+; {material_bed_temp_wait}
+; ^ {material_bed_temp_wait}
 ;M109 S210 ; nozzle temp
 M280 P0 S160
 G4 P100 ; delay for BLTouch
