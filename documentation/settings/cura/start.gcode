@@ -1,13 +1,16 @@
 ; Cura variable reference:
 ; <http://files.fieldofview.com/cura/Replacement_Patterns.html>
 ; Below is code from the BLTouch Smart V3.1 manual
-; (except with Cura variables)
+; except:
+; - with Cura variables
+; - bed temp moved to below auto home since UBL does temp automatically
+;   (so adding another temp may differ and cause an unnecessary long delay)
 ;M106 S255 ; fan
 ; M190 S{print_bed_temperature} ; bed temp
 ; ^ M190 S(print_bed_temperature) deprecated
 
 ; INFO: The bed temperature is only correct when the other extruder is disabled in Cura!
-M140 S{material_bed_temperature_layer_0} ; Set Heat Bed temperature
+; M140 S{material_bed_temperature_layer_0} ; Set Heat Bed temperature
 ; ^ M140 S(material_bed_temperature_layer_0)
 
 ; Comma is the subscript operator--See
