@@ -9,6 +9,18 @@
 ; M190 S{print_bed_temperature} ; bed temp
 ; ^ M190 S(print_bed_temperature) deprecated
 
+; M190 S{default_material_bed_temperature}
+; ^ M190 S(default_material_bed_temperature)
+; {material_bed_temp_wait}
+; ^ {material_bed_temp_wait}
+;M109 S210 ; nozzle temp
+M280 P0 S160
+G4 P100 ; delay for BLTouch
+M420 S1 ; Restore manual mesh instead of G29 re-probing (www.youtube.com/watch?v=eF060dBEnfs)
+; ^ NOTE that braces even in comments cause a parsing error in PrusaSlicer
+G28 ; home
+; G29 ; auto bed leveling
+
 ; INFO: The bed temperature is only correct when the other extruder is disabled in Cura!
 ; M140 S{material_bed_temperature_layer_0} ; Set Heat Bed temperature
 ; ^ M140 S(material_bed_temperature_layer_0)
@@ -21,23 +33,13 @@
 ; ^ M190 S(material_bed_temperature_layer_0, extruder_nr)
 M190 S{material_bed_temperature_layer_0, initial_extruder_nr}
 ; ^ M190 S(material_bed_temperature_layer_0, initial_extruder_nr)
+; M190: wait for bed temp
+; S<temp>: wait *only when heating* (for cooling also, use R<temp>)
 
 ; adhesion_extruder_nr: {adhesion_extruder_nr}
 ; extruder_nr: {extruder_nr}
 ; initial_extruder_nr: {initial_extruder_nr}
 ; ^ initial_extruder_nr is "Application-defined" according to fieldofview.com.
-
-; M190 S{default_material_bed_temperature}
-; ^ M190 S(default_material_bed_temperature)
-; {material_bed_temp_wait}
-; ^ {material_bed_temp_wait}
-;M109 S210 ; nozzle temp
-M280 P0 S160
-G4 P100 ; delay for BLTouch
-M420 S1 ; Restore manual mesh instead of G29 re-probing (www.youtube.com/watch?v=eF060dBEnfs)
-; ^ NOTE that braces even in comments cause a parsing error in PrusaSlicer
-G28 ; home
-; G29 ; auto bed leveling
 
 ;G1 X60.0 Y-0.5 Z0.32 F500.0; added by Poikilos
 ;G1 X50 Y-1.0 Z0.22 F3000.0; added by Poikilos
