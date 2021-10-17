@@ -7,6 +7,8 @@
 ; ^ M190 S(print_bed_temperature) deprecated
 
 ; INFO: The bed temperature is only correct when the other extruder is disabled in Cura!
+M140 S{material_bed_temperature_layer_0} ; Set Heat Bed temperature
+; ^ M140 S(material_bed_temperature_layer_0)
 
 ; Comma is the subscript operator--See
 ; <https://community.ultimaker.com/topic/31181-dual-extruder-start-script-gcode-placeholders/>.
