@@ -6,6 +6,23 @@ The mod utilizes the BIGTREETECH SKR V1.4 Turbo and most of the hardware from th
 For usage and further details, see the Service Manual: [documentation/manual.md](https://github.com/poikilos/r2x_14t/blob/main/documentation/manual.md).
 
 
+## How to use
+- Clone Marlin then switch to the bugfix branch (as per 
+hallski's Nov 23 '09 at 14:26 answer edited Dec 19, '21 <https://stackoverflow.com/a/1783426> on <https://stackoverflow.com/questions/1783405/how-do-i-check-out-a-remote-git-branch>):
+```
+mkdir ~/git
+cd ~/git
+git clone https://github.com/poikilos/r2x_14t
+git clone https://github.com/MarlinFirmware/Marlin.git
+cd Marlin
+git switch bugfix-2.0.x
+```
+- Ensure you are on a Marlin bugfix-2.0.x subversion that says the same CONFIGURATION_H_VERSION in Marlin/Marlin/configuration.h as in r2x_14t/Marlin-r2x_14t/Marlin (The exact version on which that was based is in r2x_14t/Marlin-base/Marlin, which, if you have the same commit as noted in the r2x_14t git commit Summary, will match the one in Marlin exactly as checked via `./meld-both-with-Marlin-bugfix-2.0.x.sh` in a GNU+Linux OS).
+- Copy all files from r2x_14t/Marlin-r2x_14t to Marlin (ensure that you confirm overwrite, or you may not have copied to the correct directory).
+  - On a GNU+Linux OS via: `rsync -rt ./Marlin-r2x_14t/ ../Marlin`
+  - On Windows via `pushconfig.bat`
+
+
 ## Project Status
 
 Using a later version of the bugfix branch on the upstream repository is desirable, while utilizing the platformio.ini, Configuration.h, and Configuration\_adv.h from the fork. Updating will provide M154 position auto-report, which the BIGTREETECH TFT35 (and other models) can utilize (the setting must be enabled in _both_ the Marlin Configuration.h and in the TFT firmware configuration file as per the [BTT Touchscreen readme](https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware)).
