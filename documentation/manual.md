@@ -111,22 +111,43 @@ Solution: If the bed is hot and the temperature reading is correct, the expected
 - The 3D printed mount for the TFT35 screen is attached to the stock metal LCD backplate using (2) #4 sheet metal screws going into the plastic tap holes, each with a washer and lock washer.
   - The 3D printed bezel is attached using (4) slotted countersunk #4 x 7/16 sheet metal screws.
 - To accommodate the unusual heater cartridges from the Replicator 2X, the screw heads are filed to a smaller diameter, the washers are filed down on one side, and the heater cartridge shafts in the heater blocks are drilled out larger. If a heater cartridge must be replaced, switching to a standard heater block with standard hardware and no modifications is preferable. When the type of heater cartridge, heater block, or insulation changes, perform PID tuning again and place the new values in the firmware.
+  - Tuning can be done using either Pronterface or OctoPrint's built-in terminal.
   - Performing it on the bed for 60C resulted in temperature shutdowns, so tried cooling to 30C then running again at 105 (; Marlin-20-specific G-code is from https://all3dp.com/2/3d-printer-pid-tuning/):
+
+PID tune the bed:
 ```
 M303EBED S105 C6
 ```
-  result:
+
+bed 105 C result:
 ```
   #define DEFAULT_bedKp 33.3357
   #define DEFAULT_bedKi 4.0417
   #define DEFAULT_bedKd 68.7382
 ```
-  formerly (for 60C):
+
+bed 60C result:
 ```
   #define DEFAULT_bedKp 56.49
   #define DEFAULT_bedKi 2.49
   #define DEFAULT_bedKd 853.97
 ```
+
+Tune T0 (left nozzle in our custom setup) with 7 cycles to 230 C:
+```
+M303 E0 S210 C7
+```
+
+FlexionHT 230 C result:
+```
+#define DEFAULT_Kp 32.1974
+#define DEFAULT_Ki 3.7686
+#define DEFAULT_Kd 68.7697
+. . .
+M301 P32.1974 I3.7686 D68.7697
+M500 # store firmware values
+```
+
 - All fans are 24V 4010 fans (40mm x 40mm x 10mm). The only quieter fan I found is a 12V SUNON MagLev fan. Using (4) 24V to 12V buck converters, using that fan model would be possible.
 - The fans on the hotend assembly must point toward the heatsink (the label points in the direction of airflow).
   - The 3D printed parts are available from Axle Media and are planned to be posted at https://thingiverse.com/poikilos.
