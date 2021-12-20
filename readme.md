@@ -7,6 +7,8 @@ For usage and further details, see the Service Manual: [documentation/manual.md]
 
 
 ## How to use
+
+### Configure Marlin
 - Clone Marlin then switch to the bugfix branch (as per 
 hallski's Nov 23 '09 at 14:26 answer edited Dec 19, '21 <https://stackoverflow.com/a/1783426> on <https://stackoverflow.com/questions/1783405/how-do-i-check-out-a-remote-git-branch>):
 ```
@@ -21,6 +23,17 @@ git switch bugfix-2.0.x
 - Copy all files from r2x_14t/Marlin-r2x_14t to Marlin (ensure that you confirm overwrite, or you may not have copied to the correct directory).
   - On a GNU+Linux OS via: `rsync -rt ./Marlin-r2x_14t/ ../Marlin`
   - On Windows via `pushconfig.bat`
+
+### Build and Install Marlin
+- Complete the steps above ("Configure Marlin").
+- Install the PlatformIO plugin for Visual Studio Code.
+- In the PlatformIO tab, click "Open Project" then choose the "Marlin" directory (not "Marlin\Marlin") that you configured.
+- Click the PlatformIO button on the left. Choose the "LPC1769" board (for BTT SKR V1.4 TURBO).
+  - Under that, click "build" (Correct any errors. Report them at <https://github.com/poikilos/r2x_14t> if you made no changes to the configuration here).
+    - (or "upload and monitor" if you have the device connected, but if that fails to upload, continue below)
+  - Copy the firmware.bin file (location is shown in the output, such as `C:\Users\Jatlivecom\git\Marlin\.pio\build\LPC1769\firmware.bin`) to a microSD card.
+  - Safely eject the microSD card.
+  - Insert the microSD into a BTT SKR V1.4 TURBO board and restart it.
 
 
 ## Project Status
