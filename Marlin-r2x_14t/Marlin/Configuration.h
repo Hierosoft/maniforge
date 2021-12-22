@@ -21,6 +21,9 @@
  */
 #pragma once
 
+// This copy of the file is from the R2X 14T configuration from <https://github.com/poikilos/r2x_14t>.
+
+
 /**
  * Configuration.h
  *
