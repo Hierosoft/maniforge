@@ -24,6 +24,11 @@
 #define CONFIG_EXAMPLES_DIR "JGAurora/A3S_V1"
 
 /**
+ * JGAurora A3S V1 configuration
+ * Authors: Jake Gustafson, Telli Mantelli, Kris Waclawski, Michael Gilardi & Samuel Pinches
+ */
+
+/**
  * Configuration_adv.h
  *
  * Advanced settings.
