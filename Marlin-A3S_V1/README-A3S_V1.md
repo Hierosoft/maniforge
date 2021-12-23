@@ -17,7 +17,9 @@ To install custom firmware:
     - If you can’t find the right port or if your machine isn't detected, you may need to install a driver for the CH340 serial-to-USB interface chip in the printer.
       - [macOS CH340 Serial Driver](http://sampin.ch/ch340-driver-mac)
       - [Windows CH340 Serial Driver](https://sparks.gogo.co.nz/ch340.html)
-- Install the u8glib library using the library manager in the menu "Sketch -> Include Library -> Manage Libraries."
+- Install the following libraries using the library manager in the menu "Sketch -> Include Library -> Manage Libraries":
+  - U8glib
+  - U8glib-HAL
 - IMPORTANT: Unplug the 8-pin LCD panel header connector on your printer. The LCD should turn off completely. This is found underneath the LCD, and can be accessed from underneath the printer without removing any screws. Remember where it goes so you can put it back after flashing.
 - Close all other programs (Cura, Repetier Host, JGCreat, etc.) that could connect to the serial port.
 - Open the "Marlin.ino" file in Arduino IDE and wait for the new project window to appear.
