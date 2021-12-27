@@ -8,8 +8,15 @@ For usage and further details, see the Service Manual: [documentation/manual.md]
 
 ## How to use
 
+### Configure the TFT
+- Build TFT firmware update using `utilities/TFT24-build_SDCard.py`.
+- Power off the mainboard.
+- Connect EXP1 and EXP2
+  - If using (or any MKS board apparently), cut off the notches and insert EXP1 and EXP2 the opposite way (resolves [#14 The display doesn't turn on with (only) EXP1 and EXP2 connected if using an A3S (MKS board) with a BTT TFT24 V1.0](https://github.com/poikilos/r2x_14t/issues/14)) as per [BigTreeTech Screens TFT24 V1.1 and TFT35 V3.0 Touch Screen Display compatible 12864LCD](https://www.youtube.com/watch?v=rexqrW6PbnQ) (See [15:29](https://www.youtube.com/watch?v=rexqrW6PbnQ&t=15m29s)).
+- Insert the card into the display and power on the mainboard.
+
 ### Configure Marlin
-- Clone Marlin then switch to the bugfix branch (as per 
+- Clone Marlin then switch to the bugfix branch (as per
 hallski's Nov 23 '09 at 14:26 answer edited Dec 19, '21 <https://stackoverflow.com/a/1783426> on <https://stackoverflow.com/questions/1783405/how-do-i-check-out-a-remote-git-branch>):
 ```
 mkdir ~/git
