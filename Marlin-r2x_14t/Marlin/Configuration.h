@@ -155,7 +155,7 @@
 #endif
 
 // Name displayed in the LCD "Ready" message and Info menu
-#define CUSTOM_MACHINE_NAME "Axle Media R2X 14T"
+#define CUSTOM_MACHINE_NAME "R2X 14T"
 // max length TFT24:        "                     "
 
 // Printer's unique ID, used by some programs to differentiate between machines.
@@ -606,6 +606,8 @@
   //#define PID_PARAMS_PER_HOTEND // Uses separate PID parameters for each extruder (useful for mismatched extruders)
                                   // Set/get with gcode: M301 E[extruder number, 0-2]
 
+    // FlexionHT, FilaPrint, thermistors not thermocouples, r2x_14t part fan duct 1.0,
+    // 7 cycles, 230 C, T0 (left):
   #if ENABLED(PID_PARAMS_PER_HOTEND)
     // Specify up to one value per hotend here, according to your setup.
     // If there are fewer values, the last one applies to the remaining hotends.
@@ -613,8 +615,6 @@
     #define DEFAULT_Ki_LIST {   1.08,   1.08 }
     #define DEFAULT_Kd_LIST { 114.00, 114.00 }
   #else
-    // FlexionHT, FilaPrint, thermistors not thermocouples, r2x_14t part fan duct 1.0,
-    // 7 cycles, 230 C, T0 (left):
     #define DEFAULT_Kp  32.1974
     #define DEFAULT_Ki   3.7686
     #define DEFAULT_Kd 68.7697
