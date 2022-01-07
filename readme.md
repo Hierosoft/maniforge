@@ -44,6 +44,11 @@ git switch bugfix-2.0.x
 - Power on the mainboard (or power the display any other way) and the flashing process will start automatically.
 
 
+## FlexionHT
+The FlexionHT retrofix kit for the Replicator 2X is highly recommended. Along with that you can use:
+- [Part Cooling Fan Duct for R2X 14T with FlexionHT](https://www.thingiverse.com/thing:5190784) CC BY 4.0 Poikilos on ThingiVerse
+
+
 ## Project Status
 
 Using a later version of the bugfix branch on the upstream repository is desirable, while utilizing the platformio.ini, Configuration.h, and Configuration\_adv.h from the fork. Updating will provide M154 position auto-report, which the BIGTREETECH TFT35 (and other models) can utilize (the setting must be enabled in _both_ the Marlin Configuration.h and in the TFT firmware configuration file as per the [BTT Touchscreen readme](https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware)).
