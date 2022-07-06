@@ -1,0 +1,8 @@
+*.txt linguist-vendored
+*.ini linguist-vendored
+*.bak linguist-vendored
+*.idx linguist-vendored
+*.cfg linguist-vendored
+config/cura/4.8/plugins/** linguist-vendored
+config/cura/4.9/plugins/** linguist-vendored
+config/cura/4.10/plugins/** linguist-vendored
