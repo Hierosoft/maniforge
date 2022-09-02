@@ -270,7 +270,7 @@ A3S_C_A_VALUES = {  # MKS TFT28 V3.0
     'Z_STEPPER_ALIGN_ITERATIONS': 3,  # default 5
     'SOUND_MENU_ITEM': "",  # Poikilos (add a mute menu item)
     'LCD_SET_PROGRESS_MANUALLY': "",  # Poikilos (Allow M73 to set %)
-    'EVENT_GCODE_SD_ABORT': "G27",
+    'EVENT_GCODE_SD_ABORT': '"G27"',
     'BABYSTEPPING': "",
     'BABYSTEP_MULTIPLICATOR_Z': 5,
     'BABYSTEP_MULTIPLICATOR_XY': 5,
