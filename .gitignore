@@ -165,3 +165,5 @@ cura.log
 cura.log.1
 plugins
 plugins.json
+err.txt
+out.txt
