@@ -1,4 +1,37 @@
 #!/usr/bin/env python3
+'''
+marlininfo
+----------
+by Poikilos
+
+Modify the Marlin configuration in a predictable way regardless of the
+configuration version. Copy, modify, then deploy a source Marlin
+configuration in the current working directory to a specified copy of
+the Marlin sourcecode.
+
+Running main only can work for R2X_14T or JGAurora A3S. If you need to
+utilize the framework yourself, you will have to set the driver_names
+(list attribute) manually on any MarlinInfo instance you create.
+
+For instructions on compiling Marlin 2 and flashing it to JGAurora A3S,
+see ../documentation/A3S_V1.md.
+
+OPTIONS:
+--machine <name>        Set the machine name to R2X_14T or A3S for some
+                        automatic settings such as what drivers are
+                        installed on the board. If the current working
+                        directory contains either of those two strings,
+                        this setting will be determined automatically.
+
+--driver-type           For each driver installed on the board
+                        (as defined by the driver_names list),
+                        set the driver type in Configuration.h to
+                        this value. This setting will be auto-detected
+                        when possible based on value of the "machine".
+
+--help                  Show this help screen.
+
+'''
 from __future__ import print_function
 import os
 import sys
@@ -33,10 +66,33 @@ from pycodetool.parsing import (
     get_cdef,
     block_uncomment_line,
     COMMENTED_DEF_WARNING,
+    find_non_whitespace,
 )
 
 verbosity = 0
 verbosities = [True, False, 0, 1, 2]
+
+
+A3S_DEF_COMMENTS = {
+    'DEFAULT_AXIS_STEPS_PER_UNIT': [
+        "// E-steps calibrated from 80: 200 yields 206, so do: 0.97087378640776699029 * 100 = 97",
+        "// - or Set and save (if EEPROM_SETTINGS enabled) with, respectively: M92 E97; M500",
+    ],
+    'Z_MIN_PROBE_REPEATABILITY_TEST': [
+        "// ^ IF has probe, recommended for TFT24 (See <https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware>)",
+    ],
+    'G26_MESH_VALIDATION': [
+        "// ^ recommended for TFT24 (See <https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware>)",
+    ],
+}
+
+R2X_14T_DEF_COMMENTS = {
+}
+
+MACHINE_DEF_COMMENTS = {
+    'A3S': A3S_DEF_COMMENTS,
+    'R2X_14T': R2X_14T_DEF_COMMENTS,
+}
 
 
 def set_verbosity(level):
@@ -63,6 +119,10 @@ def echo2(*args, **kwargs):
         return False
     print(*args, file=sys.stderr, **kwargs)
     return True
+
+
+def usage():
+    print(__doc__)
 
 
 class MarlinInfo:
@@ -209,20 +269,55 @@ class MarlinInfo:
                 " instance so that which drivers to patch are known."
             )
         names = []
-        with open(self.c_path, 'r') as ins:
+        path = self.c_path
+        with open(path, 'r') as ins:
             lines = ins.readlines()
         for name in self.driver_names:
-            v, line_n, err = get_cdef(self.c_path, name, lines=lines)
+            v, line_n, err = get_cdef(path, name, lines=lines)
+            line_i = line_n - 1
             # COMMENTED_DEF_WARNING is ok (using that line is safe
             #   since the warning indicates there is no non-commented
             #   line with the same name)
             if line_n > -1:
                 names.append(name)
-                rawL = lines[line_n]
+                rawL = lines[line_i]
                 line = rawL.strip()
+                original_line = line
                 if line.startswith("//"):
-                    line = line[2:]
+                    line = line[2:].strip()
                 parts = line.split()
+                if parts[0] != "#define":
+                    raise RuntimeError('{}:{}: expected #define'
+                                       ''.format(path, line_n))
+                original_v_i = line.find(v)
+                after_v_i = original_v_i + len(v)
+                '''
+                Normally don't use after_v_i directly, because the
+                value may have spaces (may be a macro rather than a
+                constant), but in this case it is OK since the value v
+                is reliable (found by get_cdef) so skip:
+                macro_ender = find_non_whitespace(line, comment_i-1, step=-1)
+                space_and_comment_i = macro_ender + 1
+                comment_i = line.find("//", after_v_i)
+                if comment_i < -1:
+                    comment_i = len(line)
+                original_n = parts[1]
+                original_v = parts[2]
+                original_v_i = line.find(original_v)
+                after_v_i = original_v_i + len(original_v)
+                '''
+                line = line[:original_v_i] + driver_type + line[after_v_i:]
+                lines[line_i] = line
+                if line != original_line:
+                    echo0("* changed {} to {}".format(v, driver_type))
+                    echo0('  * changed "{}" to "{}"'.format(original_line, line))
+
+        with open(self.c_path, 'w') as outs:
+            for rawL in lines:
+                if not rawL.endswith("\n"):
+                    rawL += "\n"
+                outs.write(rawL)
+
         return names
 
 
@@ -251,7 +346,11 @@ def main():
                 key = "machine"
             elif arg == "--driver-type":
                 key = "driver-type"
+            elif arg in ["--help", "/?"]:
+                usage()
+                return 0
             else:
+                usage()
                 echo0("The argument is incorrect: {}".format(arg))
                 return 1
         else:
@@ -291,11 +390,21 @@ def main():
     driver_type = options.get('driver-type')
 
     machine = options.get('machine')
-    if machine is None:
-        if "A3S" in this_marlin_name:
+
+    if "A3S" in this_marlin_name:
+        if machine is None:
             machine = "A3S"
-        elif "R2X_14T" in this_marlin_name:
+        else:
+            echo0('Warning: You set machine to {},'
+                  ' but the directory contained the string "A3S"'
+                  ''.format(machine))
+    elif "R2X_14T" in this_marlin_name:
+        if machine is None:
             machine = "R2X_14T"
+        else:
+            echo0('Warning: You set machine to {},'
+                  ' but the directory contained the string "R2X_14T"'
+                  ''.format(machine))
     print('machine={}'.format(machine))
     if machine == "R2X_14T":
         driver_types = ["TMC2209"]
@@ -324,6 +433,28 @@ def main():
             'Z_DRIVER_TYPE',
             'E0_DRIVER_TYPE',
         ]
+        '''
+        # TODO:
+        - 'DEFAULT_AXIS_STEPS_PER_UNIT', "{ 80, 80, 800, 100 }"
+          - or "{ 80, 80, 800, 100 }" & use
+            MACHINE_DEF_COMMENTS[machine]['DEFAULT_AXIS_STEPS_PER_UNIT']
+        - 'DEFAULT_MAX_FEEDRATE', "{ 500, 500, 15, 25 }"
+          (default z is 6 which is too slow for first touch of z homing)
+        - 'Z_PROBE_FEEDRATE_FAST', "(12*60)"
+          (6*60 is way too slow for first touch of z homing)\
+        - inversions are all flipped vs Marlin 1 recommended upstream
+          settings (by unofficial JGMaker forum) for some reason:
+          * 'INVERT_X_DIR', "false"
+          * 'INVERT_Y_DIR', "true"
+          * 'INVERT_Z_DIR', "true"
+          * 'INVERT_E0_DIR', "false"
+        - ask user to "remove" (comment) #define FILAMENT_RUNOUT_SENSOR
+          (if so, if not commented already, comment it)
+        - 'HOMING_FEEDRATE_MM_M', "{ (80*60), (80*60), (12*60) }"
+          (default 6*60 is way too slow for non-print z moves)
+        - 'ENCODER_PULSES_PER_STEP', "4"
+        - comment //#define REVERSE_ENCODER_DIRECTION if not already
+        '''
     else:
         raise ValueError(
             'A3S or R2X_14T is not in "{}"'
@@ -344,6 +475,8 @@ def main():
                                 driver_type))
 
         thisMarlin.patch_drivers(driver_type)
+
+
 
     cmd_parts = ["meld", thisMarlin.mm_path, dstMarlin.mm_path]
     # See <https://stackoverflow.com/a/3516106/4541104>
