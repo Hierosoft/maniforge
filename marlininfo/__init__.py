@@ -71,10 +71,25 @@ from pycodetool.parsing import (
     block_uncomment_line,
     COMMENTED_DEF_WARNING,
     find_non_whitespace,
+    insert_lines,
 )
 
 verbosity = 0
 verbosities = [True, False, 0, 1, 2]
+
+
+
+#define CONFIG_EXAMPLES_DIR "JGAurora/A3S_V1"
+top_lines = [
+    '',
+    '#define CONFIG_EXAMPLES_DIR "JGAurora/A3S_V1"',
+    '',
+    '/**',
+    ' * JGAurora A3S V1 configuration',
+    ' * Authors: Jake Gustafson, Telli Mantelli, Kris Waclawski, Michael Gilardi & Samuel Pinches',
+    ' */',
+]
+top_lines_flag = "#pragma once"
 
 BTT_TFT_URL = "https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware"
 LIN_ADVANCE_K_URL = "https://jgmakerforum.com/discussion/259/beta-jgaurora-a5-firmware-1-1-9c"
@@ -528,6 +543,20 @@ class MarlinInfo:
         '''
         return set_cdef(self.c_a_path, name, value, comments=comments)
 
+    def insert_c(self, new_lines, lines=None, after=None):
+        '''
+        Insert into self.c_path (or lines if present).
+        For documentation see insert_lines.
+        '''
+        return insert_lines(self.c_path, new_lines, lines=lines, after=after)
+
+    def insert_c_a(self, new_lines, lines=None, after=None):
+        '''
+        Insert into self.c_a_path (or lines if present).
+        For documentation see insert_lines.
+        '''
+        return insert_lines(self.c_a_path, new_lines, lines=lines, after=after)
+
     def patch_drivers(self, driver_type):
         '''
         Set every driver in driver_names to driver_type.
@@ -649,6 +678,8 @@ def main():
             'E1_DRIVER_TYPE',
         ]
     elif machine == "A3S":
+        thisMarlin.insert_c(top_lines, after=top_lines_flag)
+        thisMarlin.insert_c_a(top_lines, after=top_lines_flag)
         thisMarlin.driver_names = [
             'X_DRIVER_TYPE',
             'Y_DRIVER_TYPE',
