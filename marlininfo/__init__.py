@@ -37,6 +37,7 @@ import os
 import sys
 import pathlib
 import shutil
+import shlex
 from subprocess import (
     Popen,
 )
@@ -112,7 +113,8 @@ A3S_DEF_COMMENTS = {  # A list is multiline, while a string goes at the end.
         "  // ^ JGAurora A3S (tuned at 60C for 10 cycles: M303 EBED S60 C10)",
     ],
     'X_MIN_POS': "// thanks DaHai.",
-    'GRID_MAX_POINTS_X': "    // 4 suggested by DaHai, https://www.youtube.com/watch?v=CBlADPgQqL0&t=3m0s",
+    'GRID_MAX_POINTS_X': " // 4 suggested by DaHai, https://www.youtube.com/watch?v=CBlADPgQqL0&t=3m0s",
+    # ^ spacing differs (multiple uses)
     # ^ GRID_MAX_POINTS_Y is set to GRID_MAX_POINTS_X by default.
 }
 
@@ -703,8 +705,22 @@ def main():
                                 driver_type))
 
         thisMarlin.patch_drivers(driver_type)
-
     cmd_parts = ["meld", thisMarlin.mm_path, dstMarlin.mm_path]
+    print("# Get patch (for stock headers) using cache:")
+    print(shlex.join([
+        "diff",
+        "-u",
+        srcMarlin.c_path,
+        thisMarlin.c_path,
+    ]))
+    print(shlex.join([
+        "diff",
+        "-u",
+        srcMarlin.c_a_path,
+        thisMarlin.c_a_path,
+    ]))
+    print("# Manually merge the changes to complete the process:")
+    print(shlex.join(cmd_parts))
     # See <https://stackoverflow.com/a/3516106/4541104>
     proc = Popen(cmd_parts, shell=False,
                  stdin=None, stdout=None, stderr=None, close_fds=True)
