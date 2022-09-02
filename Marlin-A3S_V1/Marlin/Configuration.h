@@ -883,9 +883,6 @@
 #define X_DRIVER_TYPE  A4988
 #define Y_DRIVER_TYPE  A4988
 #define Z_DRIVER_TYPE  A4988
-// #define X_DRIVER_TYPE  TMC2209 // only if modded!
-// #define Y_DRIVER_TYPE  TMC2209 // only if modded!
-// #define Z_DRIVER_TYPE  TMC2209 // only if modded!
 //#define X2_DRIVER_TYPE A4988
 //#define Y2_DRIVER_TYPE A4988
 //#define Z2_DRIVER_TYPE A4988
@@ -895,7 +892,6 @@
 //#define J_DRIVER_TYPE  A4988
 //#define K_DRIVER_TYPE  A4988
 #define E0_DRIVER_TYPE A4988
-// #define E0_DRIVER_TYPE TMC2209 // only if modded!
 //#define E1_DRIVER_TYPE A4988
 //#define E2_DRIVER_TYPE A4988
 //#define E3_DRIVER_TYPE A4988
