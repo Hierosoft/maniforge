@@ -27,7 +27,7 @@ To install custom firmware:
 - Select "Upload" from the "Sketch" menu or click the Upload button.
 - Wait for the firmware to finish uploading and verifying. This may take a couple of minutes.
 - Plug the LCD connector back in.
-- In the Arduino IDE, select "Tools -> Serial monitor" to open up a simple console. In the popup menus, select "Newline" and a Baud Rate of "250000."
+- In the Arduino IDE, select "Tools -> Serial monitor" to open up a simple console. In the popup menus, select "Newline" and a Baud Rate of "250000" (or 115200 if you have connected a BTT TFT).
 - In the input box, enter the following G-code commands:
   - `M502` (press return) to reset settings (in RAM) to your configured defaults.
   - `M500` (press return) to write settings and initialize the EEPROM.

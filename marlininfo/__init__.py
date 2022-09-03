@@ -197,7 +197,7 @@ A3S_DEF_COMMENTS = {  # A list is multiline, while a string goes at the end.
 }
 
 A3S_C_A_COMMENTS = {
-    'Z_STEPPER_AUTO_ALIGN': [  # Only for using multiple z steppers
+    'Z_STEPPER_AUTO_ALIGN': [  # Only for using 2 Z *drivers*
         ("// ^ IF has probe, recommended for BTT TFT (See <{}>);"
          " for 2 Z steppers"
          "".format(BTT_TFT_URL)),
@@ -295,7 +295,7 @@ DEPRECATED = {  # These are refactored and there is no one to one conversion.
     # Marlin 2.0.x-bugfix 02000903 to 02000905:
     'X_DUAL_STEPPER_DRIVERS': "See DUAL_X_CARRIAGE etc instead.",
     'NUM_Z_STEPPER_DRIVERS': "See Z2_DRIVER_TYPE etc instead.",
-    'NOZZLE_PARK_MOVE': "See NOZZLE_PARK_X_ONLY and NOZZLE_PARK_Y_ONLY instead.",
+    'NOZZLE_PARK_MOVE': "See NOZZLE_PARK_X_ONLY & NOZZLE_PARK_Y_ONLY instead.",
     'Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS': (
         "ifdef Z_STEPPER_ALIGN_STEPPER_XY is checked instead now."
     ),
@@ -307,6 +307,7 @@ DEPRECATED_VALUES = {
     'BLTOUCH_HS_MODE': [""],
     # ^ Changed to true/false (Python boolean or C-like boolean string)
 }
+# TODO: ^ is #define COOLER_FAN_PIN -1 from A3S Configuration_adv.h deprecated?
 
 A3S_CONF = {  # include quotes explicitly for strings.
     'STRING_CONFIG_H_AUTHOR': (
@@ -340,6 +341,7 @@ A3S_CONF = {  # include quotes explicitly for strings.
     'X_MIN_POS': -5,
     'Z_MAX_POS': 205,
     'MESH_BED_LEVELING': None,
+    'AUTO_BED_LEVELING_UBL': None,
     'G26_MESH_VALIDATION': None,
     'GRID_MAX_POINTS_X': 4,
     # ^ GRID_MAX_POINTS_Y is set to GRID_MAX_POINTS_X by default.
@@ -347,12 +349,17 @@ A3S_CONF = {  # include quotes explicitly for strings.
     #   #elif ENABLED(MESH_BED_LEVELING)
     'MESH_G28_REST_ORIGIN': "",  # go to 0 such as for manual leveling
 
-    'LCD_BED_LEVELING': "",
+    # 'LCD_BED_LEVELING': "",
     'LCD_BED_TRAMMING': "",
-    'LEVEL_BED_CORNERS': "",  # renamed to LCD_BED_TRAMMING in later versions.
+    # 'LEVEL_BED_CORNERS': "",  # renamed to LCD_BED_TRAMMING in later versions.
     'EEPROM_SETTINGS': "",
     'SDSUPPORT': "",
-    'SPEAKER': "",  # ok for the included MKS TFT28, or swapped to BTT TFT24 etc
+
+    'SPEAKER': None,  # tone (instead of beep)
+    # 'SPEAKER': "",  # *incompatible now* with mega2560
+    # ^ - See [Mega2560 Print Fan
+    #     Problem](https://github.com/MarlinFirmware/Marlin/issues/23651)
+    # ^ - was ok for the included MKS TFT28 (?), or swapped to BTT TFT24 etc
     'REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER': "",  # MKS TFT28, or BTT
     'TEMP_SENSOR_BED': 1,
 
@@ -382,7 +389,7 @@ A3S_C_A_VALUES = {  # MKS TFT28 V3.0
     'WATCH_BED_TEMP_PERIOD': 90,
     'HOMING_BUMP_DIVISOR': "{ 10, 10, 6 }",
     'QUICK_HOME': "",
-    'Z_STEPPER_AUTO_ALIGN': "",  # For 2 Z steppers (rec by BTT TFT for probe)
+    'Z_STEPPER_AUTO_ALIGN': None,  # For 2 Z *drivers*; rec by BTT TFT for probe
     'Z_STEPPER_ALIGN_ITERATIONS': 3,  # default 5
     'EVENT_GCODE_SD_ABORT': '"G27"',
     'BABYSTEPPING': "",
@@ -390,6 +397,15 @@ A3S_C_A_VALUES = {  # MKS TFT28 V3.0
     'BABYSTEP_MULTIPLICATOR_XY': 5,
     'DOUBLECLICK_FOR_Z_BABYSTEPPING': "",
     'LIN_ADVANCE_K': "1.05",  # see LIN_ADVANCE_K_URL
+    # TODO: 0.6 for 3D PrintLife Pro PLA retraction 4.8@45 2022-09-02
+    #   found using https://marlinfw.org/tools/lin_advance/k-factor.html
+    #   r 4.8 is based on:
+    #   (1.9 ID - 1.75) / (2.0 stock ID - 1.75) = .6
+    #   .6 * 8 (Cura default PLA retraction) = 4.8
+    #   Set later:
+    #   M900  # report current value
+    #   M900 K0.6  # set K
+    #   M500  # save
 
     'LONG_FILENAME_HOST_SUPPORT': None,
     'SDCARD_CONNECTION': None,
@@ -410,10 +426,11 @@ A3S_C_A_VALUES = {  # MKS TFT28 V3.0
 
 # Done *after* POIKILOS_ & MACHINE_ values so overrides stock screen:
 BTT_TFT_C_VALUES = {
+    'BAUDRATE': 115200,
     # 'G26_MESH_VALIDATION': "",  See BLTouch instead.
     'ENCODER_PULSES_PER_STEP': 4,
     'REVERSE_ENCODER_DIRECTION': None,
-    'SPEAKER': "",
+    # 'SPEAKER': "",  # *incompatible* with mega2560 (See R2X_14T instead)
     'REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER': "",
 }
 BTT_TFT_C_COMMENTS = {
@@ -474,6 +491,8 @@ BLTOUCH_C_VALUES = {
     'MESH_TEST_BED_TEMP': 63,
     'USE_ZMIN_PLUG': None,
     'Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN': None,
+    'AUTO_BED_LEVELING_UBL': "",
+    'MESH_BED_LEVELING': "",
 }
 BLTOUCH_C_COMMENTS = {
     'AUTO_BED_LEVELING_BILINEAR': (
@@ -486,7 +505,7 @@ BLTOUCH_C_COMMENTS = {
 }
 
 BLTOUCH_C_A_VALUES = {
-    # 'Z_STEPPER_AUTO_ALIGN': "",  # rec by BTT TFT if probe; for 2 Z steppers
+    # 'Z_STEPPER_AUTO_ALIGN': "",  # rec by BTT TFT if probe; for 2 Z *drivers*
     # ^ See printer-specific overrides that are set BEFORE BLTOUCH values
     'MESH_BED_LEVELING': "",
     'BLTOUCH_DELAY': 500,
@@ -508,7 +527,6 @@ R2X_14T_C_VALUES = {
         ' for Replicator 2X but with thermistors)"'
     ),  # + " // Who made the changes." comment is preserved by marlininfo
     'CUSTOM_MACHINE_NAME': '"R2X 14T"',
-    'BAUDRATE': 115200,
     'SERIAL_PORT_2': -1,
     'MOTHERBOARD': "BOARD_BTT_SKR_V1_4_TURBO",
     'EXTRUDERS': 2,  # TODO: allow disabling the second extruder
@@ -582,17 +600,18 @@ R2X_14T_C_VALUES = {
     'GRID_MAX_POINTS_X': 5,
     # ^ GRID_MAX_POINTS_Y is set to GRID_MAX_POINTS_X by default.
     'EXTRAPOLATE_BEYOND_GRID': "",
-    'LCD_BED_LEVELING': "",
+    # 'LCD_BED_LEVELING': "",
     'LCD_BED_TRAMMING': None,
-    'LEVEL_BED_CORNERS': None,  # renamed to LCD_BED_TRAMMING in later versions.
+    # 'LEVEL_BED_CORNERS': None,  # renamed to LCD_BED_TRAMMING
     'Z_SAFE_HOMING': "",
     'EEPROM_SETTINGS': "",
     'SDSUPPORT': "",
     # 'NEOPIXEL_PIN': "",  # Not tried, but may be a way to rig builtin ones
+    'SPEAKER': "",  # *incompatible* with mega2560 (so only enabled here)
 }
 
 R2X_14T_C_A_VALUES = {
-    'Z_STEPPER_AUTO_ALIGN': None,  # rec by BTT TFT if probe; for 2 Z steppers
+    'Z_STEPPER_AUTO_ALIGN': None,  # rec by BTT TFT if probe; for 2 Z *drivers*
     'THERMAL_PROTECTION_HYSTERESIS': 8,
     'WATCH_TEMP_PERIOD': 25,
     'WATCH_TEMP_INCREASE': 7,
@@ -1123,7 +1142,7 @@ def main():
 
         thisMarlin.patch_drivers(driver_type)
     cmd_parts = ["meld", thisMarlin.mm_path, dstMarlin.mm_path]
-    print("# Get patch (for stock headers) using cache:")
+    print("# Get a patch (for stock headers) using cache:")
     print(shlex.join([
         "diff",
         "-u",
@@ -1136,8 +1155,26 @@ def main():
         srcMarlin.c_a_path,
         thisMarlin.c_a_path,
     ]))
+
+    print("# Get a patch for the destination using cache:")
+    print(shlex.join([
+        "diff",
+        "-u",
+        thisMarlin.c_path,
+        dstMarlin.c_path,
+    ]))
+    print(shlex.join([
+        "diff",
+        "-u",
+        thisMarlin.c_a_path,
+        dstMarlin.c_a_path,
+    ]))
+
     print("# Manually merge the changes to complete the process:")
     print(shlex.join(cmd_parts))
+    print('# Or if you\'re sure "{}" matches "{}"'
+          ' then you could do something like:')
+    print('rsync -rt "{}/" "{}"'.format(thisMarlin.m_path, dstMarlin.m_path))
     # See <https://stackoverflow.com/a/3516106/4541104>
     proc = Popen(cmd_parts, shell=False,
                  stdin=None, stdout=None, stderr=None, close_fds=True)
