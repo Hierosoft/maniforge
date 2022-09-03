@@ -109,3 +109,11 @@ See "First-time Setup" in [documentation/manual.md](documentation/manual.md#firs
 
 ## Making Modifications
 To make modifications that differ from the current state of the r2x_14t project or to understand the inner workings, See [contributing.md](contributing.md).
+
+## Development
+
+### marlininfo
+The marlininfo module is a Python module for modifying and deploying Configurations regardless of version.
+
+In several variable names, "C_" or "c_" refers to Configuration.h
+and "C_A_" or "c_a_" refers to Configuration_adv.h

@@ -77,23 +77,83 @@ from pycodetool.parsing import (
 verbosity = 0
 verbosities = [True, False, 0, 1, 2]
 
-
-
-#define CONFIG_EXAMPLES_DIR "JGAurora/A3S_V1"
-top_lines = [
+A3S_TOP_LINES_FLAG = "#pragma once"
+A3S_TOP_LINES = [
     '',
     '#define CONFIG_EXAMPLES_DIR "JGAurora/A3S_V1"',
     '',
     '/**',
     ' * JGAurora A3S V1 configuration',
-    ' * Authors: Jake Gustafson, Telli Mantelli, Kris Waclawski, Michael Gilardi & Samuel Pinches',
+    (' * Authors: Jake Gustafson, Telli Mantelli, Kris Waclawski,'
+     ' Michael Gilardi & Samuel Pinches'),
     ' */',
 ]
-top_lines_flag = "#pragma once"
+
+R2X_14T_TOP_LINES_FLAG = "#pragma once"
+R2X_14T_TOP_LINES = [
+    '',
+    '#define CONFIG_EXAMPLES_DIR "R2X_14T"',
+    '',
+    '/**',
+    ' * MakerBot Replicator 2X with BTT SKR V1.4 Turbo, TFT35 and',
+    ' * thermistors not thermocouples (The R2X 14T build is documented',
+    ' * at <https://github.com/poikilos/r2x_14t>)',
+    ' * Authors: Jake Gustafson',
+    ' */',
+]
+
+TOP_C_LINES = {
+    'A3S': {
+        A3S_TOP_LINES_FLAG: A3S_TOP_LINES,
+    },
+    'R2X_14T': {
+        R2X_14T_TOP_LINES_FLAG: R2X_14T_TOP_LINES,
+    },
+}
+
+TOP_C_A_LINES = {  # This is the same as TOP_C_LINES for now.
+    'A3S': {
+        A3S_TOP_LINES_FLAG: A3S_TOP_LINES,
+    },
+    'R2X_14T': {
+        R2X_14T_TOP_LINES_FLAG: R2X_14T_TOP_LINES,
+    },
+}
+
+moved_tpu = {
+    'PREHEAT_2_LABEL': '"TPU"',
+    'PREHEAT_2_TEMP_HOTEND': 210,
+    'PREHEAT_2_TEMP_BED': 45,
+    'PREHEAT_2_TEMP_CHAMBER': 35,
+    'PREHEAT_2_FAN_SPEED': 0,
+}
+
+moved_abs = {
+    'PREHEAT_3_LABEL': '"ABS"',
+    'PREHEAT_3_TEMP_HOTEND': 240,
+    'PREHEAT_3_TEMP_BED': 110,
+    'PREHEAT_3_TEMP_CHAMBER': 35,
+    'PREHEAT_3_FAN_SPEED': 0,
+}
+
+tpu = moved_tpu
+tpu_lines = [  # These will be overwritten if moved_ dicts above are used.
+    '',
+    '#define PREHEAT_3_LABEL       {}'.format(tpu['PREHEAT_2_LABEL']),
+    '#define PREHEAT_3_TEMP_HOTEND {}'.format(tpu['PREHEAT_2_TEMP_HOTEND']),
+    '#define PREHEAT_3_TEMP_BED    {}'.format(tpu['PREHEAT_2_TEMP_BED']),
+    '#define PREHEAT_3_TEMP_CHAMBER {}'.format(tpu['PREHEAT_2_TEMP_CHAMBER']),
+    '#define PREHEAT_3_FAN_SPEED     {}'.format(tpu['PREHEAT_2_FAN_SPEED']),
+]
+
+tpu_lines_flag = "#define PREHEAT_2_FAN_SPEED"
 
 BTT_TFT_URL = "https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware"
-LIN_ADVANCE_K_URL = "https://jgmakerforum.com/discussion/259/beta-jgaurora-a5-firmware-1-1-9c"
-TFT24_DOC_COMM = ("  // ^ recommended for TFT24 (See <{}>)".format(BTT_TFT_URL))
+LIN_ADVANCE_K_URL = (
+    "https://jgmakerforum.com/discussion/259/beta-jgaurora-a5-firmware-1-1-9c"
+)
+BTT_TFT_DOC_COMM = ("  // ^ recommended for BTT TFT (See <{}>)"
+                    "".format(BTT_TFT_URL))
 
 
 A3S_DEF_COMMENTS = {  # A list is multiline, while a string goes at the end.
@@ -108,11 +168,11 @@ A3S_DEF_COMMENTS = {  # A list is multiline, while a string goes at the end.
          " respectively: M92 E97; M500"),
     ],
     'Z_MIN_PROBE_REPEATABILITY_TEST': [
-        ("// ^ IF has probe, recommended for TFT24 (See <{}>)"
+        ("// ^ IF has probe, recommended for BTT TFT (See <{}>)"
          "".format(BTT_TFT_URL)),
     ],
     'G26_MESH_VALIDATION': [
-        "  // ^ recommended for TFT24 (See <{}>)".format(BTT_TFT_URL),
+        "  // ^ recommended for BTT TFT (See <{}>)".format(BTT_TFT_URL),
     ],
     'DEFAULT_Kd': ["    // ^ JGAurora A5 & A3S V1 (tuned at 210C)"],
     'DEFAULT_bedKd': [
@@ -128,87 +188,135 @@ A3S_DEF_COMMENTS = {  # A list is multiline, while a string goes at the end.
         "  // ^ JGAurora A3S (tuned at 60C for 10 cycles: M303 EBED S60 C10)",
     ],
     'X_MIN_POS': "// thanks DaHai.",
-    'GRID_MAX_POINTS_X': " // 4 suggested by DaHai, https://www.youtube.com/watch?v=CBlADPgQqL0&t=3m0s",
+    'GRID_MAX_POINTS_X': (
+        " // 4 suggested by DaHai,"
+        " https://www.youtube.com/watch?v=CBlADPgQqL0&t=3m0s"
+    ),
     # ^ spacing differs (multiple uses)
     # ^ GRID_MAX_POINTS_Y is set to GRID_MAX_POINTS_X by default.
 }
 
-A3S_ADV_DEF_COMMENTS = {
-    'Z_STEPPER_AUTO_ALIGN': [
-        ("// ^ IF has probe, recommended for TFT24 (See <{}>)"
+A3S_C_A_COMMENTS = {
+    'Z_STEPPER_AUTO_ALIGN': [  # Only for using multiple z steppers
+        ("// ^ IF has probe, recommended for BTT TFT (See <{}>);"
+         " for 2 Z steppers"
          "".format(BTT_TFT_URL)),
     ],
     'LIN_ADVANCE_K': [
         "  // ^ 1.05 for JGAurora A3S according to Cova on",
         "  //   <{}>".format(LIN_ADVANCE_K_URL),
     ],
-    'LONG_FILENAME_HOST_SUPPORT': [
-        TFT24_DOC_COMM,
-    ],
-    'AUTO_REPORT_SD_STATUS': [
-        TFT24_DOC_COMM,
-    ],
-    'SDCARD_CONNECTION': [
-        "  // ^ ONBOARD recommended for TFT24 (See <{}>)".format(BTT_TFT_URL),
-    ],
-    'SERIAL_FLOAT_PRECISION': [
-        "// ^ 4 recommended for TFT24 (See <{}>)".format(BTT_TFT_URL),
-    ],
-    'AUTO_REPORT_TEMPERATURES': [
-        TFT24_DOC_COMM.strip(),
-    ],
-    'AUTO_REPORT_POSITION': [
-        TFT24_DOC_COMM.strip(),
-    ],
-    'M115_GEOMETRY_REPORT': [
-        TFT24_DOC_COMM,
-    ],
-    'REPORT_FAN_CHANGE': [
-        TFT24_DOC_COMM.strip(),
-    ],
-    'HOST_ACTION_COMMANDS': [
-        TFT24_DOC_COMM.strip(),
-    ],
 }
 
-R2X_14T_DEF_COMMENTS = {
+# Done *before* printer so can be overridden:
+POIKILOS_C_VALUES = {  # Add more features. They should usually work.
+    'PID_EDIT_MENU': "",
+    'PID_AUTOTUNE_MENU': "",
+    'PREHEAT_1_LABEL': '"PLA+"',
+    'PREHEAT_1_TEMP_HOTEND': 205,
+    'PREHEAT_1_TEMP_BED': 63,
+    'PREHEAT_1_FAN_SPEED': 0,
+    'NOZZLE_PARK_FEATURE': "",
+    'PRINTCOUNTER': "",
+    'INDIVIDUAL_AXIS_HOMING_MENU': "",
+    'PIDTEMPBED': "",
+    'PROBING_BED_TEMP': 63,
+    # PROBING_NOZZLE_TEMP: See printer-specific values.
+    'LEVELING_BED_TEMP': 63,
+    'MESH_TEST_HOTEND_TEMP': 220,
+    'MESH_TEST_BED_TEMP': 63,
 }
-R2X_14T_ADV_DEF_COMMENTS = {
+POIKILOS_C_A_VALUES = {
+    'SOUND_MENU_ITEM': "",  # (add a mute menu item)
+    'LCD_SET_PROGRESS_MANUALLY': "",  # (Allow M73 to set %)
+    'ARC_SUPPORT': "",  # "Disable this feature to save ~3226 bytes"
+    # ^ "G2/G3 Arc Support"
+    'EMERGENCY_PARSER': "",
+    'LIN_ADVANCE': "",
+    'HOST_PROMPT_SUPPORT': "",  # req: HOST_ACTION_COMMANDS
+    'ADVANCED_PAUSE_FEATURE': "",
+    'FILAMENT_LOAD_UNLOAD_GCODES': "",
+    'HOST_PAUSE_M76': "",  # TODO: Verify if useful. req: HOST_ACTION_COMMANDS
+    'PARK_HEAD_ON_PAUSE': "",
+    'HOME_BEFORE_FILAMENT_CHANGE': "",  # Prevent oozing and melting workpiece
+    'LCD_INFO_MENU': "",  # not tried with MKS TFT28 V3.0
+    'LCD_TIMEOUT_TO_STATUS': 15000,   # uncomment it only
+    'SQUARE_WAVE_STEPPING': "",
+    # 'TMC_DEBUG': "",  # This was on. See if it is necessary for anything.
 }
 
-MACHINE_DEF_COMMENTS = {
-    'A3S': A3S_DEF_COMMENTS,
-    'R2X_14T': R2X_14T_DEF_COMMENTS,
+
+# Yeah, there really are no comments. There aren't dups elsewhere.
+POIKILOS_C_COMMENTS = {
+}
+POIKILOS_C_A_COMMENTS = {
 }
 
-MACHINE_ADV_DEF_COMMENTS = {
-    'A3S': A3S_ADV_DEF_COMMENTS,
-    'R2X_14T': R2X_14T_ADV_DEF_COMMENTS,
+for key, value in POIKILOS_C_VALUES.items():
+    if A3S_DEF_COMMENTS.get(key) is not None:
+        raise ValueError(
+            '{} is already set in POIKILOS_C_A_VALUES'
+            ' so the comment should be there instead of in A3S.'
+            ''.format(key)
+        )
+
+for key, value in POIKILOS_C_A_VALUES.items():
+    if A3S_C_A_COMMENTS.get(key) is not None:
+        raise ValueError(
+            '{} is already set in POIKILOS_C_A_VALUES'
+            ' so the comment should be there instead of in A3S.'
+            ''.format(key)
+        )
+
+# PID Tuning Guide here: https://reprap.org/wiki/PID_Tuning
+# ^ The comment is still also in Configuration.h though it moved.
+
+OLD_TO_NEW = {
+    # Changed somewhere between
+    # Marlin 2.0.x-bugfix 02000903 to 02000905:
+    'LEVEL_BED_CORNERS': 'LCD_BED_TRAMMING',
+    'LEVEL_CORNERS_INSET_LFRB': 'BED_TRAMMING_LEVELING_ORDER',
+    'LEVEL_CORNERS_HEIGHT': 'BED_TRAMMING_LEVELING_ORDER',
+    'LEVEL_CORNERS_Z_HOP': 'BED_TRAMMING_LEVELING_ORDER',
+    'LEVEL_CENTER_TOO': 'BED_TRAMMING_LEVELING_ORDER',
+    'LEVEL_CORNERS_USE_PROBE': 'BED_TRAMMING_LEVELING_ORDER',
+    'LEVEL_CORNERS_PROBE_TOLERANCE': 'BED_TRAMMING_LEVELING_ORDER',
+    'LEVEL_CORNERS_VERIFY_RAISED': 'BED_TRAMMING_LEVELING_ORDER',
+    'LEVEL_CORNERS_AUDIO_FEEDBACK': 'BED_TRAMMING_LEVELING_ORDER',
+    'LEVEL_CORNERS_LEVELING_ORDER': 'BED_TRAMMING_LEVELING_ORDER',
+    'DWIN_CREALITY_LCD_ENHANCED': 'DWIN_LCD_PROUI',
+    'TOOLCHANGE_FS_INIT_BEFORE_SWAP': 'TOOLCHANGE_FS_SLOW_FIRST_PRIME',
+    'LASER_POWER_INLINE_TRAPEZOID': 'LASER_POWER_TRAP',
+    'LASER_POWER_INLINE': 'LASER_POWER_SYNC',
 }
 
-# After ['#pragma once\n', '\n']:
-opening_lines = [
-    '#define CONFIG_EXAMPLES_DIR "JGAurora/A3S_V1"',
-    '',
-    '/**',
-    ' * JGAurora A3S V1 configuration',
-    ' * Authors: Jake Gustafson, Telli Mantelli, Kris Waclawski, Michael Gilardi & Samuel Pinches',
-    ' */',
-    '',
-]
+DEPRECATED = {  # These are refactored and there is no one to one conversion.
+    # Changed somewhere between
+    # Marlin 2.0.x-bugfix 02000903 to 02000905:
+    'X_DUAL_STEPPER_DRIVERS': "See DUAL_X_CARRIAGE etc instead.",
+    'NUM_Z_STEPPER_DRIVERS': "See Z2_DRIVER_TYPE etc instead.",
+    'NOZZLE_PARK_MOVE': "See NOZZLE_PARK_X_ONLY and NOZZLE_PARK_Y_ONLY instead.",
+    'Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS': (
+        "ifdef Z_STEPPER_ALIGN_STEPPER_XY is checked instead now."
+    ),
+    'HAS_LCD_MENU': "Merged with HAS_MANUAL_MOVE_MENU",
+    'HAS_DWIN_E3V2': "Merged with HAS_MANUAL_MOVE_MENU",
+}
 
+DEPRECATED_VALUES = {
+    'BLTOUCH_HS_MODE' = [""],
+    # ^ Changed to true/false (Python boolean or C-like boolean string)
+}
 
 A3S_CONF = {  # include quotes explicitly for strings.
     'STRING_CONFIG_H_AUTHOR': (
         '"(Jake Gustafson, Telli Mantelli, Kris Waclawski,'
-        ' Samuel Pinches & Michael Gilardi, 21 Jan 2018)"'
-    ), # + " // Who made the changes." comment is preserved by marlininfo
+        ' Samuel Pinches & Michael Gilardi, 2 Sep 2022)"'
+    ),  # + " // Who made the changes." comment is preserved by marlininfo
     'MOTHERBOARD': "BOARD_MKS_GEN_L",
     'CUSTOM_MACHINE_NAME': '"JGAurora A3S"',
     'HEATER_0_MAXTEMP': 265,
     'BED_MAXTEMP': 120,
-    'PID_EDIT_MENU': "",  # Poikilos
-    'PID_AUTOTUNE_MENU': "",  # Poikilos
     'DEFAULT_Kp_LIST': "{  35.30,  35.30 }",
     'DEFAULT_Ki_LIST': "{   4.35,   4.35 }",
     'DEFAULT_Kd_LIST': "{  71.57,  71.57 }",
@@ -218,7 +326,6 @@ A3S_CONF = {  # include quotes explicitly for strings.
     'DEFAULT_bedKp': "60.40",
     'DEFAULT_bedKi': "11.52",
     'DEFAULT_bedKd': "79.16",
-    'PIDTEMPBED': "",
     'EXTRUDE_MAXLENGTH': 1000,
     'DEFAULT_MAX_ACCELERATION': "{ 1000, 500, 100, 5000 }",
     'DEFAULT_ACCELERATION': "800",
@@ -228,33 +335,25 @@ A3S_CONF = {  # include quotes explicitly for strings.
     'DEFAULT_YJERK': "3.0",  # req. CLASSIC_JERK not on by default in Marlin 2
     'JUNCTION_DEVIATION_MM': "0.005",
     'Z_MIN_PROBE_REPEATABILITY_TEST': None,
-    'PROBING_BED_TEMP': 63,
     'X_BED_SIZE': 205,
     'Y_BED_SIZE': 205,
     'X_MIN_POS': -5,
     'Z_MAX_POS': 205,
     'MESH_BED_LEVELING': None,
-    'LEVELING_BED_TEMP': 63,
     'G26_MESH_VALIDATION': None,
-    'MESH_TEST_HOTEND_TEMP': 220,
-    'MESH_TEST_BED_TEMP': 63,
     'GRID_MAX_POINTS_X': 4,
     # ^ GRID_MAX_POINTS_Y is set to GRID_MAX_POINTS_X by default.
-    # TODO: ^ appears in multiple cases including #elif ENABLED(MESH_BED_LEVELING)
+    # TODO: ^ appears in multiple cases including
+    #   #elif ENABLED(MESH_BED_LEVELING)
     'MESH_G28_REST_ORIGIN': "",  # go to 0 such as for manual leveling
+
     'LCD_BED_LEVELING': "",
-    'LEVEL_BED_CORNERS': "",
+    'LCD_BED_TRAMMING': "",
+    'LEVEL_BED_CORNERS': "",  # renamed to LCD_BED_TRAMMING in later versions.
     'EEPROM_SETTINGS': "",
-    'PREHEAT_1_LABEL': '"PLA+"',  # Poikilos
-    'PREHEAT_1_TEMP_HOTEND': 205,  # Poikilos
-    'PREHEAT_1_TEMP_BED': 63,  # Poikilos
-    'PREHEAT_1_FAN_SPEED': 255,  # Poikilos
-    'NOZZLE_PARK_FEATURE': "",  # Poikilos
-    'PRINTCOUNTER': "",  # Poikilos
     'SDSUPPORT': "",
-    'INDIVIDUAL_AXIS_HOMING_MENU': "",  # Poikilos
-    'SPEAKER': "",
-    'REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER': "",
+    'SPEAKER': "",  # ok for the included MKS TFT28, or swapped to BTT TFT24 etc
+    'REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER': "",  # MKS TFT28, or BTT
     'TEMP_SENSOR_BED': 1,
 
     'TEMP_SENSOR_0': 15,
@@ -283,29 +382,20 @@ A3S_C_A_VALUES = {  # MKS TFT28 V3.0
     'WATCH_BED_TEMP_PERIOD': 90,
     'HOMING_BUMP_DIVISOR': "{ 10, 10, 6 }",
     'QUICK_HOME': "",
-    'Z_STEPPER_AUTO_ALIGN': None,
+    'Z_STEPPER_AUTO_ALIGN': "",  # For 2 Z steppers (rec by BTT TFT for probe)
     'Z_STEPPER_ALIGN_ITERATIONS': 3,  # default 5
-    'SOUND_MENU_ITEM': "",  # Poikilos (add a mute menu item)
-    'LCD_SET_PROGRESS_MANUALLY': "",  # Poikilos (Allow M73 to set %)
     'EVENT_GCODE_SD_ABORT': '"G27"',
     'BABYSTEPPING': "",
     'BABYSTEP_MULTIPLICATOR_Z': 5,
     'BABYSTEP_MULTIPLICATOR_XY': 5,
     'DOUBLECLICK_FOR_Z_BABYSTEPPING': "",
-    'LIN_ADVANCE': "",
     'LIN_ADVANCE_K': "1.05",  # see LIN_ADVANCE_K_URL
-    'ARC_SUPPORT': "",  # "Disable this feature to save ~3226 bytes"
-    # ^ "G2/G3 Arc Support"
-    'EMERGENCY_PARSER': "",  # Poikilos
-
 
     'LONG_FILENAME_HOST_SUPPORT': None,
     'SDCARD_CONNECTION': None,
     'SERIAL_FLOAT_PRECISION': None,
 
-    # Poikilos:
-    'HOST_PROMPT_SUPPORT': "",
-    'ADVANCED_PAUSE_FEATURE': "",
+    # Poikilos A3S-specific values:
     'FILAMENT_CHANGE_UNLOAD_FEEDRATE': "60",
     'FILAMENT_CHANGE_UNLOAD_ACCEL': "25",
     # ^ "(mm/s^2) Lower acceleration may allow a faster feedrate"
@@ -315,20 +405,21 @@ A3S_C_A_VALUES = {  # MKS TFT28 V3.0
     'FILAMENT_CHANGE_FAST_LOAD_FEEDRATE': "133",
     'FILAMENT_CHANGE_FAST_LOAD_ACCEL': "25",
     'FILAMENT_CHANGE_FAST_LOAD_LENGTH': "680",
-    'PARK_HEAD_ON_PAUSE': "",
-    'HOME_BEFORE_FILAMENT_CHANGE': "",
-    'FILAMENT_LOAD_UNLOAD_GCODES': "",
-
 }
 
 
-TFT24_C_VALUES = {
-    'G26_MESH_VALIDATION': "",
+# Done *after* POIKILOS_ & MACHINE_ values so overrides stock screen:
+BTT_TFT_C_VALUES = {
+    # 'G26_MESH_VALIDATION': "",  See BLTouch instead.
     'ENCODER_PULSES_PER_STEP': 4,
     'REVERSE_ENCODER_DIRECTION': None,
+    'SPEAKER': "",
+    'REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER': "",
+}
+BTT_TFT_C_COMMENTS = {
 }
 
-TFT24_C_A_VALUES = {
+BTT_TFT_C_A_VALUES = {
     'LONG_FILENAME_HOST_SUPPORT': "",
     'AUTO_REPORT_SD_STATUS': "",
     'SDCARD_CONNECTION': "ONBOARD",
@@ -337,26 +428,275 @@ TFT24_C_A_VALUES = {
     'AUTO_REPORT_POSITION': "",
     'EXTENDED_CAPABILITIES_REPORT': "",  # defined by default
     'M115_GEOMETRY_REPORT': "",  # req. EXTENDED_CAPABILITIES_REPORT
+    'M114_DETAIL': "",  # TODO: See if this is actually used by anything.
     'REPORT_FAN_CHANGE': "",
     'HOST_ACTION_COMMANDS': "",
+    'LONG_FILENAME_HOST_SUPPORT': "",  # TODO: test this on MKS TFT28
+    'SCROLL_LONG_FILENAMES': "",  # TODO: test this on MKS TFT28
+}
+BTT_TFT_C_A_COMMENTS = {
+    'LONG_FILENAME_HOST_SUPPORT': [
+        BTT_TFT_DOC_COMM,
+    ],
+    'AUTO_REPORT_SD_STATUS': [
+        BTT_TFT_DOC_COMM,
+    ],
+    'SDCARD_CONNECTION': [
+        "  // ^ ONBOARD recommended for BTT TFT (See <{}>)".format(BTT_TFT_URL),
+    ],
+    'SERIAL_FLOAT_PRECISION': [
+        "// ^ 4 recommended for BTT TFT (See <{}>)".format(BTT_TFT_URL),
+    ],
+    'AUTO_REPORT_TEMPERATURES': [
+        BTT_TFT_DOC_COMM.strip(),
+    ],
+    'AUTO_REPORT_POSITION': [
+        BTT_TFT_DOC_COMM.strip(),
+    ],
+    'M115_GEOMETRY_REPORT': [
+        BTT_TFT_DOC_COMM,
+    ],
+    'REPORT_FAN_CHANGE': [
+        BTT_TFT_DOC_COMM.strip(),
+    ],
+    'HOST_ACTION_COMMANDS': [
+        BTT_TFT_DOC_COMM.strip(),
+    ],
 }
 
-
-
-# TODO: ask for probe and use:
+# TODO: On A3S, ask for probe and use BLTOUCH values (See R2X_14T):
 
 BLTOUCH_C_VALUES = {
     'Z_MIN_PROBE_REPEATABILITY_TEST': "",
+    'AUTO_BED_LEVELING_BILINEAR': "",
+    'G26_MESH_VALIDATION': "",
+    'MESH_TEST_HOTEND_TEMP': 220,
+    'MESH_TEST_BED_TEMP': 63,
+    'USE_ZMIN_PLUG': None,
+    'Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN': None,
 }
+BLTOUCH_C_COMMENTS = {
+    'AUTO_BED_LEVELING_BILINEAR': (
+        " // specified in the BLTouch Smart V3.1 manual"
+    ),
+    'USE_ZMIN_PLUG': '// commented out as per BLTouch Smart V3.1 manual',
+    'Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN': (
+        "  // commented as per the BLTouch Smart V3.1 manual",
+    ),
+}
+
 BLTOUCH_C_A_VALUES = {
-    'Z_STEPPER_AUTO_ALIGN': "",  # Recommended by TFT24 if using probe
+    # 'Z_STEPPER_AUTO_ALIGN': "",  # rec by BTT TFT if probe; for 2 Z steppers
+    # ^ See printer-specific overrides that are set BEFORE BLTOUCH values
     'MESH_BED_LEVELING': "",
+    'BLTOUCH_DELAY': 500,
+    'BLTOUCH_FORCE_SW_MODE': "",
+    'PROBE_OFFSET_WIZARD': "",
+    'PROBE_OFFSET_WIZARD_START_Z': -4.0,
+    'PROBE_OFFSET_WIZARD_XY_POS': "{ X_CENTER, Y_CENTER }",  # uncomment it only
+}
+BLTOUCH_C_A_COMMENTS = {
+    'PROBE_OFFSET_WIZARD_XY_POS': [
+        ("      // ^ Set x to halfway (-35) between E0 and probe (-70)"
+         " so they straddle the center"),
+    ],
 }
 
 R2X_14T_C_VALUES = {
+    'STRING_CONFIG_H_AUTHOR': (
+        '"(Jake Gustafson, BTT SKR V1.4 Turbo + TFT35'
+        ' for Replicator 2X but with thermistors)"'
+    ),  # + " // Who made the changes." comment is preserved by marlininfo
+    'CUSTOM_MACHINE_NAME': '"R2X 14T"',
+    'BAUDRATE': 115200,
+    'SERIAL_PORT_2': -1,
+    'MOTHERBOARD': "BOARD_BTT_SKR_V1_4_TURBO",
+    'EXTRUDERS': 2,  # TODO: allow disabling the second extruder
+    'HOTEND_OFFSET_X': "{ 0.0, 34.00 }",  # assumes EXTRUDERS is 2
+    'HOTEND_OFFSET_Y': "{ 0.0, 0.00 }",  # assumes EXTRUDERS is 2
+    'HOTEND_OFFSET_Z': "{ 0.0, -0.00 }",  # assumes EXTRUDERS is 2
+    'TEMP_SENSOR_0': 11,
+    'TEMP_SENSOR_1': 11,
+    'TEMP_SENSOR_BED': 11,
+    'TEMP_BED_WINDOW': 3,
+    'TEMP_BED_HYSTERESIS': 8,
+    'HEATER_0_MAXTEMP': 280,
+    'HEATER_1_MAXTEMP': 280,
+    'BED_MAXTEMP': 130,
+    'PID_PARAMS_PER_HOTEND': None,
+    'DEFAULT_Kp': 32.1974,
+    'DEFAULT_Ki': 3.7686,
+    'DEFAULT_Kd': 68.7697,
+    'DEFAULT_bedKp': 33.3357,
+    'DEFAULT_bedKi': 4.0417,
+    'DEFAULT_bedKd': 68.7382,
+    'USE_XMIN_PLUG': None,
+    'USE_YMIN_PLUG': None,
+    'USE_XMAX_PLUG': "",
+    'USE_YMAX_PLUG': "",
+    'ENDSTOPPULLUP_ZMIN_PROBE': "",
+    'X_MIN_ENDSTOP_INVERTING': True,
+    'Y_MIN_ENDSTOP_INVERTING': True,
+    'Z_MIN_ENDSTOP_INVERTING': True,
+    'X_MAX_ENDSTOP_INVERTING': True,
+    'Y_MAX_ENDSTOP_INVERTING': True,
+    'Z_MAX_ENDSTOP_INVERTING': True,
+    'DISTINCT_E_FACTORS': "",
+    'DEFAULT_AXIS_STEPS_PER_UNIT': (
+        "{ 88.888889, 88.888889, 400, 91.46125, 91.46125 }"
+    ),  # 5 entries assumes EXTRUDERS is 2
+    'DEFAULT_MAX_FEEDRATE': "{ 200, 200, 5, 25, 25 }",  # assumes EXTRUDERS is 2
+    'DEFAULT_MAX_ACCELERATION': "{ 2000, 2000, 200, 10000, 10000 }",
+    # ^ 5 entries assumes EXTRUDERS is 2
+    'DEFAULT_ACCELERATION': 2000,
+    'DEFAULT_RETRACT_ACCELERATION': 2000,
+    'DEFAULT_TRAVEL_ACCELERATION': 2000,
+    'DEFAULT_EJERK': 3.5,
+    'S_CURVE_ACCELERATION': "",
+    'USE_PROBE_FOR_Z_HOMING': "",
+    'Z_MIN_PROBE_PIN': None,  # See comment regarding BTT SKR V1.4 *
+    'BLTOUCH': "",
+    'NOZZLE_TO_PROBE_OFFSET': "{ -36, 0, 0 }",  # TODO: test on FlexionHT
+    'PROBING_MARGIN': 24,
+    'Z_PROBE_FEEDRATE_FAST': "(4*60)",
+    'Z_PROBE_FEEDRATE_SLOW': "(Z_PROBE_FEEDRATE_FAST / 5)",  # default= ... / 2
+    'MULTIPLE_PROBING': 2,
+    'EXTRA_PROBING': 1,
+    'Z_CLEARANCE_DEPLOY_PROBE': 15,
+    'Z_CLEARANCE_MULTI_PROBE': 2,
+    'Z_MIN_PROBE_REPEATABILITY_TEST': "",
+    'PROBING_HEATERS_OFF': "",  # Off prevents interference (induction).
+    'PROBING_FANS_OFF': "",
+    'PREHEAT_BEFORE_PROBING': "",
+    'PROBING_NOZZLE_TEMP': 150,
+    'INVERT_X_DIR': True,
+    'INVERT_Z_DIR': True,
+    'INVERT_E1_DIR': True,
+    'X_HOME_DIR': 1,
+    'Y_HOME_DIR': 1,
+    'X_BED_SIZE': 236,
+    'Y_BED_SIZE': 129,  # TODO: See if bigger/smaller with FlexionHT vs custom
+    'Z_MAX_POS': 150,
+    'LEVELING_NOZZLE_TEMP': 150,  # if PREHEAT_BEFORE_LEVELING
+    'LEVELING_BED_TEMP': 63,  # if PREHEAT_BEFORE_LEVELING
+    'GRID_MAX_POINTS_X': 5,
+    # ^ GRID_MAX_POINTS_Y is set to GRID_MAX_POINTS_X by default.
+    'EXTRAPOLATE_BEYOND_GRID': "",
+    'LCD_BED_LEVELING': "",
+    'LCD_BED_TRAMMING': None,
+    'LEVEL_BED_CORNERS': None,  # renamed to LCD_BED_TRAMMING in later versions.
+    'Z_SAFE_HOMING': "",
+    'EEPROM_SETTINGS': "",
+    'SDSUPPORT': "",
+    # 'NEOPIXEL_PIN': "",  # Not tried, but may be a way to rig builtin ones
 }
 
 R2X_14T_C_A_VALUES = {
+    'Z_STEPPER_AUTO_ALIGN': None,  # rec by BTT TFT if probe; for 2 Z steppers
+    'THERMAL_PROTECTION_HYSTERESIS': 8,
+    'WATCH_TEMP_PERIOD': 25,
+    'WATCH_TEMP_INCREASE': 7,
+    # 'THERMAL_PROTECTION_BED_PERIOD': 20,  # default is 20
+    'THERMAL_PROTECTION_BED_HYSTERESIS': 8,
+    'WATCH_BED_TEMP_INCREASE': 4,
+    'HOTEND_IDLE_TIMEOUT': "",
+    'HOTEND_IDLE_TIMEOUT_SEC': "(15*60)",
+    'HOTEND_IDLE_MIN_TRIGGER': 140,
+    'HOTEND_IDLE_NOZZLE_TARGET': 100,
+    'HOTEND_IDLE_BED_TARGET': 43,
+    'MULTI_NOZZLE_DUPLICATION': "",
+    'ADAPTIVE_STEP_SMOOTHING': "",
+    'BABYSTEPPING': "",
+    'DOUBLECLICK_FOR_Z_BABYSTEPPING': "",
+    'BABYSTEP_ZPROBE_OFFSET': "",
+}
+
+# TODO: implement per-machine comments.
+R2X_14T_C_COMMENTS = {
+    'CUSTOM_MACHINE_NAME': [
+        '// max length BTT TFT24:        "                     "'
+    ],
+    'TEMP_SENSOR_1': '// 2ND NOZZLE',
+    'DEFAULT_Kd': [
+        ('    // ^ FlexionHT, FilaPrint, thermistors not thermocouples,'
+         ' r2x_14t part fan duct 1.0,'),
+        '    //   7 cycles, 230 C, T0 (left):',
+    ],
+    'DEFAULT_bedKd': [
+        '  // ^ 105 C, enclosed, cold start (30 C):',
+        '  // #define DEFAULT_bedKp 56.49',
+        '  // #define DEFAULT_bedKi 2.49',
+        '  // #define DEFAULT_bedKd 853.97',
+        '  // ^ 60 C, not enclosed:',
+    ],
+    'DEFAULT_AXIS_STEPS_PER_UNIT': [
+        '// Extrusion:',
+        ('// - Used factory setting 96.275 then calibrated it'
+         ' (it extruded 95/100 mm, so result is 91.46125)'),
+        '// Movement:',
+        ('// > The Replicator 2 and 2x use 18 tooth GT2 pulleys,'
+         ' 1/16 microstepping, and 200 steps/rev steppers.'
+         ' That makes the proper steps/mm value 88.888889.'),
+        ('// > Note that Makerbot used ~88.56 steps/mm in their defaults,'
+         ' which is the value you get if you calculate from the belt+pulley'
+         ' pitch diameter from the Gates GT2 specs. But this is the value'
+         ' you use for calculating belt length required in a closed loop,'
+         ' not for steps/mm. The 88.88... number is more accurate.'),
+        "// > by Ryan Carlyle Mar 2 '16 at 20:15",
+        ("// > - Hey once again, what about z axis then?"
+         " – Anton Osadchy Mar 7 '16 at 17:47"),
+        ("// > - Z is 400 steps/mm. (8mm lead, 1/16 microstepping,"
+         " 200 steps/mm motor.) Sidenote, make sure you don't over-drive"
+         " the Z stepper with plug-in drivers, it's only rated to about 0.4A."
+         " – Ryan Carlyle Mar 7 '16 at 19:15"),
+        ("// > - @RyanCarlyle FYI minor typo above, you say 200 steps/mm"
+         " for Z but I think you mean steps/rev since you already state"
+         " Z is 400 steps/mm. Thank you for accurate numbers though!"
+         " – guru_florida Aug 22 '20 at 15:12"),
+        '//',
+        '// -<https://3dprinting.stackexchange.com/a/678>',
+    ],
+    'Z_MIN_PROBE_PIN': [
+        ("// ^ already defined as P0_10 in"
+         " Marlin\\src\\pins\\lpc1768\\pins_BTT_SKR_V1_4.h"),
+        ("//   (and Marlin\\src\\pins\\lpc1769\\pins\\BTT_SKR_V1_4_TURBO.h"
+         " includes it)."),
+    ],
+    'NOZZLE_TO_PROBE_OFFSET': (
+        "// This was set for a hand-machined cooling block"
+        " (z=+3.65 when not deployed; 6.07 using dial and 0.1mm feeler gauge),"
+        " but may be or may need to be updated for FlexionHT"
+    ),
+    'Z_PROBE_FEEDRATE_FAST': [
+        "// This Poikilos setting (4*60 based on HOMING_FEEDRATE_MM_M",
+        "//   --The old setting was formerly HOMING_FEEDRATE_Z)",
+        "//   became the new default coincidentally (The default changed",
+        "//   somewhere between CONFIGURATION_H_VERSION 020008 and 02000901)",
+    ],
+    'HOTEND_OFFSET_X': " // (mm) relative X-offset for each nozzle",
+    'HOTEND_OFFSET_Y': " // (mm) relative Y-offset for each nozzle",
+    'HOTEND_OFFSET_Z': " // (mm) relative Z-offset for each nozzle",
+}
+
+R2X_14T_C_A_COMMENTS = {
+    'WATCH_BED_TEMP_INCREASE': [
+        ("  // ^ Based on approximate stopwatch readings,"
+         " the Replicator 2X bed heats"),
+        "  //   at 1C per 8s to up to about 27s at first!",
+        "  //   When the bed first starts heating, it is very slow,",
+        "  //   even if you reset it and start around 35C.",
+    ],
+}
+
+
+MACHINE_DEF_COMMENTS = {
+    'A3S': A3S_DEF_COMMENTS,
+    'R2X_14T': R2X_14T_C_COMMENTS,
+}
+
+MACHINE_ADV_DEF_COMMENTS = {
+    'A3S': A3S_C_A_COMMENTS,
+    'R2X_14T': R2X_14T_C_A_COMMENTS,
 }
 
 MACHINE_CONF = {
@@ -628,7 +968,8 @@ def main():
     echo0('destination Configuration.h, _adv versions: {}'
           ''.format(dstMarlin.get_confs_versions()))
     if dstMarlin.get_confs_versions() != srcMarlin.get_confs_versions():
-        echo0("Error: The configuration versions are incompatible.")
+        echo0("Error: The configuration versions are incompatible. First try:")
+        echo0('  meld "{}" "{}"'.format(srcMarlin.mm_path, dstMarlin.mm_path))
         return 1
     this_marlin_name = os.path.split(srcMarlin.m_path)[1]
     this_data_path = os.path.join(MY_CACHE_DIR, "tmp", this_marlin_name)
@@ -656,7 +997,52 @@ def main():
             echo0('Warning: You set machine to {},'
                   ' but the directory contained the string "R2X_14T"'
                   ''.format(machine))
+    if machine is None:
+        # See also `else` under machine cases.
+        usage()
+        raise ValueError(
+            'A3S or R2X_14T is not in "{}"'
+            ' so the machine could not be detected.'
+            ' Try setting --machine <machine>.'
+            ''.format(this_marlin_name)
+        )
     print('machine={}'.format(machine))
+
+    # Add TPU to the preheat menu:
+    thisMarlin.insert_c(tpu_lines, after=tpu_lines_flag)
+    for key, value in moved_abs.items():
+        # Overwrite tpu items that are in the third entry temporarily.
+        thisMarlin.set_c_cdef(key, value)
+        # comments=comments
+    for key, value in moved_tpu.items():
+        # insert tpu items as the second entry
+        thisMarlin.set_c_cdef(key, value)
+        # comments=comments
+
+    for key, value in POIKILOS_C_VALUES.items():
+        comments = POIKILOS_C_COMMENTS.get(key)
+        thisMarlin.set_c_cdef(key, value, comments=comments)
+
+    for key, value in POIKILOS_C_A_VALUES.items():
+        comments = POIKILOS_C_A_COMMENTS.get(key)
+        thisMarlin.set_c_a_cdef(key, value, comments=comments)
+
+    for key, value in MACHINE_CONF[machine].items():
+        comments = MACHINE_DEF_COMMENTS[machine].get(key)
+        thisMarlin.set_c_cdef(key, value, comments=comments)
+
+    for key, value in MACHINE_ADV_CONF[machine].items():
+        comments = MACHINE_ADV_DEF_COMMENTS[machine].get(key)
+        thisMarlin.set_c_a_cdef(key, value, comments=comments)
+
+    insertions = TOP_C_LINES.get(machine)
+    for flag, new_lines in insertions.items():
+        thisMarlin.insert_c(new_lines, after=flag)
+
+    insertions = TOP_C_A_LINES.get(machine)
+    for flag, new_lines in insertions.items():
+        thisMarlin.insert_c_a(new_lines, after=flag)
+
     if machine == "R2X_14T":
         driver_types = ["TMC2209"]
         if driver_type is not None:
@@ -677,35 +1063,39 @@ def main():
             'E0_DRIVER_TYPE',
             'E1_DRIVER_TYPE',
         ]
+
+        # Always use BTT TFT values for R2X_14T (ok for TFT35 as well):
+        for key, value in BTT_TFT_C_VALUES.items():
+            comments = BTT_TFT_C_COMMENTS.get(key)
+            thisMarlin.set_c_cdef(key, value, comments=comments)
+        for key, value in BTT_TFT_C_A_VALUES.items():
+            comments = BTT_TFT_C_A_COMMENTS.get(key)
+            thisMarlin.set_c_a_cdef(key, value, comments=comments)
+
+        for key, value in BLTOUCH_C_VALUES.items():
+            comments = BLTOUCH_C_COMMENTS.get(key)
+            thisMarlin.set_c_cdef(key, value, comments=comments)
+        for key, value in BLTOUCH_C_A_VALUES.items():
+            comments = BLTOUCH_C_A_COMMENTS.get(key)
+            thisMarlin.set_c_a_cdef(key, value, comments=comments)
     elif machine == "A3S":
-        thisMarlin.insert_c(top_lines, after=top_lines_flag)
-        thisMarlin.insert_c_a(top_lines, after=top_lines_flag)
         thisMarlin.driver_names = [
             'X_DRIVER_TYPE',
             'Y_DRIVER_TYPE',
             'Z_DRIVER_TYPE',
             'E0_DRIVER_TYPE',
         ]
-
-        for key, value in MACHINE_CONF['A3S'].items():
-            comments = MACHINE_DEF_COMMENTS[machine].get(key)
-            thisMarlin.set_c_cdef(key, value, comments=comments)
-
-        for key, value in MACHINE_ADV_CONF['A3S'].items():
-            comments = MACHINE_ADV_DEF_COMMENTS[machine].get(key)
-            thisMarlin.set_c_a_cdef(key, value, comments=comments)
-
-        tft_ans = input("Use a TFT24 (y/n)? ").lower()
+        tft_ans = input("Use a BTT TFT (y/n)? ").lower()
         if tft_ans not in ['y', 'n']:
             raise ValueError("You must choose y/n for yes/no")
         tft_v = ""
         if tft_ans == "y":
-            for key, value in TFT24_C_VALUES.items():
-                comments = MACHINE_DEF_COMMENTS[machine].get(key)
+            for key, value in BTT_TFT_C_VALUES.items():
+                comments = BTT_TFT_C_COMMENTS.get(key)
                 thisMarlin.set_c_cdef(key, value, comments=comments)
 
-            for key, value in TFT24_C_A_VALUES.items():
-                comments = MACHINE_ADV_DEF_COMMENTS[machine].get(key)
+            for key, value in BTT_TFT_C_A_VALUES.items():
+                comments = BTT_TFT_C_A_COMMENTS.get(key)
                 thisMarlin.set_c_a_cdef(key, value, comments=comments)
 
         runout = input("Use a filament runout sensor (y/n)? ").lower()
@@ -717,11 +1107,7 @@ def main():
         thisMarlin.set_c_cdef('FILAMENT_RUNOUT_SENSOR', runout_v)
     else:
         usage()
-        raise ValueError(
-            'A3S or R2X_14T is not in "{}"'
-            ' so the machine could not be detected.'
-            ''.format(this_marlin_name)
-        )
+        raise NotImplementedError('machine="{}"'.format(machine))
     default_s = driver_types[0]
     if driver_type is None:
         echo0("Please specify --driver-type such as one of {}"
