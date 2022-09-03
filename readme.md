@@ -11,7 +11,7 @@ For usage and further details, see the Service Manual: [documentation/manual.md]
 
 ## How to use
 
-Using the marlin-deploy command, you don't need my h files anymore. You can generate an h file. Steps:
+Using the marlin-deploy command, you don't need my (or anyone else's) versioned H files anymore! You can generate a modified H file from the originals! Steps:
 - Go to a terminal
 - run `python3 -m pip install --user https://github.com/poikilos/pycodetool/archive/refs/heads/master.zip`
 - cd to your copy of Marlin that you want to modify (See "Configure Marlin"). Make a copy of it (you only have to copy the Configuration.h and Configuration_adv.h). Rename the folder to Marlin-R2X_14T so that the deploy script will auto-detect that it is R2X_14T not JGAURORA A3S or some other 3D printer (You can also add the option `--machine R2X_14T` instead).
