@@ -304,7 +304,7 @@ DEPRECATED = {  # These are refactored and there is no one to one conversion.
 }
 
 DEPRECATED_VALUES = {
-    'BLTOUCH_HS_MODE' = [""],
+    'BLTOUCH_HS_MODE': [""],
     # ^ Changed to true/false (Python boolean or C-like boolean string)
 }
 
