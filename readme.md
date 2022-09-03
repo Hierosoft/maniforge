@@ -1,4 +1,7 @@
 # R2X 14T
+
+Never again manually scrub through comparisons of the Configuration.h and Configuration_adv.h. Instead, shove metadata into H files of any structure using Python `deploy-marlin` (or the marlininfo Python module).
+
 The R2X 14T is a mod by Jake Gustafson ("Poikilos") for the *MakerBot Replicator 2X* (possibly compatible with clones such as FlashForge Creator Pro). The name "Axle Media" is a registered fictitious name in Pennsylvania and should be only used if the mod is done by Jake Gustafson.
 
 The mod utilizes the BIGTREETECH SKR V1.4 Turbo and most of the hardware from the MakerBot Replicator 2X. The fork of Marlin 2.0 ([https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x_t14](https://github.com/poikilos/Marlin/tree/bugfix-2.0.x-r2x_t14)) only contains changes to platformio.ini, Configuration.h, and Configuration_adv.h.
@@ -7,6 +10,17 @@ For usage and further details, see the Service Manual: [documentation/manual.md]
 
 
 ## How to use
+
+Using the marlin-deploy command, you don't need my h files anymore. You can generate an h file. Steps:
+- Go to a terminal
+- run `python3 -m pip install --user https://github.com/poikilos/pycodetool/archive/refs/heads/master.zip`
+- cd to your copy of Marlin that you want to modify (See "Configure Marlin"). Make a copy of it (you only have to copy the Configuration.h and Configuration_adv.h). Rename the folder to Marlin-R2X_14T so that the deploy script will auto-detect that it is R2X_14T not JGAURORA A3S or some other 3D printer (You can also add the option `--machine R2X_14T` instead).
+- cd to the folder containing the copies you made.
+- install meld and ensure it is in your system's PATH (so it can be run with `meld` in Terminal without a full path)
+- run your copy of marlin-deploy using the full path such as: `python3 /home/owner/git/r2x_14t/marlin-deploy ~/git/Marlin`
+  - where ~/git/Marlin is (the real Marlin, not the copy--where you want to compile). Follow additional instructions on screen if there are any issues.
+- Meld should launch. If it doesn't, ensure it is installed and in the system or user PATH. You can also view the meld command that was displayed and compare those directories yourself. Potentially, you can just copy the files from the first directory to the next.
+- A manual step still necessary for R2X_14T (or BTT boards in general): in platformio.ini, change the default_envs line to `default_envs = LPC1769`
 
 ### Configure Marlin
 - Clone Marlin then switch to the bugfix branch (as per
@@ -19,10 +33,10 @@ git clone https://github.com/MarlinFirmware/Marlin.git
 cd Marlin
 git switch bugfix-2.0.x
 ```
-- Ensure you are on a Marlin bugfix-2.0.x subversion that says the same CONFIGURATION_H_VERSION in Marlin/Marlin/configuration.h as in r2x_14t/Marlin-r2x_14t/Marlin (The exact version on which that was based is in r2x_14t/Marlin-base/Marlin, which, if you have the same commit as noted in the r2x_14t git commit Summary, will match the one in Marlin exactly as checked via `./meld-both-with-Marlin-bugfix-2.0.x.sh` in a GNU+Linux OS).
-- Copy all files from r2x_14t/Marlin-r2x_14t to Marlin (ensure that you confirm overwrite, or you may not have copied to the correct directory).
-  - On a GNU+Linux OS via: `rsync -rt ./Marlin-r2x_14t/ ../Marlin`
-  - On Windows via `pushconfig.bat`
+- Ensure you are on a Marlin bugfix-2.0.x subversion that says the same CONFIGURATION_H_VERSION in Marlin/Marlin/configuration.h as in r2x_14t/Marlin-R2X_14T/Marlin (The exact version on which that was based is in r2x_14t/Marlin-base/Marlin, which, if you have the same commit as noted in the r2x_14t git commit Summary, will match the one in Marlin exactly as checked via `./meld-both-with-Marlin-bugfix-2.0.x.sh` in a GNU+Linux OS).
+  - However, this isn't critical anymore using the `deploy-marlin` script. If the version doesn't match, you can just merge changes manually now (requires meld).
+
+You are probably done if you followed the steps this far. See "How to Use" to use `deploy-marlin` instead of manually editing files. If you are having trouble with the deploy script and your CONFIGURATION_H_VERSION matches the Marlin-R2X_14T directory, you can do it the old way: The safest way is using [Meld](https://meldmerge.org/): `meld ./Marlin-R2X_14T/ ../Marlin`. If you are sure the versions match, you may be able to copy all files from r2x_14t/Marlin-R2X_14T to Marlin (ensure that you confirm overwrite, or you may not have copied to the correct directory). On a GNU+Linux system that would be done via: `rsync -rt ./Marlin-R2X_14T/ ../Marlin` (On Windows via `pushconfig.bat`).
 
 ### Build and Install Marlin
 - Complete the steps above ("Configure Marlin").
