@@ -11,13 +11,13 @@ For usage and further details, see the Service Manual: [documentation/manual.md]
 
 ## How to use
 
-Using the marlin-deploy command, you don't need my (or anyone else's) versioned H files anymore! You can generate a modified H file from the originals! Steps:
+Using the deploy-marlin command, you don't need my (or anyone else's) versioned H files anymore! You can generate a modified H file from the originals! Steps:
 - Go to a terminal
 - run `python3 -m pip install --user https://github.com/poikilos/pycodetool/archive/refs/heads/master.zip`
 - cd to your copy of Marlin that you want to modify (See "Configure Marlin"). Make a copy of it (you only have to copy the Configuration.h and Configuration_adv.h). Rename the folder to Marlin-R2X_14T so that the deploy script will auto-detect that it is R2X_14T not JGAURORA A3S or some other 3D printer (You can also add the option `--machine R2X_14T` instead).
 - cd to the folder containing the copies you made.
 - install meld and ensure it is in your system's PATH (so it can be run with `meld` in Terminal without a full path)
-- run your copy of marlin-deploy using the full path such as: `python3 /home/owner/git/r2x_14t/marlin-deploy ~/git/Marlin`
+- run your copy of deploy-marlin using the full path such as: `python3 /home/owner/git/r2x_14t/deploy-marlin ~/git/Marlin`
   - where ~/git/Marlin is (the real Marlin, not the copy--where you want to compile). Follow additional instructions on screen if there are any issues.
 - Meld should launch. If it doesn't, ensure it is installed and in the system or user PATH. You can also view the meld command that was displayed and compare those directories yourself. Potentially, you can just copy the files from the first directory to the next.
 - A manual step still necessary for R2X_14T (or BTT boards in general): in platformio.ini, change the default_envs line to `default_envs = LPC1769`
