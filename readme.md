@@ -10,6 +10,13 @@ For usage and further details, see the Service Manual: [documentation/manual.md]
 
 
 ## How to use
+If you are not compiling Marlin nor flashing/configuring a TFT, you can still use this project. See:
+- [documentation/settings.md](documentation/settings.md)
+- [config](config) for Slicer settings files
+- [config/screens](config/screens) for screen configurations
+
+
+If you are compiling Marlin:
 
 Using the deploy-marlin command, you don't need my (or anyone else's) versioned H files anymore! You can generate a modified H file from the originals! Steps:
 - Go to a terminal

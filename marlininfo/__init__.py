@@ -355,17 +355,21 @@ A3S_CONF = {  # include quotes explicitly for strings.
     'EEPROM_SETTINGS': "",
     'SDSUPPORT': "",
 
-    'SPEAKER': None,  # tone (instead of beep)
+    'SPEAKER': "",  # tone (instead of beep)
     # 'SPEAKER': "",  # *incompatible now* with mega2560
     # ^ - See [Mega2560 Print Fan
     #     Problem](https://github.com/MarlinFirmware/Marlin/issues/23651)
     # ^ - was ok for the included MKS TFT28 (?), or swapped to BTT TFT24 etc
-    'REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER': "",  # MKS TFT28, or BTT
+    # ^ - fixed by FAN_SOFT_PWM (recommended by Marlin compile metadata
+    #     and by <https://github.com/MarlinFirmware/Configurations
+    #     /tree/bugfix-2.0.x/config/examples/JGAurora/A5>:
+    'FAN_SOFT_PWM': "",
+    'REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER': None,  # BTT not MKS TFT28
     'TEMP_SENSOR_BED': 1,
 
     'TEMP_SENSOR_0': 15,
-    'DEFAULT_AXIS_STEPS_PER_UNIT': "{ 80, 80, 800, 100 }",
-    # ^ TODO: or "{ 80, 80, 800, 97 }" (100 upstream, 97 Poikilos)
+    'DEFAULT_AXIS_STEPS_PER_UNIT': "{ 80, 80, 800, 94.3396 }",
+    # ^ TODO: or "{ 80, 80, 800, 97 }" (100 upstream, 94.3396 Poikilos (formerly 97))
     'DEFAULT_MAX_FEEDRATE': "{ 500, 500, 15, 25 }",
     # ^ default z is 6 which is too slow for first touch of z homing
     'Z_PROBE_FEEDRATE_FAST': "(12*60)",
@@ -381,8 +385,8 @@ A3S_CONF = {  # include quotes explicitly for strings.
     'INVERT_E0_DIR': "false",
     'HOMING_FEEDRATE_MM_M': "{ (80*60), (80*60), (12*60) }",
     # ^ default 6*60 is way too slow for non-print z moves
-    'ENCODER_PULSES_PER_STEP': "5",  # MKS TFT28 V3.0
-    'REVERSE_ENCODER_DIRECTION': "",  # MKS TFT28 V3.0
+    'ENCODER_PULSES_PER_STEP': None,  # MKS TFT28 V3.0 has no encoder
+    'REVERSE_ENCODER_DIRECTION': None,  # MKS TFT28 V3.0 has no encoder
 }
 
 A3S_C_A_VALUES = {  # MKS TFT28 V3.0
@@ -404,8 +408,13 @@ A3S_C_A_VALUES = {  # MKS TFT28 V3.0
     #   .6 * 8 (Cura default PLA retraction) = 4.8
     #   Set later:
     #   M900  # report current value
-    #   M900 K0.6  # set K
+    #   M900 K0.56  # set K
     #   M500  # save
+    # TODO: set K to 0.56: ask user tube inner dia (K1.05 2.0 or 0.56 for 1.9)
+    # FormFutura HDglass (modified PETG): M900 K0.8 using line test;
+    # - 0.88 seemed to look better using LinearAdvanceTowerGenerator,
+    #   but after printing the same tower, 0.8 was better (had no
+    #   bulging on corners).
 
     'LONG_FILENAME_HOST_SUPPORT': None,
     'SDCARD_CONNECTION': None,
@@ -931,6 +940,26 @@ class MarlinInfo:
         return self.set_c_cdef(self.driver_names, driver_type)
 
 
+# from https://github.com/poikilos/DigitalMusicMC
+# and https://github.com/poikilos/blnk
+# and https://github.com/poikilos/linux-preinstall
+def which(cmd):
+    paths_str = os.environ.get('PATH')
+    if paths_str is None:
+        echo1("Warning: There is no PATH variable, so returning {}"
+              "".format(cmd))
+        return cmd
+    paths = paths_str.split(os.path.pathsep)
+    for path in paths:
+        echo1("looking in {}".format(path))
+        tryPath = os.path.join(path, cmd)
+        if os.path.isfile(tryPath):
+            return tryPath
+        else:
+            echo1("There is no {}".format(tryPath))
+    return None
+
+
 def main():
     try:
         srcMarlin = MarlinInfo(os.getcwd())
@@ -1129,7 +1158,7 @@ def main():
         raise NotImplementedError('machine="{}"'.format(machine))
     default_s = driver_types[0]
     if driver_type is None:
-        echo0("Please specify --driver-type such as one of {}"
+        echo0("Please specify --driver-type such as one of {} and try again."
               "".format(driver_types))
         return 0
     if driver_type is not None:
@@ -1142,6 +1171,8 @@ def main():
 
         thisMarlin.patch_drivers(driver_type)
     cmd_parts = ["meld", thisMarlin.mm_path, dstMarlin.mm_path]
+    print("")
+    print("# You must use one of the following manual methods for safety.")
     print("# Get a patch (for stock headers) using cache:")
     print(shlex.join([
         "diff",
@@ -1170,8 +1201,23 @@ def main():
         dstMarlin.c_a_path,
     ]))
 
-    print("# Manually merge the changes to complete the process:")
-    print(shlex.join(cmd_parts))
+    try_merge_programs = ["diffuse", "meld", "tkdiff"]
+    dir_merge_programs = ["meld", "tkdiff"]
+    default_merge_program = "meld"
+    print("# Manually merge the changes to complete the process using"
+          "#   any merging program (specify the file such as Configuration.h"
+          "#   if not one of {}):".format(dir_merge_programs))
+    show_merge_programs = []
+    for merge in try_merge_programs:
+        program_path = which(merge)
+        if program_path is not None:
+            show_merge_programs.append(merge)
+    if len(show_merge_programs) == 0:
+        show_merge_programs.append(default_merge_program)
+        print("# (Install {} or any of {} then)"
+              "".format(show_merge_programs[0], try_merge_programs))
+    for program in show_merge_programs:
+        print(shlex.join([program]+cmd_parts[1:]))
     print('# Or if you\'re sure "{}" matches "{}"'
           ' then you could do something like:')
     print('rsync -rt "{}/" "{}"'.format(thisMarlin.m_path, dstMarlin.m_path))
