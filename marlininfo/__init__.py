@@ -389,6 +389,51 @@ A3S_CONF = {  # include quotes explicitly for strings.
     'REVERSE_ENCODER_DIRECTION': None,  # MKS TFT28 V3.0 has no encoder
 }
 
+MATERIALS = {  # formerly K_FACTORS { 'PLA' ... etc
+    '3D PrintLife Pro PLA': {
+        'brand': "3D PrintLife",
+        'material': "PLA",
+        'color': "white",
+        'K': 0.6,
+        'comment': (
+            "0.6 for 3D PrintLife Pro PLA retraction 4.8@45 2022-09-02"
+            " found using https://marlinfw.org/tools/lin_advance/k-factor.html"
+        ),
+    },
+    'PolyTerra PLA': {
+        'brand': "PolyTerra",
+        'material': "PLA",
+        'color': 'black',
+        'K': 0.3325,
+        'comment': (
+            "0.3325 using LinearAdvanceTowerGenerator (step 0.05)"
+        ),
+    },
+    'FormFutura HDglass': {
+        'brand': "FormFutura",
+        'material': "PETG",
+        'color': "clear",
+        'K': 0.8,
+        'comment': (
+            "0.88 seemed to look better using LinearAdvanceTowerGenerator"
+            " but after printing the same tower, 0.8 was better (had no"
+            " bulging on corners)"
+        ),
+    },
+}
+# Set later:
+# M900  ; report current value
+# M900 K0.56 ; set K
+# M500  ; save
+
+# TODO: set K to 0.56: ask user tube inner dia (K1.05 2.0 or 0.56 for 1.9)
+# FormFutura HDglass (modified PETG): M900 K0.8 using line test;
+
+#   retraction 4.8 is based on:
+#   (1.9 ID - 1.75) / (2.0 stock ID - 1.75) = .6
+#   .6 * 8 (Cura default PLA retraction) = 4.8
+
+#
 A3S_C_A_VALUES = {  # MKS TFT28 V3.0
     'WATCH_BED_TEMP_PERIOD': 90,
     'HOMING_BUMP_DIVISOR': "{ 10, 10, 6 }",
@@ -401,21 +446,7 @@ A3S_C_A_VALUES = {  # MKS TFT28 V3.0
     'BABYSTEP_MULTIPLICATOR_XY': 5,
     'DOUBLECLICK_FOR_Z_BABYSTEPPING': "",
     'LIN_ADVANCE_K': "1.05",  # see LIN_ADVANCE_K_URL
-    # TODO: 0.6 for 3D PrintLife Pro PLA retraction 4.8@45 2022-09-02
-    #   found using https://marlinfw.org/tools/lin_advance/k-factor.html
-    #   r 4.8 is based on:
-    #   (1.9 ID - 1.75) / (2.0 stock ID - 1.75) = .6
-    #   .6 * 8 (Cura default PLA retraction) = 4.8
-    #   Set later:
-    #   M900  # report current value
-    #   M900 K0.56  # set K
-    #   M500  # save
-    # TODO: set K to 0.56: ask user tube inner dia (K1.05 2.0 or 0.56 for 1.9)
-    # FormFutura HDglass (modified PETG): M900 K0.8 using line test;
-    # - 0.88 seemed to look better using LinearAdvanceTowerGenerator,
-    #   but after printing the same tower, 0.8 was better (had no
-    #   bulging on corners).
-
+    # TODO: ^ Use MATERIALS dict & let the user choose.
     'LONG_FILENAME_HOST_SUPPORT': None,
     'SDCARD_CONNECTION': None,
     'SERIAL_FLOAT_PRECISION': None,
@@ -847,6 +878,25 @@ class MarlinInfo:
         self.mm_path = os.path.dirname(self.c_path)
         self.m_path = os.path.dirname(self.mm_path)
 
+
+    @classmethod
+    def transfer_paths_in(cls, roots):
+        '''
+        Get the configuration file paths for the given roots. If any
+        item of roots is not a directory it will not be modified. If
+        you are trying to modify a single directory, still put it in
+        a list such as `subs = transfer_paths_in([path])`.
+        '''
+
+        results = []
+        for relpath in cls.TRANSFER_RELPATHS:
+            parts = roots.copy()
+            for i in range(len(parts)):
+                if os.path.isdir(parts[i]):
+                    parts[i] = os.path.join(parts[i], relpath)
+            results.append(parts)
+        return results
+
     def get_c_cdef(self, name):
         '''
         Get a a 3-long tuple with the value of the named #define from
@@ -1170,7 +1220,7 @@ def main():
                                 driver_type))
 
         thisMarlin.patch_drivers(driver_type)
-    cmd_parts = ["meld", thisMarlin.mm_path, dstMarlin.mm_path]
+    cmd_parts = ["meld", thisMarlin.m_path, dstMarlin.m_path]
     print("")
     print("# You must use one of the following manual methods for safety.")
     print("# Get a patch (for stock headers) using cache:")
@@ -1201,12 +1251,14 @@ def main():
         dstMarlin.c_a_path,
     ]))
 
-    try_merge_programs = ["diffuse", "meld", "tkdiff"]
-    dir_merge_programs = ["meld", "tkdiff"]
+    try_merge_programs = ["diffuse", "meldq", "meld", "tkdiff"]
+    # ^ meldq is a quiet meld script from github.com/poikilos/linux-preinstall
+    dir_merge_programs = ["meldq", "meld", "tkdiff"]
     default_merge_program = "meld"
-    print("# Manually merge the changes to complete the process using"
-          "#   any merging program (specify the file such as Configuration.h"
-          "#   if not one of {}):".format(dir_merge_programs))
+    print("# Manually merge the changes to complete the process using")
+    print("#   any merging program")
+    # print("#   (specify the file such as Configuration.h")
+    # print("#   if not one of {}):".format(dir_merge_programs))
     show_merge_programs = []
     for merge in try_merge_programs:
         program_path = which(merge)
@@ -1217,7 +1269,12 @@ def main():
         print("# (Install {} or any of {} then)"
               "".format(show_merge_programs[0], try_merge_programs))
     for program in show_merge_programs:
-        print(shlex.join([program]+cmd_parts[1:]))
+        if program not in dir_merge_programs:
+            new_commands = MarlinInfo.transfer_paths_in(cmd_parts)
+            for new_parts in new_commands:
+                print(shlex.join([program]+new_parts[1:]))
+        else:
+            print(shlex.join([program]+cmd_parts[1:]))
     print('# Or if you\'re sure "{}" matches "{}"'
           ' then you could do something like:')
     print('rsync -rt "{}/" "{}"'.format(thisMarlin.m_path, dstMarlin.m_path))
@@ -1225,7 +1282,27 @@ def main():
     proc = Popen(cmd_parts, shell=False,
                  stdin=None, stdout=None, stderr=None, close_fds=True)
     # close_fds: make parent process' file handles inaccessible to child
-
+    print()
+    print('After merging:')
+    print('- Close any slicers, Pronterface, or anything else that may use the USB port where the 3D Printer is connected.')
+    print('- Connect the 3D printer via USB and open "{}" in Arduino IDE.'.format(dstMarlin.m_path))
+    print('- *Unplug the serial connector* from the screen if using an MKS Gen-L V1 to avoid bricking the screen by passing the board firmware to it!')
+    print('- Choose the correct hardware for "Board" "Processor" and "Port" (all 3 are in the "Tools" menu).')
+    print('- Click "Upload" (right arrow) to compile & upload.')
+    print('- After it says "Finished Upload", reconnect the LCD screen.')
+    print('- Use the screen to reset the firmware settings (press "Reset" on the warning, or find the reset option), then save. Otherwise, open Pronterface, choose the port, connect, then run:')
+    print('M502;')
+    print('M500;')
+    print('- In Pronterface or your start g-code in your slicer, you can set the linear advance to the correct value of your filament. See <https://marlinfw.org/tools/lin_advance/k-factor.html> or <https://github.com/poikilos/LinearAdvanceTowerGenerator> for calibration code and steps to obtain the correct K value such as:')
+    print('; viewcurrent value:')
+    print('M900;')
+    print('; HDglass, with 1.9mm ID x 680mm bowden tube:')
+    print('M900 K0.8;')
+    print('M500;')
+    print("Reboot (and install firmware from SDcard bin file if present):")
+    print('M997;')
+    print()
+    print("Opening a slicer while printing from the SD card may freeze the print (known to happen on MKS screens).")
     return 0
 
 
