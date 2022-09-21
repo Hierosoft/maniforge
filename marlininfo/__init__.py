@@ -74,9 +74,6 @@ from pycodetool.parsing import (
     insert_lines,
 )
 
-verbosity = 0
-verbosities = [True, False, 0, 1, 2]
-
 A3S_TOP_LINES_FLAG = "#pragma once"
 A3S_TOP_LINES = [
     '',
@@ -768,6 +765,8 @@ MACHINE_ADV_CONF = {
     'R2X_14T': R2X_14T_C_A_VALUES,
 }
 
+verbosity = 0
+verbosities = [True, False, 0, 1, 2]
 
 def set_verbosity(level):
     global verbosity
