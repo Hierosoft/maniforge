@@ -672,7 +672,7 @@ R2X_14T_C_COMMENTS = {
     'CUSTOM_MACHINE_NAME': [
         '// max length BTT TFT24:        "                     "'
     ],
-    'TEMP_SENSOR_1': '// 2ND NOZZLE',
+    'TEMP_SENSOR_1': ' // 2ND NOZZLE',
     'DEFAULT_Kd': [
         ('    // ^ FlexionHT, FilaPrint, thermistors not thermocouples,'
          ' r2x_14t part fan duct 1.0,'),
@@ -1065,7 +1065,11 @@ def main():
     echo0('destination Configuration.h, _adv versions: {}'
           ''.format(dstMarlin.get_confs_versions()))
     if dstMarlin.get_confs_versions() != srcMarlin.get_confs_versions():
-        echo0("Error: The configuration versions are incompatible. First try:")
+        echo0("Error: The configuration versions are incompatible")
+        echo0(" ({} != {}) First try:".format(
+            dstMarlin.get_confs_versions(),
+            srcMarlin.get_confs_versions(),
+        ))
         echo0('  meld "{}" "{}"'.format(srcMarlin.mm_path, dstMarlin.mm_path))
         return 1
     this_marlin_name = os.path.split(srcMarlin.m_path)[1]

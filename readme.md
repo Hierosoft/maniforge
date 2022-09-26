@@ -14,7 +14,7 @@ If you are not compiling Marlin nor flashing/configuring a TFT, you can still us
 - [documentation/settings.md](documentation/settings.md)
 - [config](config) for Slicer settings files
 - [config/screens](config/screens) for screen configurations
-
+- See also "[Hardware Changes](#hardware-changes)" below.
 
 If you are compiling Marlin:
 
@@ -86,18 +86,30 @@ The main goal was to improve bed adhesion and eliminate skipping on the extruder
 - Remove the grease from the z-axis and apply PTFE-based dry lube (did the same for all other axes).
 - Improved drivers
     - requires: new mainboard (The BTT SKR V1.4 Turbo mainboard allows using improved stepper drivers and slicer software)
+        - requires: drill 4 #6-32 pilot holes for mainboard standoffs; screw in the standoffs; screw in the mainboard with M3 screws.
         - requires: thermistors
-            - requires: drilling holes for the thermistors (or getting new heater blocks in this case); drilling a hole in the bed for the thermistor, and a 2.5mm hole close enough so the screw head or washer holds the thermistor wires enough to keep the thermistor in place, then tapping the the 2.5 mm hole using a 3mm tap.
+            - requires either:
+                - FlexionHT
+                - OR drilling holes for the thermistors (or getting new heater blocks in this case); drilling a hole in the bed for the thermistor, and a 2.5mm hole close enough so the screw head or washer holds the thermistor wires enough to keep the thermistor in place, then tapping the the 2.5 mm hole using a 3mm tap.
         - provides: all new electronics (forums indicate the stock mosfets on the Mightyboard aren’t that great and that people often replace them) other than the endstops and motors.
 - FilaPrint bed surface:
     - provides: heat-responsive bed surface (Adhesion increases when hot; ABS parts detach easily when cooled to around 70 C and self-detach at a lower temperature — PLA+ detach easily around 35 C then self-detach around 25 C)
-- BLTouch Smart V3.1
-    - requires: Marlin 2.0 (which requires a new mainboard, generally, though an old fork of Marlin exists that may work with one or more Mightyboard hardware versions)
+- BLTouch Smart V3.1 (If you don't use this, I still suggest adding a ZMAX endstop [skip the steps about removing the ZMIN endstop in that case] to prevent the terrible clunking noise, though it technically only damages the end of the Z axis lead screw. The clunking doesn't seem to affect the follower significantly, but gums up its grease with metal shavings!)
+    - requires:
+      - Marlin 2.0 (which requires a new mainboard, generally, though an old fork of Marlin exists that may work with one or more Mightyboard hardware versions)
+      - Move the Z endstop to the bottom ("right" in these cases means your right when you are looking at the back).
+        - Remove the soft rear wall of the printer.
+        - Unplug the Z axis endstop and remove the screws and then remove it.
+        - Drill (2) holes in the z-axis mounting plate (removable back plate) spaced 3/4" (19.05mm) apart, with the hole centers being 62.5mm from the bottom of the back mounting plate; the first hole's center being about 3.75mm to the right of the right edge of the wiring harness bracket.
+        - Make (2) 3mm spacers, around 6.5-8mm longnear the bottom rear of the board. For better stability, make some sord of 3rd spacer or add hot glue for spacing.
+        - Unplug the other end of the endstop connector from the ZMIN port on the mainboard and plug it into the ZMAX port.
+        - Change Configuration.h to use the ZMAX port.
     - provides: mesh bed leveling (The firmware is set to 25-point probing and bilinear interpolation; Auto Bed Leveling in the menu runs the process then asks to save to EEPROM; The printer automatically uses this as long as the start G-code loads the stored mesh–the firmware is also set to load it on startup)
 - Copperhead throats
     - requires: new standard-style threaded heater blocks (which also hold thermistors without modifications and provide more room for cooling ducts); new dual-extruder threaded motor mount block (“cold block”; hand machined from a large heatsink so that block and fins are a continuous piece of metal).
         - requires: drilling out the heater blocks to hold the large MakerBot heater cartridges (switching to standard heater cartridges is also possible)
     - solves: Prevent print errors (drag) and failures (fatal clogs) caused by heat creep (expansion of filament at the upper part of the throats). The failure sometimes occurred with ABS but almost always occurred with PLA/PLA+.
+
 
 ### Optional Add-ons
 - [Simplified & Enhanced Air Scrubber for 3M Filter such as for MakerBot Replicator 2X](https://www.thingiverse.com/thing:4871456) by Poikilos
@@ -131,6 +143,7 @@ See "First-time Setup" in [documentation/manual.md](documentation/manual.md#firs
 ## Making Modifications
 To make modifications that differ from the current state of the r2x_14t project or to understand the inner workings, See [contributing.md](contributing.md).
 
+
 ## Development
 
 ### marlininfo
@@ -138,3 +151,13 @@ The marlininfo module is a Python module for modifying and deploying Configurati
 
 In several variable names, "C_" or "c_" refers to Configuration.h
 and "C_A_" or "c_a_" refers to Configuration_adv.h
+
+
+### Measurements
+If the metric measurements differ from the value converted to in this section, they are more accurate (~ means approximate), within about .04mm tolerance. Where the unit of measurement isn't specified, it is mm.
+
+- Z-Axis endstop ("Right" means when looking at the board with the switch facing upward; width on x axis is first, then y, then the third dimension if present is thickness.)
+  - The board is about 1+9/16" x 5/8" (39.6 x 16.1mm x 1.63mm)
+  - The 3mm shank holes are 3/4" apart, starting ~1/8" (3.5mm) from the right edge and about 1/8" (3mm) from the top.
+  - The endstop switch is 6.38 from the right edge, and the size of the switch is 12.81 x 6.5 (including the bumps on the bottom for the unused two M2 shank holes that are 6.33 apart) x 5.65 mm.
+  - The leads stick out 1.89mm in the back.

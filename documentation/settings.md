@@ -32,5 +32,6 @@ Reduce print time
 ### Cooling
 Reduce warping, such as for HDglass PETG and some other materials or formulations of materials:
 - Regular Fan Speed: 50.0
+  - When using two Creality 4010 style fans (tested with WINSINN brand 24V), they twitch and don't turn until reaching at least 49/255 (19.22%)
 - Regular Fan Speed at Height: 1.5 (default: calculated from Initial Layer Height)
   - If there are bridges on a low layer, reduce it to one fewer than that layer number instead of using mm.
