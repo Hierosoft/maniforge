@@ -67,11 +67,12 @@ from pycodetool.parsing import (
     substring_after,
     find_after,
     get_cdef,
-    set_cdef,
     block_uncomment_line,
     COMMENTED_DEF_WARNING,
     find_non_whitespace,
     insert_lines,
+    write_lines,
+    SourceFileInfo,
 )
 
 A3S_TOP_LINES_FLAG = "#pragma once"
@@ -366,7 +367,8 @@ A3S_CONF = {  # include quotes explicitly for strings.
 
     'TEMP_SENSOR_0': 15,
     'DEFAULT_AXIS_STEPS_PER_UNIT': "{ 80, 80, 800, 94.3396 }",
-    # ^ TODO: or "{ 80, 80, 800, 97 }" (100 upstream, 94.3396 Poikilos (formerly 97))
+    # ^ TODO: or "{ 80, 80, 800, 97 }"
+    #   (100 upstream, 94.3396 Poikilos (formerly 97))
     'DEFAULT_MAX_FEEDRATE': "{ 500, 500, 15, 25 }",
     # ^ default z is 6 which is too slow for first touch of z homing
     'Z_PROBE_FEEDRATE_FAST': "(12*60)",
@@ -768,6 +770,7 @@ MACHINE_ADV_CONF = {
 verbosity = 0
 verbosities = [True, False, 0, 1, 2]
 
+
 def set_verbosity(level):
     global verbosity
     if level not in verbosities:
@@ -807,9 +810,12 @@ class MarlinInfo:
         structure containing the "Marlin" directory.
     '''
 
+    C_REL = os.path.join("Marlin", "Configuration.h")
+    C_A_REL = os.path.join("Marlin", "Configuration_adv.h")
     TRANSFER_RELPATHS = [
-        os.path.join("Marlin", "Configuration.h"),
-        os.path.join("Marlin", "Configuration_adv.h"),
+        "platformio.ini",
+        C_REL,
+        C_A_REL,
     ]
 
     DRIVER_NAMES = [
@@ -837,11 +843,10 @@ class MarlinInfo:
     def __init__(self, path):
         sub = os.path.split(path)[1]
         MarlinMarlin = os.path.join(path, "Marlin")
-        c_rel = os.path.join("Marlin", "Configuration.h")
-        c_a_rel = os.path.join("Marlin", "Configuration_adv.h")
-        self.c_path = os.path.join(path, c_rel)
-        self.c_a_path = os.path.join(path, c_a_rel)
+        self.c_path = os.path.join(path, MarlinInfo.C_REL)
+        self.c_a_path = os.path.join(path, MarlinInfo.C_A_REL)
         self.driver_names = None
+        self.file_metas = {}
 
         if not os.path.isdir(MarlinMarlin):
             # Check if we are in MarlinMarlin already:
@@ -865,18 +870,26 @@ class MarlinInfo:
         if not os.path.isfile(self.c_path):
             raise FileNotFoundError(
                 'Error: "{}" does not exist (also tried "{}")'
-                ''.format(self.c_path)
+                ''.format(self.c_path, "in ..")
             )
             return 1
         if not os.path.isfile(self.c_path):
             raise FileNotFoundError(
                 'Error: "{}" does not exist (also tried "{}")'
-                ''.format(self.c_a_path)
+                ''.format(self.c_a_path, "in ..")
             )
             return 1
         self.mm_path = os.path.dirname(self.c_path)
         self.m_path = os.path.dirname(self.mm_path)
 
+        for relpath in MarlinInfo.TRANSFER_RELPATHS:
+            file_path = os.path.join(self.m_path, relpath)
+            if os.path.isfile(file_path):
+                self.file_metas[relpath] = SourceFileInfo(self.m_path, relpath)
+            else:
+                # The file is optional (such as "platformio.ini"
+                #   or files in "/pins") if there wasn't an error yet.
+                echo1('* there is no "{}"'.format(file_path))
 
     @classmethod
     def transfer_paths_in(cls, roots):
@@ -928,6 +941,7 @@ class MarlinInfo:
         --the Marlin/Marlin subdirectory will be created if it doesn't
         exist, where Marlin/ is repo_path.
         '''
+        results = []
         if not os.path.isdir(repo_path):
             raise FileNotFoundError('"{}" does not exist.'.format(repo_path))
         dest_mm_path = os.path.join(repo_path, "Marlin")
@@ -936,7 +950,10 @@ class MarlinInfo:
         for src in MarlinInfo.TRANSFER_RELPATHS:
             srcPath = os.path.join(self.m_path, src)
             dstPath = os.path.join(repo_path, src)
-            shutil.copy(srcPath, dstPath)
+            if os.path.isfile(srcPath):
+                shutil.copy(srcPath, dstPath)
+                results.append(dstPath)
+        return results
 
     def drivers_dict(self):
         results = {}
@@ -948,31 +965,63 @@ class MarlinInfo:
                 results[name] = v
         return results
 
-    def set_c_cdef(self, name, value, comments=None):
+    def save_changes(self):
         '''
-        This operates on self.c_path. For documentation see set_cdef.
+        Only save if there are unsaved changes made using the
+        set_ and insert_ methods or methods that use them. There will be
+        no changes if the calls used values that were the same as the
+        previous values.
         '''
-        return set_cdef(self.c_path, name, value, comments=comments)
+        count = 0
+        for relpath, fi in self.file_metas.items():
+            echo1('saving "{}"'.format(fi.full_path()))
+            this_count = fi.save_changes()
+            echo0('* saved {} change(s) to "{}"'
+                  ''.format(this_count, fi.full_path()))
+            count += this_count
+        return count
 
-    def set_c_a_cdef(self, name, value, comments=None):
+    def set_c(self, name, value, comments=None):
         '''
-        This operates on self.c_a_path. For documentation see set_cdef.
+        This operates on self.c_path.
+        For documentation see SourceFileInfo's set_cached method.
         '''
-        return set_cdef(self.c_a_path, name, value, comments=comments)
+        relpath = MarlinInfo.C_REL
+        fi = self.file_metas[relpath]
+        return fi.set_cached(name, value, comments=comments)
 
-    def insert_c(self, new_lines, lines=None, after=None):
+    def set_c_a(self, name, value, comments=None):
+        '''
+        This operates on self.c_a_path.
+        For documentation see SourceFileInfo's set_cached method.
+        '''
+        relpath = MarlinInfo.C_A_REL
+        fi = self.file_metas[relpath]
+        return fi.set_cached(name, value, comments=comments)
+
+    def insert_c(self, new_lines, after=None):
         '''
         Insert into self.c_path (or lines if present).
-        For documentation see insert_lines.
-        '''
-        return insert_lines(self.c_path, new_lines, lines=lines, after=after)
+        For documentation see SourceFileInfo's insert_cached method.
 
-    def insert_c_a(self, new_lines, lines=None, after=None):
+        Returns:
+        True if success, False if failed.
+        '''
+        relpath = MarlinInfo.C_REL
+        fi = self.file_metas[relpath]
+        return fi.insert_cached(new_lines, after=after)
+
+    def insert_c_a(self, new_lines, after=None):
         '''
         Insert into self.c_a_path (or lines if present).
-        For documentation see insert_lines.
+        For documentation see SourceFileInfo's insert_cached method.
+
+        Returns:
+        True if success, False if failed.
         '''
-        return insert_lines(self.c_a_path, new_lines, lines=lines, after=after)
+        relpath = MarlinInfo.C_A_REL
+        fi = self.file_metas[relpath]
+        return fi.insert_cached(new_lines, after=after)
 
     def patch_drivers(self, driver_type):
         '''
@@ -986,7 +1035,7 @@ class MarlinInfo:
                 "You must first set driver_names on the MarlinInfo"
                 " instance so that which drivers to patch are known."
             )
-        return self.set_c_cdef(self.driver_names, driver_type)
+        return self.set_c(self.driver_names, driver_type)
 
 
 # from https://github.com/poikilos/DigitalMusicMC
@@ -1007,6 +1056,42 @@ def which(cmd):
         else:
             echo1("There is no {}".format(tryPath))
     return None
+
+
+POST_MERGE_DOC_FMT = '''
+After merging:
+- Close any slicers, Pronterface, or anything else that may use the USB
+  port where the 3D Printer is connected.
+- Connect the 3D printer via USB and open "{marlin_path}" in Arduino IDE.
+- *Unplug the serial connector* from the screen if using an MKS Gen-L V1
+  to avoid bricking the screen by passing the board firmware to it!
+- Choose the correct hardware for "Board" "Processor" and "Port"
+  (all 3 are in the "Tools" menu).
+- Click "Upload" (right arrow) to compile & upload.
+- After it says "Finished Upload", reconnect the LCD screen.
+- Use the screen to reset the firmware settings
+  (press "Reset" on the warning, or find the reset option), then save.
+  Otherwise, open Pronterface, choose the port, connect, then run:
+M502;
+M500;
+- In Pronterface or your start g-code in your slicer, you can
+  set the linear advance to the correct value of your filament.
+  See <https://marlinfw.org/tools/lin_advance/k-factor.html>
+  or <https://github.com/poikilos/LinearAdvanceTowerGenerator>
+  for calibration code and steps to obtain the correct K value such as:
+; viewcurrent value:
+M900;
+; HDglass, with 1.9mm ID x 680mm bowden tube:
+M900 K0.8;
+M500;
+Reboot (and install firmware from SDcard bin file if present):
+M997;
+
+Opening a slicer while printing from the SD card may freeze the print
+on MKS screens (confirmed on TFT28 V4.0 with firmware 3.0.2).
+Unplugging the USB cable while printing from the SD card is ideal.
+
+'''
 
 
 def main():
@@ -1048,11 +1133,20 @@ def main():
         sys.stderr.write(
             "Error: You must specify a destination Marlin directory"
         )
-        try_dst = os.path.join(pathlib.Path.home(), "Downloads", "git",
-                               "MarlinFirmware", "Marlin")
-        if os.path.isdir(try_dst):
+        try_dst = None
+        HOME = pathlib.Path.home()
+        try_dsts = [
+            os.path.join(HOME, "Downloads", "git", "MarlinFirmware", "Marlin"),
+            os.path.join(HOME, "git", "MarlinFirmware", "Marlin"),
+        ]
+        found_dst = None
+        for try_dst in try_dsts:
+            if os.path.isdir(try_dst):
+                found_dst = try_dst
+                break
+        if found_dst is not None:
             sys.stderr.write(
-                ' such as via:\n  {} "{}"\n'.format(sys.argv[0], try_dst)
+                ' such as via:\n  {} "{}"\n'.format(sys.argv[0], found_dst)
             )
         else:
             sys.stderr.write(".\n")
@@ -1076,10 +1170,18 @@ def main():
     this_data_path = os.path.join(MY_CACHE_DIR, "tmp", this_marlin_name)
     if not os.path.isdir(this_data_path):
         os.makedirs(this_data_path)
-    srcMarlin.copy_to(this_data_path)
+    results = srcMarlin.copy_to(this_data_path)
+    if len(results) > 0:
+        for result in results:
+            echo0('* wrote "{}"'.format(result))
+    else:
+        raise FileNotFoundError(
+            "There were no files to transfer (looked for: {})."
+            "".format(MarlinInfo.TRANSFER_RELPATHS)
+        )
     thisMarlin = MarlinInfo(this_data_path)
 
-    driver_types = ["A4988", "TMC2209"]
+    driver_types = ["A4988", "TMC2209"]  # or "TMC2130" etc.
     driver_type = options.get('driver-type')
 
     machine = options.get('machine')
@@ -1108,41 +1210,45 @@ def main():
             ''.format(this_marlin_name)
         )
     print('machine={}'.format(machine))
-
+    changes = []
     # Add TPU to the preheat menu:
-    thisMarlin.insert_c(tpu_lines, after=tpu_lines_flag)
+    if thisMarlin.insert_c(tpu_lines, after=tpu_lines_flag):
+        changes += tpu_lines
+
     for key, value in moved_abs.items():
         # Overwrite tpu items that are in the third entry temporarily.
-        thisMarlin.set_c_cdef(key, value)
+        changes += thisMarlin.set_c(key, value)
         # comments=comments
     for key, value in moved_tpu.items():
         # insert tpu items as the second entry
-        thisMarlin.set_c_cdef(key, value)
+        changes += thisMarlin.set_c(key, value)
         # comments=comments
 
     for key, value in POIKILOS_C_VALUES.items():
         comments = POIKILOS_C_COMMENTS.get(key)
-        thisMarlin.set_c_cdef(key, value, comments=comments)
+        changes += thisMarlin.set_c(key, value, comments=comments)
 
     for key, value in POIKILOS_C_A_VALUES.items():
         comments = POIKILOS_C_A_COMMENTS.get(key)
-        thisMarlin.set_c_a_cdef(key, value, comments=comments)
+        changes += thisMarlin.set_c_a(key, value, comments=comments)
 
     for key, value in MACHINE_CONF[machine].items():
         comments = MACHINE_DEF_COMMENTS[machine].get(key)
-        thisMarlin.set_c_cdef(key, value, comments=comments)
+        changes += thisMarlin.set_c(key, value, comments=comments)
 
     for key, value in MACHINE_ADV_CONF[machine].items():
         comments = MACHINE_ADV_DEF_COMMENTS[machine].get(key)
-        thisMarlin.set_c_a_cdef(key, value, comments=comments)
+        changes += thisMarlin.set_c_a(key, value, comments=comments)
 
     insertions = TOP_C_LINES.get(machine)
     for flag, new_lines in insertions.items():
-        thisMarlin.insert_c(new_lines, after=flag)
+        if thisMarlin.insert_c(new_lines, after=flag):
+            changes += new_lines
 
     insertions = TOP_C_A_LINES.get(machine)
     for flag, new_lines in insertions.items():
-        thisMarlin.insert_c_a(new_lines, after=flag)
+        if thisMarlin.insert_c_a(new_lines, after=flag):
+            changes += new_lines
 
     if machine == "R2X_14T":
         driver_types = ["TMC2209"]
@@ -1168,17 +1274,17 @@ def main():
         # Always use BTT TFT values for R2X_14T (ok for TFT35 as well):
         for key, value in BTT_TFT_C_VALUES.items():
             comments = BTT_TFT_C_COMMENTS.get(key)
-            thisMarlin.set_c_cdef(key, value, comments=comments)
+            changes += thisMarlin.set_c(key, value, comments=comments)
         for key, value in BTT_TFT_C_A_VALUES.items():
             comments = BTT_TFT_C_A_COMMENTS.get(key)
-            thisMarlin.set_c_a_cdef(key, value, comments=comments)
+            changes += thisMarlin.set_c_a(key, value, comments=comments)
 
         for key, value in BLTOUCH_C_VALUES.items():
             comments = BLTOUCH_C_COMMENTS.get(key)
-            thisMarlin.set_c_cdef(key, value, comments=comments)
+            changes += thisMarlin.set_c(key, value, comments=comments)
         for key, value in BLTOUCH_C_A_VALUES.items():
             comments = BLTOUCH_C_A_COMMENTS.get(key)
-            thisMarlin.set_c_a_cdef(key, value, comments=comments)
+            changes += thisMarlin.set_c_a(key, value, comments=comments)
     elif machine == "A3S":
         thisMarlin.driver_names = [
             'X_DRIVER_TYPE',
@@ -1193,11 +1299,11 @@ def main():
         if tft_ans == "y":
             for key, value in BTT_TFT_C_VALUES.items():
                 comments = BTT_TFT_C_COMMENTS.get(key)
-                thisMarlin.set_c_cdef(key, value, comments=comments)
+                changes += thisMarlin.set_c(key, value, comments=comments)
 
             for key, value in BTT_TFT_C_A_VALUES.items():
                 comments = BTT_TFT_C_A_COMMENTS.get(key)
-                thisMarlin.set_c_a_cdef(key, value, comments=comments)
+                changes += thisMarlin.set_c_a(key, value, comments=comments)
 
         runout = input("Use a filament runout sensor (y/n)? ").lower()
         if runout not in ['y', 'n']:
@@ -1205,10 +1311,11 @@ def main():
         runout_v = ""
         if runout == "n":
             runout_v = None
-        thisMarlin.set_c_cdef('FILAMENT_RUNOUT_SENSOR', runout_v)
+        changes += thisMarlin.set_c('FILAMENT_RUNOUT_SENSOR', runout_v)
     else:
         usage()
         raise NotImplementedError('machine="{}"'.format(machine))
+    thisMarlin.save_changes()  # Only saves if necessary.
     default_s = driver_types[0]
     if driver_type is None:
         echo0("Please specify --driver-type such as one of {} and try again."
@@ -1222,7 +1329,7 @@ def main():
                       "".format(this_driver_name, this_driver_type,
                                 driver_type))
 
-        thisMarlin.patch_drivers(driver_type)
+        changes += thisMarlin.patch_drivers(driver_type)
     cmd_parts = ["meld", thisMarlin.m_path, dstMarlin.m_path]
     print("")
     print("# You must use one of the following manual methods for safety.")
@@ -1285,27 +1392,9 @@ def main():
     proc = Popen(cmd_parts, shell=False,
                  stdin=None, stdout=None, stderr=None, close_fds=True)
     # close_fds: make parent process' file handles inaccessible to child
-    print()
-    print('After merging:')
-    print('- Close any slicers, Pronterface, or anything else that may use the USB port where the 3D Printer is connected.')
-    print('- Connect the 3D printer via USB and open "{}" in Arduino IDE.'.format(dstMarlin.m_path))
-    print('- *Unplug the serial connector* from the screen if using an MKS Gen-L V1 to avoid bricking the screen by passing the board firmware to it!')
-    print('- Choose the correct hardware for "Board" "Processor" and "Port" (all 3 are in the "Tools" menu).')
-    print('- Click "Upload" (right arrow) to compile & upload.')
-    print('- After it says "Finished Upload", reconnect the LCD screen.')
-    print('- Use the screen to reset the firmware settings (press "Reset" on the warning, or find the reset option), then save. Otherwise, open Pronterface, choose the port, connect, then run:')
-    print('M502;')
-    print('M500;')
-    print('- In Pronterface or your start g-code in your slicer, you can set the linear advance to the correct value of your filament. See <https://marlinfw.org/tools/lin_advance/k-factor.html> or <https://github.com/poikilos/LinearAdvanceTowerGenerator> for calibration code and steps to obtain the correct K value such as:')
-    print('; viewcurrent value:')
-    print('M900;')
-    print('; HDglass, with 1.9mm ID x 680mm bowden tube:')
-    print('M900 K0.8;')
-    print('M500;')
-    print("Reboot (and install firmware from SDcard bin file if present):")
-    print('M997;')
-    print()
-    print("Opening a slicer while printing from the SD card may freeze the print (known to happen on MKS screens).")
+    print(POST_MERGE_DOC_FMT.format(
+        marlin_path=dstMarlin.m_path,
+    ))
     return 0
 
 
