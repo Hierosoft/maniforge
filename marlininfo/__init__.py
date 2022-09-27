@@ -656,6 +656,9 @@ R2X_14T_C_VALUES = {
     'X_BED_SIZE': 236,
     'Y_BED_SIZE': 129,  # TODO: See if bigger/smaller with FlexionHT vs custom
     'Z_MAX_POS': 150,
+    # ^ TODO: Z_MAX_POS may be as small as 123 with aluminum z axis assembly
+    #   depending on screw tightness)
+    'NOZZLE_PARK_POINT': "{ (X_MIN_POS + 10), (Y_MAX_POS - 10), 123 }",
     'LEVELING_NOZZLE_TEMP': 150,  # if PREHEAT_BEFORE_LEVELING
     'LEVELING_BED_TEMP': 63,  # if PREHEAT_BEFORE_LEVELING
     'GRID_MAX_POINTS_X': 5,
@@ -1389,12 +1392,13 @@ def main():
             #   but its value will be switched with TEMP_1_PIN in this patch.
             changes += thisMarlin.set_pin("TEMP_1_PIN", "P0_24_A1")
             new_lines = ["#define TEMP_0_PIN P0_23_A0"]
-            changes += new_lines
-            thisMarlin.insert_pin_lines(
+
+            if thisMarlin.insert_pin_lines(
                 "#define TEMP_0_PIN P0_23_A0",
                 before="TEMP_1_PIN",
-            )
-            print("* The TH0 port will be avoided due to --T0 TH1.")
+            ):
+                changes += new_lines
+            print("* The TH0 port will be avoided due to --T0 1.")
             if options.get('nozzles') is not None:
                 if options.get('nozzles') != 1:
                     raise ValueError(
