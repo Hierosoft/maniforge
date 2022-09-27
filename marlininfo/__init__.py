@@ -31,6 +31,17 @@ OPTIONS:
 
 --help                  Show this help screen.
 
+--T0 <port name>        (default: TH0) Set T0 to TH0 or TH1. TH1 can be
+                        used such as when TH0 is damaged, but the number
+                        of nozzles will be limited to 1.
+
+--zmax                  (only for R2X_14T; default None) Enable a
+                        custom-installed ZMAX endstop (such as if you
+                        moved the endstop from the top to the bottom).
+                        This is not compatible with
+                        Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN (but that
+                        setting isn't enabled anywhere in this program
+                        for the BTT mainboard).
 '''
 from __future__ import print_function
 import os
@@ -524,18 +535,29 @@ BTT_TFT_C_A_COMMENTS = {
 
 BLTOUCH_C_VALUES = {
     'Z_MIN_PROBE_REPEATABILITY_TEST': "",
-    'AUTO_BED_LEVELING_BILINEAR': "",
+    # 'AUTO_BED_LEVELING_BILINEAR': "",
     'G26_MESH_VALIDATION': "",
     'MESH_TEST_HOTEND_TEMP': 220,
     'MESH_TEST_BED_TEMP': 63,
     'USE_ZMIN_PLUG': None,
     'Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN': None,
     'AUTO_BED_LEVELING_UBL': "",
-    'MESH_BED_LEVELING': "",
+    # ^ "superset" of the previous bed leveling methods, with an
+    #   "optimized line-splitting algorithm"
+    #   -<https://marlinfw.org/docs/features/unified_bed_leveling.html>
+    # 'MESH_BED_LEVELING': "",
+    # ^ conflict: "Select only one of: MESH_BED_LEVELING,
+    #   AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_3POINT,
+    #   AUTO_BED_LEVELING_BILINEAR or AUTO_BED_LEVELING_UBL."
+    # TODO: (?) LCD_BED_LEVELING: "",
+    # ^ "for ABL or MBL"
+    #   "Include a guided procedure if manual probing is enabled"
 }
+# TODO: Add a neopixel option (NEOPIXEL_PIN)
 BLTOUCH_C_COMMENTS = {
     'AUTO_BED_LEVELING_BILINEAR': (
         " // specified in the BLTouch Smart V3.1 manual"
+        " but UBL supercedes it and MESH_BED_LEVELING"
     ),
     'USE_ZMIN_PLUG': '// commented out as per BLTouch Smart V3.1 manual',
     'Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN': (
@@ -609,7 +631,7 @@ R2X_14T_C_VALUES = {
     'DEFAULT_RETRACT_ACCELERATION': 2000,
     'DEFAULT_TRAVEL_ACCELERATION': 2000,
     'DEFAULT_EJERK': 3.5,
-    'S_CURVE_ACCELERATION': "",
+    # S_CURVE_ACCELERATION': "",  # conflicts with LIN_ADVANCE unless EXPERIMENTAL_SCURVE
     'USE_PROBE_FOR_Z_HOMING': "",
     'Z_MIN_PROBE_PIN': None,  # See comment regarding BTT SKR V1.4 *
     'BLTOUCH': "",
@@ -666,7 +688,7 @@ R2X_14T_C_A_VALUES = {
     'ADAPTIVE_STEP_SMOOTHING': "",
     'BABYSTEPPING': "",
     'DOUBLECLICK_FOR_Z_BABYSTEPPING': "",
-    'BABYSTEP_ZPROBE_OFFSET': "",
+    # 'BABYSTEP_ZPROBE_OFFSET': "",  # conflicts with MESH_BED_LEVELING
 }
 
 # TODO: implement per-machine comments.
@@ -688,31 +710,33 @@ R2X_14T_C_COMMENTS = {
         '  // ^ 60 C, not enclosed:',
     ],
     'DEFAULT_AXIS_STEPS_PER_UNIT': [
-        '// Extrusion:',
-        ('// - Used factory setting 96.275 then calibrated it'
+        '/*',
+        'Extrusion:',
+        ('- Used factory setting 96.275 then calibrated it'
          ' (it extruded 95/100 mm, so result is 91.46125)'),
-        '// Movement:',
-        ('// > The Replicator 2 and 2x use 18 tooth GT2 pulleys,'
+        'Movement:',
+        ('> The Replicator 2 and 2x use 18 tooth GT2 pulleys,'
          ' 1/16 microstepping, and 200 steps/rev steppers.'
          ' That makes the proper steps/mm value 88.888889.'),
-        ('// > Note that Makerbot used ~88.56 steps/mm in their defaults,'
+        ('> Note that Makerbot used ~88.56 steps/mm in their defaults,'
          ' which is the value you get if you calculate from the belt+pulley'
          ' pitch diameter from the Gates GT2 specs. But this is the value'
          ' you use for calculating belt length required in a closed loop,'
          ' not for steps/mm. The 88.88... number is more accurate.'),
-        "// > by Ryan Carlyle Mar 2 '16 at 20:15",
-        ("// > - Hey once again, what about z axis then?"
+        "> by Ryan Carlyle Mar 2 '16 at 20:15",
+        ("> - Hey once again, what about z axis then?"
          " – Anton Osadchy Mar 7 '16 at 17:47"),
-        ("// > - Z is 400 steps/mm. (8mm lead, 1/16 microstepping,"
+        ("> - Z is 400 steps/mm. (8mm lead, 1/16 microstepping,"
          " 200 steps/mm motor.) Sidenote, make sure you don't over-drive"
          " the Z stepper with plug-in drivers, it's only rated to about 0.4A."
          " – Ryan Carlyle Mar 7 '16 at 19:15"),
-        ("// > - @RyanCarlyle FYI minor typo above, you say 200 steps/mm"
+        ("> - @RyanCarlyle FYI minor typo above, you say 200 steps/mm"
          " for Z but I think you mean steps/rev since you already state"
          " Z is 400 steps/mm. Thank you for accurate numbers though!"
          " – guru_florida Aug 22 '20 at 15:12"),
-        '//',
-        '// -<https://3dprinting.stackexchange.com/a/678>',
+        '',
+        '-<https://3dprinting.stackexchange.com/a/678>',
+        '*/',
     ],
     'Z_MIN_PROBE_PIN': [
         ("// ^ already defined as P0_10 in"
@@ -812,10 +836,13 @@ class MarlinInfo:
 
     C_REL = os.path.join("Marlin", "Configuration.h")
     C_A_REL = os.path.join("Marlin", "Configuration_adv.h")
+    PINS_BTT_SKR_V1_4_REL = os.path.join("Marlin", "src", "pins",
+                                         "lpc1768", "pins_BTT_SKR_V1_4.h")
     TRANSFER_RELPATHS = [
         "platformio.ini",
         C_REL,
         C_A_REL,
+        PINS_BTT_SKR_V1_4_REL,
     ]
 
     DRIVER_NAMES = [
@@ -909,7 +936,7 @@ class MarlinInfo:
             results.append(parts)
         return results
 
-    def get_c_cdef(self, name):
+    def get_c(self, name):
         '''
         Get a a 3-long tuple with the value of the named #define from
         Marlin/Configuration.h along with the line number and error
@@ -917,7 +944,7 @@ class MarlinInfo:
         '''
         return get_cdef(self.c_path, name)
 
-    def get_c_a_cdef(self, name):
+    def get_c_a(self, name):
         '''
         Get a a 3-long tuple with the value of the named #define from
         Marlin/Configuration_adv.h along with the line number and error
@@ -931,8 +958,8 @@ class MarlinInfo:
         CONFIGURATION_ADV_H_VERSION as strings.
         '''
         return (
-            self.get_c_cdef("CONFIGURATION_H_VERSION")[0],
-            self.get_c_a_cdef("CONFIGURATION_ADV_H_VERSION")[0],
+            self.get_c("CONFIGURATION_H_VERSION")[0],
+            self.get_c_a("CONFIGURATION_ADV_H_VERSION")[0],
         )
 
     def copy_to(self, repo_path):
@@ -951,6 +978,9 @@ class MarlinInfo:
             srcPath = os.path.join(self.m_path, src)
             dstPath = os.path.join(repo_path, src)
             if os.path.isfile(srcPath):
+                dstParent = os.path.dirname(dstPath)
+                if not os.path.isdir(dstParent):
+                    os.makedirs(dstParent)
                 shutil.copy(srcPath, dstPath)
                 results.append(dstPath)
         return results
@@ -958,7 +988,7 @@ class MarlinInfo:
     def drivers_dict(self):
         results = {}
         for name in MarlinInfo.DRIVER_NAMES:
-            v, line_n, err = self.get_c_cdef(name)
+            v, line_n, err = self.get_c(name)
             if err == COMMENTED_DEF_WARNING:
                 continue
             elif v is not None:
@@ -983,7 +1013,7 @@ class MarlinInfo:
 
     def set_c(self, name, value, comments=None):
         '''
-        This operates on self.c_path.
+        This operates on MarlinInfo.C_REL.
         For documentation see SourceFileInfo's set_cached method.
         '''
         relpath = MarlinInfo.C_REL
@@ -992,14 +1022,23 @@ class MarlinInfo:
 
     def set_c_a(self, name, value, comments=None):
         '''
-        This operates on self.c_a_path.
+        This operates on MarlinInfo.C_A_REL.
         For documentation see SourceFileInfo's set_cached method.
         '''
         relpath = MarlinInfo.C_A_REL
         fi = self.file_metas[relpath]
         return fi.set_cached(name, value, comments=comments)
 
-    def insert_c(self, new_lines, after=None):
+    def set_pin(self, name, value, comments=None):
+        '''
+        This operates on MarlinInfo.PINS_BTT_SKR_V1_4_REL.
+        For documentation see SourceFileInfo's set_cached method.
+        '''
+        relpath = MarlinInfo.PINS_BTT_SKR_V1_4_REL
+        fi = self.file_metas[relpath]
+        return fi.set_cached(name, value, comments=comments)
+
+    def insert_c(self, new_lines, after=None, before=None):
         '''
         Insert into self.c_path (or lines if present).
         For documentation see SourceFileInfo's insert_cached method.
@@ -1009,9 +1048,9 @@ class MarlinInfo:
         '''
         relpath = MarlinInfo.C_REL
         fi = self.file_metas[relpath]
-        return fi.insert_cached(new_lines, after=after)
+        return fi.insert_cached(new_lines, after=after, before=before)
 
-    def insert_c_a(self, new_lines, after=None):
+    def insert_c_a(self, new_lines, after=None, before=None):
         '''
         Insert into self.c_a_path (or lines if present).
         For documentation see SourceFileInfo's insert_cached method.
@@ -1021,7 +1060,19 @@ class MarlinInfo:
         '''
         relpath = MarlinInfo.C_A_REL
         fi = self.file_metas[relpath]
-        return fi.insert_cached(new_lines, after=after)
+        return fi.insert_cached(new_lines, after=after, before=before)
+
+    def insert_pin_lines(self, new_lines, after=None, before=None):
+        '''
+        Insert into self.c_a_path (or lines if present).
+        For documentation see SourceFileInfo's insert_cached method.
+
+        Returns:
+        True if success, False if failed.
+        '''
+        relpath = MarlinInfo.PINS_BTT_SKR_V1_4_REL
+        fi = self.file_metas[relpath]
+        return fi.insert_cached(new_lines, after=after, before=before)
 
     def patch_drivers(self, driver_type):
         '''
@@ -1104,6 +1155,21 @@ def main():
         return 1
     dst_repo_path = None
     options = {}
+    value_arg_keys = {}
+    tmp_keys = [
+        'machine',
+        'driver-type',
+        'T0',
+        'nozzles',
+    ]
+    BOOLEAN_KEYS = [
+        'zmax',
+    ]
+    echo1()
+    echo1("CHECKING FOR OPTIONS...")
+    echo1()
+    for key in tmp_keys:
+        value_arg_keys["--" + key] = key
     key = None
     for argI in range(1, len(sys.argv)):
         arg = sys.argv[argI]
@@ -1111,14 +1177,18 @@ def main():
             options[key] = arg
             key = None
         elif arg.startswith("--"):
+            next_key = value_arg_keys.get(arg)
+            tmp_key = arg[2:]
             if arg == "--verbose":
                 set_verbosity(1)
             elif arg == "--debug":
                 set_verbosity(2)
-            elif arg == "--machine":
-                key = "machine"
-            elif arg == "--driver-type":
-                key = "driver-type"
+            elif tmp_key in BOOLEAN_KEYS:
+                options[tmp_key] = True
+            elif next_key is not None:
+                key = next_key
+                echo1("using setting {} via {}"
+                      "".format(next_key, arg))
             elif arg in ["--help", "/?"]:
                 usage()
                 return 0
@@ -1129,6 +1199,13 @@ def main():
         else:
             if dst_repo_path is None:
                 dst_repo_path = arg
+            else:
+                usage()
+                echo0('You specified an extra argument: "{}"'
+                      ''.format(arg))
+                return 1
+    echo1("options={}".format(options))
+
     if dst_repo_path is None:
         sys.stderr.write(
             "Error: You must specify a destination Marlin directory"
@@ -1252,6 +1329,7 @@ def main():
 
     if machine == "R2X_14T":
         driver_types = ["TMC2209"]
+
         if driver_type is not None:
             if driver_type not in driver_types:
                 raise ValueError(
@@ -1259,16 +1337,18 @@ def main():
                     " should instead be one of: {}"
                     "".format(machine, driver_type, driver_types)
                 )
+            print("driver_type={}".format(driver_type))
         else:
             driver_type = driver_types[0]
             print("# automatically selected for {}:".format(machine))
             print("--driver-type {}".format(driver_type))
+
         thisMarlin.driver_names = [
             'X_DRIVER_TYPE',
             'Y_DRIVER_TYPE',
             'Z_DRIVER_TYPE',
             'E0_DRIVER_TYPE',
-            'E1_DRIVER_TYPE',
+            'E1_DRIVER_TYPE',  # removed later if nozzles == 1
         ]
 
         # Always use BTT TFT values for R2X_14T (ok for TFT35 as well):
@@ -1285,6 +1365,86 @@ def main():
         for key, value in BLTOUCH_C_A_VALUES.items():
             comments = BLTOUCH_C_A_COMMENTS.get(key)
             changes += thisMarlin.set_c_a(key, value, comments=comments)
+        th_answer = options.get("T0")
+        if th_answer is None:
+            while True:
+                th_answer = input("Are you using 0 or 1 for T0"
+                                  " (0:TH0 or 1:TH1)? ")
+                known_th_pins = ["0", "1"]  # default for T0
+                if th_answer not in known_th_pins:
+                    print("Error: Only {} are recognized.".format(known_th_pins))
+                    continue
+                    # raise NotImplementedError(
+                    #     "Only pins {} are implemented.".format(known_th_pins)
+                    # )
+                break
+        if th_answer == "1":
+            # -#define TEMP_1_PIN                      P0_23_A0  // A0 (T0) - (67) - TEMP_1_PIN
+            # -#define TEMP_BED_PIN                    P0_25_A2  // A2 (T2) - (69) - TEMP_BED_PIN            #define TEMP_0_PIN P0_23_A0
+            # +#define TEMP_0_PIN P0_23_A0
+            # +#define TEMP_1_PIN P0_24_A1
+            # +#define TEMP_BED_PIN P0_25_A2
+            # ^ TEMP_0_PIN is defined in
+            #   Marlin\src\pins\lpc1768\pins_BTT_SKR_common.h
+            #   but its value will be switched with TEMP_1_PIN in this patch.
+            changes += thisMarlin.set_pin("TEMP_1_PIN", "P0_24_A1")
+            new_lines = ["#define TEMP_0_PIN P0_23_A0"]
+            changes += new_lines
+            thisMarlin.insert_pin_lines(
+                "#define TEMP_0_PIN P0_23_A0",
+                before="TEMP_1_PIN",
+            )
+            print("* The TH0 port will be avoided due to --T0 TH1.")
+            if options.get('nozzles') is not None:
+                if options.get('nozzles') != 1:
+                    raise ValueError(
+                        "You can only use 1 nozzle because you said"
+                        " to avoid a damaged TH0, but --nozzles is set to"
+                        " {}.".format(options.get('nozzles'))
+                    )
+            options['nozzles'] = "1"
+        elif th_answer == "0":
+            print("* The default --T0 TH0 will be assumed (no code changes).")
+        user_nozzles = options.get('nozzles')
+        nozzles = None
+        if user_nozzles is None:
+            nozzles = 2
+        else:
+            nozzles = int(user_nozzles)
+        if nozzles == 1:
+            thisMarlin.set_c_a("MULTI_NOZZLE_DUPLICATION", None)
+            thisMarlin.set_c("EXTRUDERS", 1)
+            # All of the following should have only one extruder element
+            #   instead of the last value being duplicated in the case
+            #   of having two:
+            thisMarlin.set_c("DEFAULT_AXIS_STEPS_PER_UNIT", "{ 88.888889, 88.888889, 400, 91.46125 }")
+            thisMarlin.set_c("DEFAULT_MAX_FEEDRATE", "{ 200, 200, 5, 25 }")
+            thisMarlin.set_c("DEFAULT_MAX_ACCELERATION", "{ 2000, 2000, 200, 10000 }")
+            thisMarlin.set_c("E1_DRIVER_TYPE", None)
+            thisMarlin.driver_names.remove("E1_DRIVER_TYPE")
+        elif nozzles == 2:
+            pass
+        else:
+            raise NotImplementedError(
+                "Only --nozzles 1 or --nozzles 2 is implemented."
+            )
+        zmax_answer = options.get("zmax")
+        if zmax_answer is not True:
+            while True:
+                zmax_answer = input("Did you install a custom ZMAX sensor (y/n)? ")
+                zmax_answer = zmax_answer.lower().strip()
+                if zmax_answer in ["y", "yes"]:
+                    zmax_answer = True
+                    break
+                elif zmax_answer in ["n", "no"]:
+                    zmax_answer = False
+                    break
+                else:
+                    echo0("Specify y/yes or n/no.")
+        if zmax_answer is True:
+            thisMarlin.set_c("USE_ZMAX_PLUG", "")
+        else:
+            thisMarlin.set_c("USE_ZMAX_PLUG", None)
     elif machine == "A3S":
         thisMarlin.driver_names = [
             'X_DRIVER_TYPE',
@@ -1315,7 +1475,6 @@ def main():
     else:
         usage()
         raise NotImplementedError('machine="{}"'.format(machine))
-    thisMarlin.save_changes()  # Only saves if necessary.
     default_s = driver_types[0]
     if driver_type is None:
         echo0("Please specify --driver-type such as one of {} and try again."
@@ -1330,6 +1489,9 @@ def main():
                                 driver_type))
 
         changes += thisMarlin.patch_drivers(driver_type)
+
+    thisMarlin.save_changes()  # Only saves if necessary.
+
     cmd_parts = ["meld", thisMarlin.m_path, dstMarlin.m_path]
     print("")
     print("# You must use one of the following manual methods for safety.")
