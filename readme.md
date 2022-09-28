@@ -66,9 +66,21 @@ You are probably done if you followed the steps this far. See "How to Use" to us
 
 
 ## FlexionHT
-The FlexionHT retrofix kit for the Replicator 2X is highly recommended. Along with that you can use:
-- [Part Cooling Fan Duct for R2X 14T with FlexionHT](https://www.thingiverse.com/thing:5190784) CC BY 4.0 Poikilos on ThingiVerse
+The FlexionHT retrofix kit for the Replicator 2X is highly recommended. Along with that you can use the printable parts below.
 
+The ThingiVerse collection "[Poikilos R2X 14T mod and upgrades for Replicator 2X](https://www.thingiverse.com/poikilos/collections/poikilos-r2x-14t-mod-and-upgrades-for-replicator-2x)" also lists such parts.
+
+### [Part Cooling Fan Duct for R2X 14T with FlexionHT](https://www.thingiverse.com/thing:5190784) CC BY 4.0 Poikilos on ThingiVerse
+My BLTouch mount for the FlexionHT:
+- For the top screw, using a set screw (headless) or no screw at all is better so as not to interfere with the cleaning wheel brush on the FlexionHT, so now the mount has clips and side shank holes to hold them down.
+  - If you do use a screw in the top, going in more than about 2.5mm will cause the screw to block the long motor mount screws!
+    - Some screw kits have nothing shorter than 8mm, so the shaft on the BLTouch mount has to be 5.5 (8-2.5) tall, but it is partly cut away to make room for the cleaning wheel brush. You can cut off this whole top brace if desired, especially if you use the side screw shank holes.
+- The countersunk side screw shank holes are ideal for stability.
+  - There are 4 holes in case you have the flexion mounted in the other orientation (rotated 180 degrees looking at the front). They are counter-sunk 90 degrees for metric screws.
+  - Countersunk screws are measured from the head. The M3 screws must be at least 4mm (3.84562 to have 1mm of grab) and cannot be longer than 6.5 (3.84+2.84562=~6.69: 3.84 depth in holes, plus 2.84562 thickness of my BLTouch mount)
+    - A rare but standard countersunk M3 computer screw is 6mm (M3x6, but typically closer to 1/4" long--actually ~5.82mm)
+
+### [BLTouch Mount for FlexionHT on R2X 14T mod for MakerBot Replicator 2X](https://www.thingiverse.com/thing:5537397)
 
 ## Project Status
 
@@ -90,7 +102,7 @@ The main goal was to improve bed adhesion and eliminate skipping on the extruder
         - requires: thermistors
             - requires either:
                 - FlexionHT
-                - OR drilling holes for the thermistors (or getting new heater blocks in this case); drilling a hole in the bed for the thermistor, and a 2.5mm hole close enough so the screw head or washer holds the thermistor wires enough to keep the thermistor in place, then tapping the the 2.5 mm hole using a 3mm tap.
+                - OR drilling holes for the thermistors (or getting new heater blocks in this case); drilling a hole in the bed for the thermistor, and a 2.5mm hole close enough so the screw head or washer holds the thermistor wires enough to keep the thermistor in place, then tapping the the 2.5 mm hole using a M3 tap.
         - provides: all new electronics (forums indicate the stock mosfets on the Mightyboard aren’t that great and that people often replace them) other than the endstops and motors.
 - FilaPrint bed surface:
     - provides: heat-responsive bed surface (Adhesion increases when hot; ABS parts detach easily when cooled to around 70 C and self-detach at a lower temperature — PLA+ detach easily around 35 C then self-detach around 25 C)
