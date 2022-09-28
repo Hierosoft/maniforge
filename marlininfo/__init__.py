@@ -1447,6 +1447,10 @@ def main():
                     echo0("Specify y/yes or n/no.")
         if zmax_answer is True:
             thisMarlin.set_c("USE_ZMAX_PLUG", "")
+            # Note that ZMAX_PLUG is POWERDET according to
+            # Marlin\Marlin\src\pins\lpc1768\pins_BTT_SKR_V1_4.h
+            # *not* on the same row as the ZMIN plugs according to the
+            # board diagram, but is the one next to EXP2.
         else:
             thisMarlin.set_c("USE_ZMAX_PLUG", None)
     elif machine == "A3S":
