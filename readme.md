@@ -66,7 +66,7 @@ You are probably done if you followed the steps this far. See "How to Use" to us
 
 
 ## FlexionHT
-The FlexionHT retrofix kit for the Replicator 2X is highly recommended. Along with that you can use the printable parts below.
+The FlexionHT retrofit kit for the Replicator 2X is highly recommended. I ordered the Flexion on eBay and got the FlexionHT and it works fine and is suitable for flexible filament. Along with the FlexionHT retrofit kit you can use the printable parts below.
 
 The ThingiVerse collection "[Poikilos R2X 14T mod and upgrades for Replicator 2X](https://www.thingiverse.com/poikilos/collections/poikilos-r2x-14t-mod-and-upgrades-for-replicator-2x)" also lists such parts.
 

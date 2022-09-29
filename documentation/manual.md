@@ -67,9 +67,11 @@ Solutions:
     - Go to Motion, Bed Leveling, Level Bed.
     - Go back to Main, then Configuration, Store Settings (you will hear 2 ominous beeps upon success).
   - In touch mode:
-    - Menu, Movement, Bed Level, ABL, Start. It will take several minutes.
+    - Menu, Movement, Bed Level, UBL (or ABL depending on configuration), Start. It will take several minutes.
     - When it is complete it beeps 3 times rapidly.
     - Press OK after that when it asks to store the mesh to EEPROM.
+    - If it shows a stop error, you may need to ensure the wiring is good, unbend the probe, clean the BLTouch, flip the probe 180 degrees, or replace the BLTouch (or at least the probe) with a new one and restart the printer.
+      - Before all that, try it in Marlin Mode. That made the error stop occurring for me.
 - Replace the bed: In the case that the bed is a FilaPrint bed and 5 years old or more, replace the surface with a new FilaPrint bed surface or borosilicate glass with patterned silicone. Either type of bed will become sticky when hot and release the printed part when cool in most cases (See also: "The print adheres too well"). To potentially avoid buying a new bed surface, re-slice the model to print on a part of the bed that isn't as worn.
 
 ### Issue: The print adheres too well.

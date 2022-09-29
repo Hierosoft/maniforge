@@ -565,6 +565,12 @@ BLTOUCH_C_COMMENTS = {
     ),
 }
 
+ZMAX_COMMENTS = {
+    'USE_PROBE_FOR_Z_HOMING': (
+        '// Commented when using max endstop with probe (See <https://www.instructables.com/Dual-Z-Max-and-Probe-for-Z-Min/>)'
+    )
+}
+
 BLTOUCH_C_A_VALUES = {
     # 'Z_STEPPER_AUTO_ALIGN': "",  # rec by BTT TFT if probe; for 2 Z *drivers*
     # ^ See printer-specific overrides that are set BEFORE BLTOUCH values
@@ -620,6 +626,16 @@ R2X_14T_C_VALUES = {
     'X_MAX_ENDSTOP_INVERTING': True,
     'Y_MAX_ENDSTOP_INVERTING': True,
     'Z_MAX_ENDSTOP_INVERTING': True,
+    'Z_MIN_PROBE_ENDSTOP_INVERTING': False,
+    # ^ These settings are necessary for the stock endstops that have circuits.
+    #   For these, PULLUP defines (that raise a partial state to a binary
+    #   state) shouldn't be necessary due to the circuits
+    #   according to Ed's 3d Tech on [BTT SKR2 - Switch Endstop on SKR 2
+    #   (Rev B)](https://www.youtube.com/watch?v=wwekaHOCHuk)
+    #   Ed also mentions that you can check the current state of any
+    #   endstop and they shouldn't be "TRIGGERED" unless pressed (They
+    #   should be inverted if triggered when not pressed):
+    #   M119
     'DISTINCT_E_FACTORS': "",
     'DEFAULT_AXIS_STEPS_PER_UNIT': (
         "{ 88.888889, 88.888889, 400, 91.46125, 91.46125 }"
@@ -635,7 +651,7 @@ R2X_14T_C_VALUES = {
     'USE_PROBE_FOR_Z_HOMING': "",
     'Z_MIN_PROBE_PIN': None,  # See comment regarding BTT SKR V1.4 *
     'BLTOUCH': "",
-    'NOZZLE_TO_PROBE_OFFSET': "{ -36, 0, 0 }",  # TODO: test on FlexionHT
+    'NOZZLE_TO_PROBE_OFFSET': "{ -35, 0, 0 }",  # See comment
     'PROBING_MARGIN': 24,
     'Z_PROBE_FEEDRATE_FAST': "(4*60)",
     'Z_PROBE_FEEDRATE_SLOW': "(Z_PROBE_FEEDRATE_FAST / 5)",  # default= ... / 2
@@ -658,7 +674,9 @@ R2X_14T_C_VALUES = {
     'Z_MAX_POS': 150,
     # ^ TODO: Z_MAX_POS may be as small as 123 with aluminum z axis assembly
     #   depending on screw tightness)
-    'NOZZLE_PARK_POINT': "{ (X_MIN_POS + 10), (Y_MAX_POS - 10), 123 }",
+    'NOZZLE_PARK_POINT': "{ (X_MIN_POS + 10), (Y_MAX_POS - 10), 115 }",
+    # ^ TODO: increase Z to 123 (as measured on screen by moving
+    #   manually after homing) and see if is still ok.
     'LEVELING_NOZZLE_TEMP': 150,  # if PREHEAT_BEFORE_LEVELING
     'LEVELING_BED_TEMP': 63,  # if PREHEAT_BEFORE_LEVELING
     'GRID_MAX_POINTS_X': 5,
@@ -748,9 +766,9 @@ R2X_14T_C_COMMENTS = {
          " includes it)."),
     ],
     'NOZZLE_TO_PROBE_OFFSET': (
-        "// This was set for a hand-machined cooling block"
+        "// -35,0,-2.56 works on FlexionHT, otherwise x is -36 such as"
+        " for a hand-machined cooling block"
         " (z=+3.65 when not deployed; 6.07 using dial and 0.1mm feeler gauge),"
-        " but may be or may need to be updated for FlexionHT"
     ),
     'Z_PROBE_FEEDRATE_FAST': [
         "// This Poikilos setting (4*60 based on HOMING_FEEDRATE_MM_M",
@@ -1450,9 +1468,41 @@ def main():
             # Note that ZMAX_PLUG is POWERDET according to
             # Marlin\Marlin\src\pins\lpc1768\pins_BTT_SKR_V1_4.h
             # *not* on the same row as the ZMIN plugs according to the
-            # board diagram, but is the one next to EXP2.
+            # board diagram, but is the one next to EXP1.
+
+            # TODO: add the comments from ZMAX_COMMENTS?
+
+            # Define min and max to prevent grinding the z axis follower
+            #   at the top of the range. All of these settings are
+            #   necessary to get Marlin to do it. See also:
+            # "z home dir must be 1 for z max homing."
+            # - Repetier
+            #   <forum.repetier.com/discussion/comment/30062/#Comment_30062>
+            thisMarlin.set_c("USE_ZMIN_PLUG", "")
+            thisMarlin.set_c("USE_XMAX_PLUG", "")
+            thisMarlin.set_c("USE_YMAX_PLUG", "")
+            thisMarlin.set_c("USE_ZMAX_PLUG", "")
+            # It is ok to home with the ZMAX endstop instead of the
+            #   probe (and necessary to use it with the probe as min):
+            thisMarlin.set_c("USE_PROBE_FOR_Z_HOMING", None)
+            thisMarlin.set_c("Z_HOME_DIR", -1)
+            thisMarlin.set_c("Z_MAX_POS", 130)
+            thisMarlin.set_c("USE_PROBE_FOR_Z_HOMING", None)
+            # ^ Don't set Z_MAX_POS too high or Marlin might give up (It
+            #   may determine the bed is floating more than 25 mm above
+            #   the endstop if set to the factory build volume's 155
+            #   height).
+            #   It is actually 123, but setting it to that may cause
+            #   Marlin to give up if you get to 0 before the probe
+            #   triggers (such as if your springs aren't tightened as
+            #   much as mine)--remember, homing is done at max then
+            #   probing happens by approaching 0 from there.
+
         else:
             thisMarlin.set_c("USE_ZMAX_PLUG", None)
+        # Always invert endstops that make a connection when triggered.
+        #   (already done in BLTouch config further up--see
+        #   (X|Y|Z)_(MIN|MAX)_ENDSTOP_INVERTING).
     elif machine == "A3S":
         thisMarlin.driver_names = [
             'X_DRIVER_TYPE',
@@ -1565,6 +1615,14 @@ def main():
     print(POST_MERGE_DOC_FMT.format(
         marlin_path=dstMarlin.m_path,
     ))
+    if zmax_answer is True:
+        print()
+        print("All of the sundry settings related to the --zmax option"
+              " have been set to prevent grinding the z-axis follower,"
+              " as long as you:")
+        print("* Followed the directions in the readme for placing the z axis endstop (or change the Z_MAX_POS accordingly).")
+        print("* Run UBL (Menu, Movement, Bed Level, UBL, Start) and when it finishes save to EEPROM (*before doing any Home command*)")
+        print("  * If it has a stop error, see bed leveling in the manual in the documentation folder of marlininfo.")
     return 0
 
 
