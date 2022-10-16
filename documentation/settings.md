@@ -73,6 +73,8 @@ speed_travel = 50
 top_layers = 999999
 ```
 - The top_layers trick forces the layers to print slow and with a solid pattern (unlike 100% infill or thicker walls).
+- These settings also help you print with TPU (85A such as YOYI and allegedly Ninjaflex is 85A), but I only thoroughly tested that with a 1.9mm ID bowden tube (Mine is TECBOSS but capricorn or other 1.9mm ID tube should be the same).
+  - Note that you will need thick supports, treelike for easier removal, and ideally print the mini with its back facing toward the bed.
 
 ### SiePie Large Minis
 The extracted [profile](https://drive.google.com/file/d/11zgWHZbpnXP2Zl1bGod-h26Dxyaa4LEk/view) has only the following unique settings:
