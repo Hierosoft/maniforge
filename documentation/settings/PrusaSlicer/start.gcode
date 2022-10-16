@@ -14,7 +14,7 @@
 ; Below is code from the BLTouch Smart V3.1 manual (modified by Poikilos):
 ; M106 S255 ; fan
 ; M190 S[first_layer_bed_temperature] ; set bed temp and wait
-; ^ first_layer_bed_temperature 
+; ^ first_layer_bed_temperature
 M190 S[bed_temperature] ; set bed temp and wait
 ; ^ bed_temperature
 M109 S[first_layer_temperature_0] ; set nozzle temp and wait
