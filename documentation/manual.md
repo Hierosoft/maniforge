@@ -74,6 +74,7 @@ Solutions:
       - Before all that, try upgrading Marlin (bugfix-2.0.x d1211b9f90ecdc7499c33969ab2a5f9e1b34893c has an issue where this happens whenever a zmax endstop is used and is enabled for homing)
         - [ ] Test on bugfix-2.1.x
         - See marlininfo issue [#22](https://github.com/poikilos/marlininfo/issues/22).
+        - This issue is also discussed in [../readme.md](../readme.md)
 - Replace the bed: In the case that the bed is a FilaPrint bed and 5 years old or more, replace the surface with a new FilaPrint bed surface or borosilicate glass with patterned silicone. Either type of bed will become sticky when hot and release the printed part when cool in most cases (See also: "The print adheres too well"). To potentially avoid buying a new bed surface, re-slice the model to print on a part of the bed that isn't as worn.
 
 ### Issue: The print adheres too well.

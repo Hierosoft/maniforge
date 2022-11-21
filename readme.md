@@ -109,13 +109,7 @@ The main goal was to improve bed adhesion and eliminate skipping on the extruder
 - BLTouch Smart V3.1 (If you don't use this, I still suggest adding a ZMAX endstop [skip the steps about removing the ZMIN endstop in that case] to prevent the terrible clunking noise, though it technically only damages the end of the Z axis lead screw. The clunking doesn't seem to affect the follower significantly, but gums up its grease with metal shavings!)
     - requires:
       - Marlin 2.0 (which requires a new mainboard, generally, though an old fork of Marlin exists that may work with one or more Mightyboard hardware versions)
-      - Move the Z endstop to the bottom ("right" in these cases means your right when you are looking at the back).
-        - Remove the soft rear wall of the printer.
-        - Unplug the Z axis endstop and remove the screws and then remove it.
-        - Drill (2) holes in the z-axis mounting plate (removable back plate) spaced 3/4" (19.05mm) apart, with the hole centers being 62.5mm from the bottom of the back mounting plate; the first hole's center being about 3.75mm to the right of the right edge of the wiring harness bracket.
-        - Make (2) 3mm spacers, around 6.5-8mm longnear the bottom rear of the board. For better stability, make some sord of 3rd spacer or add hot glue for spacing.
-        - Unplug the other end of the endstop connector from the ZMIN port on the mainboard and plug it into the ZMAX port.
-        - Change Configuration.h to use the ZMAX port.
+      - [Custom Z_MAX](#custom-z_max)
     - provides: mesh bed leveling (The firmware is set to 25-point probing and bilinear interpolation; Auto Bed Leveling in the menu runs the process then asks to save to EEPROM; The printer automatically uses this as long as the start G-code loads the stored mesh–the firmware is also set to load it on startup)
 - Copperhead throats
     - requires: new standard-style threaded heater blocks (which also hold thermistors without modifications and provide more room for cooling ducts); new dual-extruder threaded motor mount block (“cold block”; hand machined from a large heatsink so that block and fins are a continuous piece of metal).
@@ -125,6 +119,23 @@ The main goal was to improve bed adhesion and eliminate skipping on the extruder
 
 ### Optional Add-ons
 - [Simplified & Enhanced Air Scrubber for 3M Filter such as for MakerBot Replicator 2X](https://www.thingiverse.com/thing:4871456) by Poikilos
+
+#### Custom Z_MAX
+This part is not complete, but seems possible with Marlin bugfix-2.1.x (not bugfix-2.0.x) according to the issue page. A link to the closed MarlinFirmware/Marlin issue is at: <https://github.com/poikilos/marlininfo/issues/22>. This issue is also discussed in [documentation/manual.md](documentation/manual.md)
+
+
+If you place the screws differently, you'll have to modify the R2X_14T config's Z_MAX_POS value by the difference. If your endstop is higher, you will have to subtract. Note that the build volume will not match the manufacturer build volume either way. Making a mount that places the endstop all the way at the bottom may cause pulling or crushing of the wires that go to the bed (That issue may be solvable and allow increasing the build volume).
+
+Requires:
+- USE_ZMAX_PLUG (not USE_ZMIN_PLUG, that is BLTOUCH and may be only required for Marlin < 2 ?)
+- Z_MAX_ENDSTOP_INVERTING (possibly)
+- Move the Z endstop (the ZMIN factory one) to the bottom ("right" in these cases means your right when you are looking at the back).
+  - Remove the soft rear wall of the printer.
+  - Unplug the Z axis endstop and remove the screws and then remove it.
+  - Drill (2) holes in the z-axis mounting plate (removable back plate) spaced 3/4" (19.05mm) apart, with the hole centers being 62.5mm from the bottom of the back mounting plate; the first hole's center being about 3.75mm to the right of the right edge of the wiring harness bracket.
+  - Make (2) 3mm spacers, around 6.5-8mm longnear the bottom rear of the board. For better stability, make some sord of 3rd spacer or add hot glue for spacing.
+  - Unplug the other end of the endstop connector from the ZMIN port on the mainboard and plug it into the ZMAX port.
+  - Change Configuration.h to use the ZMAX port.
 
 
 ## Slicer Settings
