@@ -69,7 +69,14 @@ for try_repos_dir in [REPO_DIR, REPOS_DIR]:
 if sys.version_info.major < 3:
     input = raw_input
 
-from pycodetool import (
+from .find_pycodetool import pycodetool
+# ^ also works for submodules since changes sys.path
+
+
+from .find_hierosoft import hierosoft
+# ^ also works for submodules since changes sys.path
+
+from hierosoft.logging import (
     to_syntax_error,  # (path, lineN, msg, col=None)
     echo_SyntaxWarning,  # (path, lineN, msg, col=None)
     raise_SyntaxError,  # (path, lineN, msg, col=None)
@@ -84,6 +91,8 @@ from pycodetool.parsing import (
     insert_lines,
     write_lines,
     SourceFileInfo,
+    toPythonLiteral,
+    cdefs_to_d,
 )
 
 A3S_TOP_LINES_FLAG = "#pragma once"
@@ -129,7 +138,7 @@ TOP_C_A_LINES = {  # This is the same as TOP_C_LINES for now.
     },
 }
 
-moved_tpu = {
+MOVED_TPU = {
     'PREHEAT_2_LABEL': '"TPU"',
     'PREHEAT_2_TEMP_HOTEND': 210,
     'PREHEAT_2_TEMP_BED': 45,
@@ -137,25 +146,44 @@ moved_tpu = {
     'PREHEAT_2_FAN_SPEED': 0,
 }
 
-moved_abs = {
+MOVED_ABS = {
     'PREHEAT_3_LABEL': '"ABS"',
-    'PREHEAT_3_TEMP_HOTEND': 240,
-    'PREHEAT_3_TEMP_BED': 110,
+    'PREHEAT_3_TEMP_HOTEND': 245,
+    'PREHEAT_3_TEMP_BED': 105,
     'PREHEAT_3_TEMP_CHAMBER': 35,
     'PREHEAT_3_FAN_SPEED': 0,
 }
 
-tpu = moved_tpu
+MOVED_PETG = {
+    'PREHEAT_4_LABEL': '"PETG"',
+    'PREHEAT_4_TEMP_HOTEND': 250,
+    'PREHEAT_4_TEMP_BED': 83,
+    'PREHEAT_4_TEMP_CHAMBER': 35,
+    'PREHEAT_4_FAN_SPEED': 0,
+}
+
+tpu = MOVED_TPU
 tpu_lines = [  # These will be overwritten if moved_ dicts above are used.
     '',
     '#define PREHEAT_3_LABEL       {}'.format(tpu['PREHEAT_2_LABEL']),
     '#define PREHEAT_3_TEMP_HOTEND {}'.format(tpu['PREHEAT_2_TEMP_HOTEND']),
-    '#define PREHEAT_3_TEMP_BED    {}'.format(tpu['PREHEAT_2_TEMP_BED']),
+    '#define PREHEAT_3_TEMP_BED     {}'.format(tpu['PREHEAT_2_TEMP_BED']),
     '#define PREHEAT_3_TEMP_CHAMBER {}'.format(tpu['PREHEAT_2_TEMP_CHAMBER']),
     '#define PREHEAT_3_FAN_SPEED     {}'.format(tpu['PREHEAT_2_FAN_SPEED']),
 ]
 
+petg = MOVED_PETG
+petg_lines = [  # These will be overwritten if moved_ dicts above are used.
+    '',
+    '#define PREHEAT_4_LABEL       {}'.format(petg['PREHEAT_4_LABEL']),
+    '#define PREHEAT_4_TEMP_HOTEND {}'.format(petg['PREHEAT_4_TEMP_HOTEND']),
+    '#define PREHEAT_4_TEMP_BED     {}'.format(petg['PREHEAT_4_TEMP_BED']),
+    '#define PREHEAT_4_TEMP_CHAMBER {}'.format(petg['PREHEAT_4_TEMP_CHAMBER']),
+    '#define PREHEAT_4_FAN_SPEED     {}'.format(petg['PREHEAT_4_FAN_SPEED']),
+]
+
 tpu_lines_flag = "#define PREHEAT_2_FAN_SPEED"
+petg_lines_flag = "#define PREHEAT_3_FAN_SPEED"
 
 BTT_TFT_URL = "https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware"
 LIN_ADVANCE_K_URL = (
@@ -165,7 +193,7 @@ BTT_TFT_DOC_COMM = ("  // ^ recommended for BTT TFT (See <{}>)"
                     "".format(BTT_TFT_URL))
 
 
-A3S_DEF_COMMENTS = {  # A list is multiline, while a string goes at the end.
+A3S_C_COMMENTS = {  # A list is multiline, while a string goes at the end.
     'TEMP_SENSOR_0': ("// manual calibration of thermistor"
                       " in JGAurora A5 & A3S V1 hotend"),
     'TEMP_SENSOR_BED': ("// measured to be satisfactorily accurate"
@@ -234,6 +262,7 @@ POIKILOS_C_VALUES = {  # Add more features. They should usually work.
     'LEVELING_BED_TEMP': 63,
     'MESH_TEST_HOTEND_TEMP': 220,
     'MESH_TEST_BED_TEMP': 63,
+    'NOZZLE_CLEAN_FEATURE': "",
 }
 POIKILOS_C_A_VALUES = {
     'SOUND_MENU_ITEM': "",  # (add a mute menu item)
@@ -241,7 +270,6 @@ POIKILOS_C_A_VALUES = {
     'ARC_SUPPORT': "",  # "Disable this feature to save ~3226 bytes"
     # ^ "G2/G3 Arc Support"
     'EMERGENCY_PARSER': "",
-    'LIN_ADVANCE': "",
     'HOST_PROMPT_SUPPORT': "",  # req: HOST_ACTION_COMMANDS
     'ADVANCED_PAUSE_FEATURE': "",
     'FILAMENT_LOAD_UNLOAD_GCODES': "",
@@ -262,7 +290,7 @@ POIKILOS_C_A_COMMENTS = {
 }
 
 for key, value in POIKILOS_C_VALUES.items():
-    if A3S_DEF_COMMENTS.get(key) is not None:
+    if A3S_C_COMMENTS.get(key) is not None:
         raise ValueError(
             '{} is already set in POIKILOS_C_A_VALUES'
             ' so the comment should be there instead of in A3S.'
@@ -318,9 +346,9 @@ DEPRECATED_VALUES = {
 }
 # TODO: ^ is #define COOLER_FAN_PIN -1 from A3S Configuration_adv.h deprecated?
 
-A3S_CONF = {  # include quotes explicitly for strings.
+A3S_C_VALUES = {  # include quotes explicitly for strings.
     'STRING_CONFIG_H_AUTHOR': (
-        '"(Jake Gustafson, Telli Mantelli, Kris Waclawski,'
+        '"(marlininfo by Jake Gustafson, Telli Mantelli, Kris Waclawski,'
         ' Samuel Pinches & Michael Gilardi, 2 Sep 2022)"'
     ),  # + " // Who made the changes." comment is preserved by marlininfo
     'MOTHERBOARD': "BOARD_MKS_GEN_L",
@@ -384,19 +412,20 @@ A3S_CONF = {  # include quotes explicitly for strings.
     # ^ default z is 6 which is too slow for first touch of z homing
     'Z_PROBE_FEEDRATE_FAST': "(12*60)",
     # ^ 6*60 is way too slow for first touch of z homing
-    'X_MIN_ENDSTOP_INVERTING': "true",
-    'Y_MIN_ENDSTOP_INVERTING': "true",
-    'Z_MIN_ENDSTOP_INVERTING': "true",
+    'X_MIN_ENDSTOP_INVERTING': True,
+    'Y_MIN_ENDSTOP_INVERTING': True,
+    'Z_MIN_ENDSTOP_INVERTING': True,
     # Inversions below are flipped vs Marlin 1 recommended upstream
     #   settings (by unofficial JGMaker forum) for some reason:
-    'INVERT_X_DIR': "false",
-    'INVERT_Y_DIR': "true",
-    'INVERT_Z_DIR': "true",
-    'INVERT_E0_DIR': "false",
+    'INVERT_X_DIR': False,
+    'INVERT_Y_DIR': True,
+    'INVERT_Z_DIR': True,
+    'INVERT_E0_DIR': False,
     'HOMING_FEEDRATE_MM_M': "{ (80*60), (80*60), (12*60) }",
     # ^ default 6*60 is way too slow for non-print z moves
     'ENCODER_PULSES_PER_STEP': None,  # MKS TFT28 V3.0 has no encoder
     'REVERSE_ENCODER_DIRECTION': None,  # MKS TFT28 V3.0 has no encoder
+    'NOZZLE_PARK_POINT': "{ (X_MIN_POS + 10), (Y_MAX_POS - 10), 115 }",
 }
 
 MATERIALS = {  # formerly K_FACTORS { 'PLA' ... etc
@@ -471,6 +500,7 @@ A3S_C_A_VALUES = {  # MKS TFT28 V3.0
     'FILAMENT_CHANGE_FAST_LOAD_FEEDRATE': "133",
     'FILAMENT_CHANGE_FAST_LOAD_ACCEL': "25",
     'FILAMENT_CHANGE_FAST_LOAD_LENGTH': "680",
+    'LIN_ADVANCE': "",
 }
 
 
@@ -590,7 +620,7 @@ BLTOUCH_C_A_COMMENTS = {
 
 R2X_14T_C_VALUES = {
     'STRING_CONFIG_H_AUTHOR': (
-        '"(Jake Gustafson, BTT SKR V1.4 Turbo + TFT35'
+        '"(marlininfo by Jake Gustafson, BTT SKR V1.4 Turbo + TFT35'
         ' for Replicator 2X but with thermistors)"'
     ),  # + " // Who made the changes." comment is preserved by marlininfo
     'CUSTOM_MACHINE_NAME': '"R2X 14T"',
@@ -638,20 +668,20 @@ R2X_14T_C_VALUES = {
     #   M119
     'DISTINCT_E_FACTORS': "",
     'DEFAULT_AXIS_STEPS_PER_UNIT': (
-        "{ 88.888889, 88.888889, 400, 91.46125, 91.46125 }"
-    ),  # 5 entries assumes EXTRUDERS is 2
+        "{ 88.888889, 88.888889, 400, 92.61898734177215189873, 92.61898734177215189873 }"
+    ), # 5 entries assumes EXTRUDERS is 2; See also comment
     'DEFAULT_MAX_FEEDRATE': "{ 200, 200, 5, 25, 25 }",  # assumes EXTRUDERS is 2
     'DEFAULT_MAX_ACCELERATION': "{ 2000, 2000, 200, 10000, 10000 }",
     # ^ 5 entries assumes EXTRUDERS is 2
-    'DEFAULT_ACCELERATION': 2000,
+    'DEFAULT_ACCELERATION': 850, # formerly 2000...but that's more jerky
     'DEFAULT_RETRACT_ACCELERATION': 2000,
-    'DEFAULT_TRAVEL_ACCELERATION': 2000,
-    'DEFAULT_EJERK': 3.5,
-    # S_CURVE_ACCELERATION': "",  # conflicts with LIN_ADVANCE unless EXPERIMENTAL_SCURVE
+    'DEFAULT_TRAVEL_ACCELERATION': 850,
+    'DEFAULT_EJERK': 3.5,  # Higher is more jerky.
+    'S_CURVE_ACCELERATION': "",  # See comment
     'USE_PROBE_FOR_Z_HOMING': "",
     'Z_MIN_PROBE_PIN': None,  # See comment regarding BTT SKR V1.4 *
     'BLTOUCH': "",
-    'NOZZLE_TO_PROBE_OFFSET': "{ -35, 0, 0 }",  # See comment
+    'NOZZLE_TO_PROBE_OFFSET': "{ -35, 0, -2.56 }",  # See comment
     'PROBING_MARGIN': 24,
     'Z_PROBE_FEEDRATE_FAST': "(4*60)",
     'Z_PROBE_FEEDRATE_SLOW': "(Z_PROBE_FEEDRATE_FAST / 5)",  # default= ... / 2
@@ -669,14 +699,16 @@ R2X_14T_C_VALUES = {
     'INVERT_E1_DIR': True,
     'X_HOME_DIR': 1,
     'Y_HOME_DIR': 1,
-    'X_BED_SIZE': 236,
-    'Y_BED_SIZE': 129,  # TODO: See if bigger/smaller with FlexionHT vs custom
+    'X_BED_SIZE': 241,  # formerly 236; 242 would center the nozzle on the edge with FlexionHT, or still be on with that plus FilaPrint
+    'Y_BED_SIZE': 133,  # TODO: See if bigger/smaller with FlexionHT vs custom
     'Z_MAX_POS': 150,
     # ^ TODO: Z_MAX_POS may be as small as 123 with aluminum z axis assembly
     #   depending on screw tightness)
     'NOZZLE_PARK_POINT': "{ (X_MIN_POS + 10), (Y_MAX_POS - 10), 115 }",
     # ^ TODO: increase Z to 123 (as measured on screen by moving
-    #   manually after homing) and see if is still ok.
+    #   manually after homing; tried 115 before that) and see if is still ok.
+    #   - Set to 0 until Marlin bug is fixed! See marlininfo issue
+    #     [#22](https://github.com/poikilos/marlininfo/issues/22)
     'LEVELING_NOZZLE_TEMP': 150,  # if PREHEAT_BEFORE_LEVELING
     'LEVELING_BED_TEMP': 63,  # if PREHEAT_BEFORE_LEVELING
     'GRID_MAX_POINTS_X': 5,
@@ -693,6 +725,7 @@ R2X_14T_C_VALUES = {
 }
 
 R2X_14T_C_A_VALUES = {
+    'EXPERIMENTAL_SCURVE': None,  # See Configuration.h comment for S_CURVE_ACCELERATION
     'Z_STEPPER_AUTO_ALIGN': None,  # rec by BTT TFT if probe; for 2 Z *drivers*
     'THERMAL_PROTECTION_HYSTERESIS': 8,
     'WATCH_TEMP_PERIOD': 25,
@@ -701,7 +734,7 @@ R2X_14T_C_A_VALUES = {
     'THERMAL_PROTECTION_BED_HYSTERESIS': 8,
     'WATCH_BED_TEMP_INCREASE': 4,
     'HOTEND_IDLE_TIMEOUT': "",
-    'HOTEND_IDLE_TIMEOUT_SEC': "(15*60)",
+    'HOTEND_IDLE_TIMEOUT_SEC': "(30*60)",  # long: don't interrupt UBL
     'HOTEND_IDLE_MIN_TRIGGER': 140,
     'HOTEND_IDLE_NOZZLE_TARGET': 100,
     'HOTEND_IDLE_BED_TARGET': 43,
@@ -733,8 +766,12 @@ R2X_14T_C_COMMENTS = {
     'DEFAULT_AXIS_STEPS_PER_UNIT': [
         '/*',
         'Extrusion:',
-        ('- Used factory setting 96.275 then calibrated it'
-         ' (it extruded 95/100 mm, so result is 91.46125)'),
+        '- Used factory setting 96.275 then calibrated it',
+        ' (it extruded 95/100 mm, so result is 91.46125)',
+        '- Using that value with the FlexionHT though,',
+        '  (hot, using a 300mm mark I made above the extruder inlet)',
+        '  I extruded 200mm and got 197.5, so the result is',
+        '  92.61898734177215189873.',
         'Movement:',
         ('> The Replicator 2 and 2x use 18 tooth GT2 pulleys,'
          ' 1/16 microstepping, and 200 steps/rev steppers.'
@@ -758,6 +795,12 @@ R2X_14T_C_COMMENTS = {
         '',
         '-<https://3dprinting.stackexchange.com/a/678>',
         '*/',
+    ],
+    'S_CURVE_ACCELERATION': [
+        "// ^ S_CURVE_ACCELERATION conflicts with LIN_ADVANCE unless",
+        "//   EXPERIMENTAL_SCURVE; LINEAR acceleration is",
+        "//   counterproductive at least for ABS on direct drive",
+        "//   (Marlin's calibration test only looks correct on K=0 line).",
     ],
     'Z_MIN_PROBE_PIN': [
         ("// ^ already defined as P0_10 in"
@@ -792,22 +835,22 @@ R2X_14T_C_A_COMMENTS = {
 }
 
 
-MACHINE_DEF_COMMENTS = {
-    'A3S': A3S_DEF_COMMENTS,
+MACHINES_C_COMMENTS = {
+    'A3S': A3S_C_COMMENTS,
     'R2X_14T': R2X_14T_C_COMMENTS,
 }
 
-MACHINE_ADV_DEF_COMMENTS = {
+MACHINES_C_A_COMMENTS = {
     'A3S': A3S_C_A_COMMENTS,
     'R2X_14T': R2X_14T_C_A_COMMENTS,
 }
 
-MACHINE_CONF = {
-    'A3S': A3S_CONF,
+MACHINES_C_VALUES = {
+    'A3S': A3S_C_VALUES,
     'R2X_14T': R2X_14T_C_VALUES,
 }
 
-MACHINE_ADV_CONF = {
+MACHINES_C_A_VALUES = {
     'A3S': A3S_C_A_VALUES,
     'R2X_14T': R2X_14T_C_A_VALUES,
 }
@@ -821,6 +864,11 @@ def set_verbosity(level):
     if level not in verbosities:
         raise ValueError("level must be one of {}".format(verbosities))
     verbosity = level
+    echo0("verbosity={}".format(verbosity))
+
+
+def get_verbosity():
+    return verbosity
 
 
 def echo0(*args, **kwargs):
@@ -895,6 +943,8 @@ class MarlinInfo:
         self.c_a_path = os.path.join(path, MarlinInfo.C_A_REL)
         self.driver_names = None
         self.file_metas = {}
+        self._changed = []
+        self._not_changed = []  # ECLineInfo list
 
         if not os.path.isdir(MarlinMarlin):
             # Check if we are in MarlinMarlin already:
@@ -963,6 +1013,8 @@ class MarlinInfo:
         Marlin/Configuration.h along with the line number and error
         if any.
         '''
+        relpath = MarlinInfo.C_REL
+        fi = self.file_metas[relpath]
         return get_cdef(self.c_path, name)
 
     def get_c_a(self, name):
@@ -971,7 +1023,45 @@ class MarlinInfo:
         Marlin/Configuration_adv.h along with the line number and error
         if any.
         '''
+        relpath = MarlinInfo.C_A_REL
+        fi = self.file_metas[relpath]
         return get_cdef(self.c_a_path, name)
+
+    def get_relative(self, path):
+        bad_start = self.m_path + os.path.sep
+        relpath = path
+        if relpath.startswith(bad_start):
+            relpath = relpath[len(bad_start):]
+        return relpath
+
+    def get_cached_rel(self, name, relpath):
+        '''
+        Get a cached value.
+
+        Sequential arguments:
+        name -- The name of the #define.
+        relpath -- The relative path within Marlin such as
+            "Marlin/Configuration.h". If the path starts with
+            self.m_path+"/", that portion will be removed to allow the
+            file_metas lookup to still work.
+        '''
+        if name is None:
+            raise ValueError("You must provide the name to get_cached_rel.")
+        relpath = self.get_relative(relpath)
+        fi = self.file_metas[relpath]
+        return fi.get_cached(name)
+
+    def get_line(self, line_index, relpath):
+        relpath = self.get_relative(relpath)
+        fi = self.file_metas[relpath]
+        # v, line_n, got_key, err = fi.get_cached(None, line_index=line_index)
+        return fi._lines[line_index]
+
+    def get_cached_c(self, name):
+        return self.get_cached_rel(name, MarlinInfo.C_REL)
+
+    def get_cached_c_a(self, name):
+        return self.get_cached_rel(name, MarlinInfo.C_A_REL)
 
     def get_confs_versions(self):
         '''
@@ -1009,7 +1099,7 @@ class MarlinInfo:
     def drivers_dict(self):
         results = {}
         for name in MarlinInfo.DRIVER_NAMES:
-            v, line_n, err = self.get_c(name)
+            v, line_n, got_name, err = self.get_cached_c(name)
             if err == COMMENTED_DEF_WARNING:
                 continue
             elif v is not None:
@@ -1039,7 +1129,31 @@ class MarlinInfo:
         '''
         relpath = MarlinInfo.C_REL
         fi = self.file_metas[relpath]
-        return fi.set_cached(name, value, comments=comments)
+        lines, unaffected_items = fi.set_cached(name, value, comments=comments)
+        self._changed += lines
+        self._not_changed += unaffected_items
+        if len(lines) > 0:
+            # echo2("{}: #define {} {}".format(fi.full_path(), name, value))
+            for line in lines:
+                echo2("{}: `{}`".format(fi.full_path(), line))
+        else:
+            echo2("(skipped) {}: {} to {}".format(fi.full_path(), name, value))
+
+    def add_not_changed_lines(self, lines, relpath):
+        d = cdefs_to_d(None, lines=lines)
+        for key, value in d.items():
+            self._not_changed.append(ECLineInfo(
+                key,
+                None,
+                v=value,
+                # t="string",
+                # i=None,  # Line number or other index
+                commented=value is None,
+                cm="//",
+                path=relpath,
+                orphan=True,
+            ))
+
 
     def set_c_a(self, name, value, comments=None):
         '''
@@ -1048,7 +1162,43 @@ class MarlinInfo:
         '''
         relpath = MarlinInfo.C_A_REL
         fi = self.file_metas[relpath]
-        return fi.set_cached(name, value, comments=comments)
+        lines, unaffected_items = fi.set_cached(name, value, comments=comments)
+        for line in lines:
+            echo2("{}: `{}`".format(fi.full_path(), line))
+        self._changed += lines
+        self._not_changed += unaffected_items
+
+
+    def set_multiple_c(self, d, comment_d=None):
+        '''
+        Sequential arguments:
+        d -- a dict with several keys and values to change in the Marlin
+            Configuration.h.
+        comment_d -- a dict where each key corresponds to a key in d and
+            the value is a string or string list (For details on the
+            individual value itself, see the MarlinInfo set_c
+            documentation for the "comments" argument).
+        '''
+        for key, value in d.items():
+            comments = None
+            if comment_d is not None:
+                comments = comment_d.get(key)
+            self.set_c(key, value, comments=comments)
+            # ^ set_c handles self._changed and self._not_changed
+
+    def set_multiple_c_a(self, d, comment_d=None):
+        '''
+        Sequential arguments:
+        d -- a dict with several keys and values to change in the Marlin
+            Configuration.h.
+        '''
+        for key, value in d.items():
+            # Overwrite tpu items that are in the third entry temporarily.
+            comments = None
+            if comment_d is not None:
+                comments = comment_d.get(key)
+            self.set_c_a(key, value, comments=comments)
+            # ^ set_c handles self._changed and self._not_changed
 
     def set_pin(self, name, value, comments=None):
         '''
@@ -1056,10 +1206,21 @@ class MarlinInfo:
         For documentation see SourceFileInfo's set_cached method.
         '''
         relpath = MarlinInfo.PINS_BTT_SKR_V1_4_REL
+        if relpath not in self.file_metas:
+            raise FileNotFoundError(
+                '"{}" is missing but is required for this configuration.'
+                ''.format(os.path.join(self.mm_path, relpath))
+            )
         fi = self.file_metas[relpath]
-        return fi.set_cached(name, value, comments=comments)
+        new_line = None
+        lines, unaffected_items = fi.set_cached(name, value, comments=comments)
+        self._changed += lines
+        self._not_changed += unaffected_items
+        if len(lines) > 0:
+            return True
+        return False
 
-    def insert_c(self, new_lines, after=None, before=None):
+    def insert_c(self, lines, after=None, before=None):
         '''
         Insert into self.c_path (or lines if present).
         For documentation see SourceFileInfo's insert_cached method.
@@ -1069,9 +1230,14 @@ class MarlinInfo:
         '''
         relpath = MarlinInfo.C_REL
         fi = self.file_metas[relpath]
-        return fi.insert_cached(new_lines, after=after, before=before)
+        if fi.insert_cached(lines, after=after, before=before):
+            self._changed += lines
+            return True
+        else:
+            self.add_not_changed_lines(lines, relpath)
+        return False
 
-    def insert_c_a(self, new_lines, after=None, before=None):
+    def insert_c_a(self, lines, after=None, before=None):
         '''
         Insert into self.c_a_path (or lines if present).
         For documentation see SourceFileInfo's insert_cached method.
@@ -1081,9 +1247,38 @@ class MarlinInfo:
         '''
         relpath = MarlinInfo.C_A_REL
         fi = self.file_metas[relpath]
-        return fi.insert_cached(new_lines, after=after, before=before)
+        if fi.insert_cached(lines, after=after, before=before):
+            self._changed += lines
+            return True
+        else:
+            self.add_not_changed_lines(lines, relpath)
+        return False
 
-    def insert_pin_lines(self, new_lines, after=None, before=None):
+
+    def insert_multiple_c(self, lines_for_flags):
+        '''
+        Sequential arguments:
+        lines_for_flags -- a dictionary where each key is a flag to
+            find in the marlin Configuration.h after
+            which to insert the value.
+        '''
+        for flag, lines in lines_for_flags.items():
+            self.insert_c(lines, after=flag)
+            # ^ handles self._changed and self._not_changed
+
+
+    def insert_multiple_c_a(self, lines_for_flags):
+        '''
+        Sequential arguments:
+        lines_for_flags -- a dictionary where each key is a flag to
+            find in the marlin Configuration.h after
+            which to insert the value.
+        '''
+        for flag, lines in lines_for_flags.items():
+            self.insert_c_a(lines, after=flag)
+            # ^ handles self._changed and self._not_changed
+
+    def insert_pin_lines(self, lines, after=None, before=None):
         '''
         Insert into self.c_a_path (or lines if present).
         For documentation see SourceFileInfo's insert_cached method.
@@ -1093,7 +1288,12 @@ class MarlinInfo:
         '''
         relpath = MarlinInfo.PINS_BTT_SKR_V1_4_REL
         fi = self.file_metas[relpath]
-        return fi.insert_cached(new_lines, after=after, before=before)
+        if fi.insert_cached(lines, after=after, before=before):
+            self._changed += lines
+            return True
+        else:
+            self.add_not_changed_lines(lines, relpath)
+        return False
 
     def patch_drivers(self, driver_type):
         '''
@@ -1107,7 +1307,7 @@ class MarlinInfo:
                 "You must first set driver_names on the MarlinInfo"
                 " instance so that which drivers to patch are known."
             )
-        return self.set_c(self.driver_names, driver_type)
+        self.set_c(self.driver_names, driver_type)
 
 
 # from https://github.com/poikilos/DigitalMusicMC
@@ -1164,6 +1364,25 @@ on MKS screens (confirmed on TFT28 V4.0 with firmware 3.0.2).
 Unplugging the USB cable while printing from the SD card is ideal.
 
 '''
+
+
+def in_any(haystacks, needle):
+    for haystack in haystacks:
+        if needle in haystack:
+            return True
+    return False
+
+
+def c_val_hr(v):
+    '''
+    Get a human-readable representation of an encoded C value.
+    '''
+    vMsg = toPythonLiteral(v)
+    if v == "":
+        vMsg = "undefined"
+    elif v is None:
+        vMsg = "undefined"
+    return vMsg
 
 
 def main():
@@ -1308,45 +1527,38 @@ def main():
             ''.format(this_marlin_name)
         )
     print('machine={}'.format(machine))
-    changes = []
-    # Add TPU to the preheat menu:
-    if thisMarlin.insert_c(tpu_lines, after=tpu_lines_flag):
-        changes += tpu_lines
 
-    for key, value in moved_abs.items():
-        # Overwrite tpu items that are in the third entry temporarily.
-        changes += thisMarlin.set_c(key, value)
-        # comments=comments
-    for key, value in moved_tpu.items():
-        # insert tpu items as the second entry
-        changes += thisMarlin.set_c(key, value)
-        # comments=comments
+    # Add TPU & PETG to the preheat menu
+    # (adding petg_lines won't work if tpu_lines_flag isn't found,
+    # since the last line of tpu_lines_flag is the flag for petg_lines):
+    thisMarlin.insert_c(tpu_lines, after=tpu_lines_flag)
+    thisMarlin.insert_c(petg_lines, after=petg_lines_flag)
 
-    for key, value in POIKILOS_C_VALUES.items():
-        comments = POIKILOS_C_COMMENTS.get(key)
-        changes += thisMarlin.set_c(key, value, comments=comments)
-
-    for key, value in POIKILOS_C_A_VALUES.items():
-        comments = POIKILOS_C_A_COMMENTS.get(key)
-        changes += thisMarlin.set_c_a(key, value, comments=comments)
-
-    for key, value in MACHINE_CONF[machine].items():
-        comments = MACHINE_DEF_COMMENTS[machine].get(key)
-        changes += thisMarlin.set_c(key, value, comments=comments)
-
-    for key, value in MACHINE_ADV_CONF[machine].items():
-        comments = MACHINE_ADV_DEF_COMMENTS[machine].get(key)
-        changes += thisMarlin.set_c_a(key, value, comments=comments)
-
-    insertions = TOP_C_LINES.get(machine)
-    for flag, new_lines in insertions.items():
-        if thisMarlin.insert_c(new_lines, after=flag):
-            changes += new_lines
-
-    insertions = TOP_C_A_LINES.get(machine)
-    for flag, new_lines in insertions.items():
-        if thisMarlin.insert_c_a(new_lines, after=flag):
-            changes += new_lines
+    thisMarlin.set_multiple_c(MOVED_ABS)
+    thisMarlin.set_multiple_c(MOVED_TPU)
+    thisMarlin.set_multiple_c(
+        POIKILOS_C_VALUES,
+        comment_d=POIKILOS_C_COMMENTS,
+    )
+    thisMarlin.set_multiple_c_a(
+        POIKILOS_C_A_VALUES,
+        comment_d=POIKILOS_C_A_COMMENTS,
+    )
+    previous_verbosity = get_verbosity()
+    # set_verbosity(2)
+    echo2("* setting Configuration.h values for {}".format(machine))
+    thisMarlin.set_multiple_c(
+        MACHINES_C_VALUES[machine],
+        comment_d=MACHINES_C_COMMENTS.get(machine),
+    )
+    # set_verbosity(previous_verbosity)
+    echo2("* setting Configuration_adv.h values for {}".format(machine))
+    thisMarlin.set_multiple_c_a(
+        MACHINES_C_A_VALUES[machine],
+        comment_d=MACHINES_C_A_COMMENTS.get(machine),
+    )
+    thisMarlin.insert_multiple_c(TOP_C_LINES.get(machine))
+    thisMarlin.insert_multiple_c_a(TOP_C_A_LINES.get(machine))
 
     if machine == "R2X_14T":
         driver_types = ["TMC2209"]
@@ -1373,19 +1585,15 @@ def main():
         ]
 
         # Always use BTT TFT values for R2X_14T (ok for TFT35 as well):
-        for key, value in BTT_TFT_C_VALUES.items():
-            comments = BTT_TFT_C_COMMENTS.get(key)
-            changes += thisMarlin.set_c(key, value, comments=comments)
-        for key, value in BTT_TFT_C_A_VALUES.items():
-            comments = BTT_TFT_C_A_COMMENTS.get(key)
-            changes += thisMarlin.set_c_a(key, value, comments=comments)
+        thisMarlin.set_multiple_c(BTT_TFT_C_VALUES,
+                                  comment_d=BTT_TFT_C_COMMENTS)
+        thisMarlin.set_multiple_c_a(BTT_TFT_C_A_VALUES,
+                                    comment_d=BTT_TFT_C_A_COMMENTS)
+        thisMarlin.set_multiple_c(BLTOUCH_C_VALUES,
+                                  comment_d=BLTOUCH_C_COMMENTS)
+        thisMarlin.set_multiple_c_a(BLTOUCH_C_A_VALUES,
+                                    comment_d=BLTOUCH_C_A_COMMENTS)
 
-        for key, value in BLTOUCH_C_VALUES.items():
-            comments = BLTOUCH_C_COMMENTS.get(key)
-            changes += thisMarlin.set_c(key, value, comments=comments)
-        for key, value in BLTOUCH_C_A_VALUES.items():
-            comments = BLTOUCH_C_A_COMMENTS.get(key)
-            changes += thisMarlin.set_c_a(key, value, comments=comments)
         th_answer = options.get("T0")
         if th_answer is None:
             while True:
@@ -1408,14 +1616,10 @@ def main():
             # ^ TEMP_0_PIN is defined in
             #   Marlin\src\pins\lpc1768\pins_BTT_SKR_common.h
             #   but its value will be switched with TEMP_1_PIN in this patch.
-            changes += thisMarlin.set_pin("TEMP_1_PIN", "P0_24_A1")
+            thisMarlin.set_pin("TEMP_1_PIN", "P0_24_A1")
             new_lines = ["#define TEMP_0_PIN P0_23_A0"]
+            thisMarlin.insert_pin_lines(new_lines, before="TEMP_1_PIN")
 
-            if thisMarlin.insert_pin_lines(
-                "#define TEMP_0_PIN P0_23_A0",
-                before="TEMP_1_PIN",
-            ):
-                changes += new_lines
             print("* The TH0 port will be avoided due to --T0 1.")
             if options.get('nozzles') is not None:
                 if options.get('nozzles') != 1:
@@ -1439,7 +1643,7 @@ def main():
             # All of the following should have only one extruder element
             #   instead of the last value being duplicated in the case
             #   of having two:
-            thisMarlin.set_c("DEFAULT_AXIS_STEPS_PER_UNIT", "{ 88.888889, 88.888889, 400, 91.46125 }")
+            thisMarlin.set_c("DEFAULT_AXIS_STEPS_PER_UNIT", "{ 88.888889, 88.888889, 400, 92.61898734177215189873 }")
             thisMarlin.set_c("DEFAULT_MAX_FEEDRATE", "{ 200, 200, 5, 25 }")
             thisMarlin.set_c("DEFAULT_MAX_ACCELERATION", "{ 2000, 2000, 200, 10000 }")
             thisMarlin.set_c("E1_DRIVER_TYPE", None)
@@ -1450,10 +1654,13 @@ def main():
             raise NotImplementedError(
                 "Only --nozzles 1 or --nozzles 2 is implemented."
             )
-        zmax_answer = options.get("zmax")
+        zmax_answer = options.get('zmax')
         if zmax_answer is not True:
             while True:
-                zmax_answer = input("Did you install a custom ZMAX sensor (y/n)? ")
+                zmax_answer = input(
+                    'Did you install a ZMAX sensor'
+                    ' (at a custom-drilled location at the bottom) (y/n)? '
+                )
                 zmax_answer = zmax_answer.lower().strip()
                 if zmax_answer in ["y", "yes"]:
                     zmax_answer = True
@@ -1484,18 +1691,24 @@ def main():
             thisMarlin.set_c("USE_ZMAX_PLUG", "")
             # It is ok to home with the ZMAX endstop instead of the
             #   probe (and necessary to use it with the probe as min):
-            thisMarlin.set_c("USE_PROBE_FOR_Z_HOMING", None)
-            thisMarlin.set_c("Z_HOME_DIR", -1)
-            thisMarlin.set_c("Z_MAX_POS", 130)
-            thisMarlin.set_c("USE_PROBE_FOR_Z_HOMING", None)
+            use_z_probe_for_homing = False
+            if use_z_probe_for_homing:
+                thisMarlin.set_c("USE_PROBE_FOR_Z_HOMING", None)
+                thisMarlin.set_c("Z_HOME_DIR", 1)
+            else:
+                thisMarlin.set_c("USE_PROBE_FOR_Z_HOMING", "")
+                thisMarlin.set_c("Z_HOME_DIR", -1)
+            thisMarlin.set_c("Z_MAX_POS", 150)
             # ^ Don't set Z_MAX_POS too high or Marlin might give up (It
             #   may determine the bed is floating more than 25 mm above
             #   the endstop if set to the factory build volume's 155
             #   height).
-            #   It is actually 123, but setting it to that may cause
-            #   Marlin to give up if you get to 0 before the probe
-            #   triggers (such as if your springs aren't tightened as
-            #   much as mine)--remember, homing is done at max then
+            #   Z_MAX_POS is actually about 148.7 with Poikilos'
+            #   printable ZMAX endstop holder (and the FilaPrint bed
+            #   treatment), but setting it to that
+            #   may cause Marlin to give up if you get to 0 before the
+            #   probe triggers (such as if your springs aren't tightened
+            #   as much as mine)--remember, homing is done at max then
             #   probing happens by approaching 0 from there.
 
         else:
@@ -1515,13 +1728,14 @@ def main():
             raise ValueError("You must choose y/n for yes/no")
         tft_v = ""
         if tft_ans == "y":
-            for key, value in BTT_TFT_C_VALUES.items():
-                comments = BTT_TFT_C_COMMENTS.get(key)
-                changes += thisMarlin.set_c(key, value, comments=comments)
-
-            for key, value in BTT_TFT_C_A_VALUES.items():
-                comments = BTT_TFT_C_A_COMMENTS.get(key)
-                changes += thisMarlin.set_c_a(key, value, comments=comments)
+            thisMarlin.set_multiple_c(
+                BTT_TFT_C_VALUES,
+                comment_d=BTT_TFT_C_COMMENTS,
+            )
+            thisMarlin.set_multiple_c_a(
+                BTT_TFT_C_VALUES,
+                comment_d=BTT_TFT_C_COMMENTS,
+            )
 
         runout = input("Use a filament runout sensor (y/n)? ").lower()
         if runout not in ['y', 'n']:
@@ -1529,7 +1743,7 @@ def main():
         runout_v = ""
         if runout == "n":
             runout_v = None
-        changes += thisMarlin.set_c('FILAMENT_RUNOUT_SENSOR', runout_v)
+        thisMarlin.set_c('FILAMENT_RUNOUT_SENSOR', runout_v)
     else:
         usage()
         raise NotImplementedError('machine="{}"'.format(machine))
@@ -1546,7 +1760,7 @@ def main():
                       "".format(this_driver_name, this_driver_type,
                                 driver_type))
 
-        changes += thisMarlin.patch_drivers(driver_type)
+        thisMarlin.patch_drivers(driver_type)
 
     thisMarlin.save_changes()  # Only saves if necessary.
 
@@ -1611,7 +1825,8 @@ def main():
     # See <https://stackoverflow.com/a/3516106/4541104>
     proc = Popen(cmd_parts, shell=False,
                  stdin=None, stdout=None, stderr=None, close_fds=True)
-    # close_fds: make parent process' file handles inaccessible to child
+    # ^ shell=True made the output stop spamming the console.
+    # ^ close_fds: make parent process' file handles inaccessible to child
     print(POST_MERGE_DOC_FMT.format(
         marlin_path=dstMarlin.m_path,
     ))
@@ -1620,9 +1835,69 @@ def main():
         print("All of the sundry settings related to the --zmax option"
               " have been set to prevent grinding the z-axis follower,"
               " as long as you:")
-        print("* Followed the directions in the readme for placing the z axis endstop (or change the Z_MAX_POS accordingly).")
-        print("* Run UBL (Menu, Movement, Bed Level, UBL, Start) and when it finishes save to EEPROM (*before doing any Home command*)")
-        print("  * If it has a stop error, see bed leveling in the manual in the documentation folder of marlininfo.")
+        print("* Followed the directions in the readme for placing the"
+              " z axis endstop (or change the Z_MAX_POS accordingly).")
+        print("* Run UBL (Menu, Movement, Bed Level, UBL, Start)"
+              " and when it finishes save to EEPROM"
+              " (*before doing any Home command*)")
+        print("  * If it has a stop error, see bed leveling"
+              " in the manual in the documentation folder of marlininfo.")
+        print("* Some/all of the actions above may not be necessary in"
+              " Marlin bugfix-2.1.x if you have commit 21971f2 which"
+              " fixes [Mesh bed leveling doesn't handle Z_MAX homing properly]"
+              "(https://github.com/MarlinFirmware/Marlin/issues/10390)"
+              " and the steps still don't seem to fix the issue in"
+              " previous versions including bugfix-2.0.x anyway unless"
+              " you completely prevent the bed from sliding down"
+              " every time the motors turn off and you ensure that the"
+              " nozzle is all the way to the bed each time you turn the"
+              " printer on so it thinks that is 0.")
+
+    if len(thisMarlin._not_changed) > 0:
+        print()
+        print('The following settings were not changed in "{}"'
+              ' (not found or already set--you should check them before'
+              ' merging with "{}"):'
+              ''.format(thisMarlin.m_path, dstMarlin.m_path))
+        # for line in thisMarlin._not_changed:
+        for info in thisMarlin._not_changed:
+            why = None
+            newV = info._v
+            newLineI = info._i
+            newName = info._n
+            oldV, oldLineN, oldName, oldErr = srcMarlin.get_cached_rel(info._n, info._path)
+            relpath = srcMarlin.get_relative(info._path)
+
+            if oldLineN > -1:
+                oldLineI = oldLineN - 1
+                old_v_hr = c_val_hr(oldV)
+                new_v_hr = c_val_hr(newV)
+                if old_v_hr == new_v_hr:
+                    '''
+                    why = ('// (already {} in {}/{})'
+                           ''.format(new_v_hr, thisMarlin.mm_path, relpath))
+                    '''
+                    pass
+                else:
+                    why = ('// (why is UNKNOWN; {} != {} ::'
+                           ' {}/{} != {}/{})'
+                           ''.format(old_v_hr, new_v_hr,
+                                     srcMarlin.mm_path, relpath,
+                                     thisMarlin.mm_path, relpath))
+                line = srcMarlin.get_line(oldLineI, info._path)
+            else:
+                why = ('// not in {} ({}/{})'
+                       ''.format(info._path, srcMarlin.mm_path, relpath))
+                # ^ It must not be in srcMarlin, since thisMarlin is
+                #   a changed copy of srcMarlin.
+                line = "{}".format(newName)
+            if why is not None:
+                print('`{}` {}'.format(line.strip(), why))
+        print()
+    else:
+        print('All settings were applied but only to "{}".'
+              ''.format(thisMarlin.m_path))
+
     return 0
 
 
