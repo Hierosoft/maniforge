@@ -460,8 +460,9 @@ MATERIALS = {  # formerly K_FACTORS { 'PLA' ... etc
         ),
     },
 }
+# Firmware default is set via LIN_ADVANCE_K.
 # Set later:
-# M900  ; report current value
+# M900  ; report current value (get K)
 # M900 K0.56 ; set K
 # M500  ; save
 
