@@ -49,6 +49,10 @@ import sys
 import pathlib
 import shutil
 import shlex
+import git
+import platform
+from git import Repo
+
 from subprocess import (
     Popen,
 )
@@ -58,6 +62,13 @@ REPO_DIR = os.path.dirname(MODULE_DIR)
 REPOS_DIR = os.path.dirname(REPO_DIR)
 
 CACHES_DIR = os.path.join(pathlib.Path.home(), ".cache")
+
+CONFIGS_DIR = os.path.join(pathlib.Path.home(), ".config")
+if platform.system() == "Windows":
+    CONFIGS_DIR = os.environ['APPDATA']
+
+MY_CONFIG_DIR = os.path.join(CONFIGS_DIR, "marlininfo")
+
 MY_CACHE_DIR = os.path.join(CACHES_DIR, "marlininfo")
 
 for try_repos_dir in [REPO_DIR, REPOS_DIR]:
@@ -937,7 +948,14 @@ class MarlinInfo:
         # E0 to E7
         DRIVER_NAMES.append('E{}_DRIVER_TYPE'.format(n))
 
-    def __init__(self, path):
+    def __init__(self, path, repo=None):
+        '''
+        Keyword arguments:
+        repo -- an existing git.Repo instance that is equivalent to path
+            (will be generated automatically from path, or from parent
+            of path if path is a Marlin/Marlin directory).
+        '''
+        self._loaded_repo_path = None
         sub = os.path.split(path)[1]
         MarlinMarlin = os.path.join(path, "Marlin")
         self.c_path = os.path.join(path, MarlinInfo.C_REL)
@@ -981,6 +999,12 @@ class MarlinInfo:
         self.mm_path = os.path.dirname(self.c_path)
         self.m_path = os.path.dirname(self.mm_path)
 
+        self.repo = None
+        if repo is None:
+            self.load_repo()
+        else:
+            self.repo = repo
+
         for relpath in MarlinInfo.TRANSFER_RELPATHS:
             file_path = os.path.join(self.m_path, relpath)
             if os.path.isfile(file_path):
@@ -989,6 +1013,87 @@ class MarlinInfo:
                 # The file is optional (such as "platformio.ini"
                 #   or files in "/pins") if there wasn't an error yet.
                 echo1('* there is no "{}"'.format(file_path))
+
+    def load_repo(self):
+        '''
+        Load the repo at self.m_path (only if that is not already loaded
+        as self.repo).
+        '''
+        if self.m_path is None:
+            raise ValueError("self.m_path must be set before load_repo.")
+        if self._loaded_repo_path == self.m_path:
+            return True
+        try:
+            self._loaded_repo_path = None
+            if self.repo is not None:
+                del self.repo
+                self.repo = None
+            repo = Repo(self.m_path)
+            if not repo.bare:
+                self.repo = repo
+                self._loaded_repo_path = self.m_path
+                return True
+            else:
+                echo0('Warning: diff features will not be available '
+                      ' since "{}" is a bare repo.'.format(self.m_path))
+        except git.exc.InvalidGitRepositoryError:
+            echo0('Warning: diff features will not be available '
+                  ' since "{}" is not a repo.'.format(self.m_path))
+        return False
+
+    def backup_dir(self):
+        '''
+        Get the path (string) of the directory where a backup of the
+        current commit resides.
+        '''
+        backups_dir = os.path.join(MY_CONFIG_DIR, "backup")
+        repo_user_path, repo_name = os.path.split(self.m_path)
+        repo_user = os.path.split(repo_user_path)[1]
+        # ^ such as MarlinFirmware or someone who forked Marlin
+        return os.path.join(backups_dir, repo_user, repo_name,
+                            str(self.repo.active_branch),
+                            self.short_commit())
+
+    def backup_config(self):
+        '''
+        Backup all of the Marlin configuration files, but only if they
+        are unchanged.
+
+        Raises:
+        RuntimeError if the file is changed (doesn't match git index)
+        but there is not already a backup of it in self.backup_dir().
+        '''
+        if not self.load_repo():
+            return False
+
+        backup_dir = self.backup_dir()
+        changed_relpaths = [str(s) for s in self.repo.index.diff(None)]
+        for relpath in MarlinInfo.TRANSFER_RELPATHS:
+            old = os.path.join(self.m_path, relpath)
+            bak = os.path.join(backup_dir, relpath)
+            bak_dir = os.path.dirname(bak)
+            if not os.path.isdir(bak_dir):
+                os.makedirs(bak_dir)
+
+            if not os.path.isfile(bak):
+                if relpath in changed_relpaths:
+                    raise RuntimeError(
+                        '"{}" could not be backed up because it was already'
+                        ' changed. Revert it before running this file, so'
+                        ' that a clean copy can be created at "{}".'
+                        ''.format(old, bak)
+                    )
+                shutil.copy(old, bak)
+                echo0('- backed up "{}"'.format(bak))
+            else:
+                echo0('- kept existing "{}"'.format(bak))
+        return True
+
+    def short_commit(self):
+        if not self.load_repo():
+            return None
+        return str(self.repo.commit())[:7]
+
 
     @classmethod
     def transfer_paths_in(cls, roots):
@@ -1385,10 +1490,45 @@ def c_val_hr(v):
         vMsg = "undefined"
     return vMsg
 
+def get_repo(path):
+    repo = None
+    try:
+        repo = Repo(path)
+    except git.exc.InvalidGitRepositoryError:
+        pass
+    if repo.bare:
+        echo0("The repo is bare.")
+        repo = None
+    if repo is None:
+        # echo0('  branch: "{}"'.format())
+        sys.stderr.write(
+            "Error: You must run this from a destination Marlin repo"
+            " or specify one (or Marlin/Marlin directory)."
+        )
+        try_dst = None
+        HOME = pathlib.Path.home()
+        try_dsts = [
+            os.path.join(HOME, "Downloads", "git", "MarlinFirmware", "Marlin"),
+            os.path.join(HOME, "git", "MarlinFirmware", "Marlin"),
+        ]
+        found_dst = None
+        for try_dst in try_dsts:
+            if os.path.isdir(try_dst):
+                found_dst = try_dst
+                break
+        if found_dst is not None:
+            sys.stderr.write(
+                ' such as via:\n  {} "{}"\n'.format(sys.argv[0], found_dst)
+            )
+        else:
+            sys.stderr.write(".\n")
+        sys.stderr.flush()
+    return repo
 
 def main():
     try:
         srcMarlin = MarlinInfo(os.getcwd())
+        # ^ If in_place, then above is changed to dstMarlin.backup_dir()
     except FileNotFoundError as ex:
         echo0(str(ex))
         echo0("You must run this from a Marlin repo"
@@ -1412,6 +1552,7 @@ def main():
     for key in tmp_keys:
         value_arg_keys["--" + key] = key
     key = None
+    in_place = True
     for argI in range(1, len(sys.argv)):
         arg = sys.argv[argI]
         if key is not None:
@@ -1440,6 +1581,7 @@ def main():
         else:
             if dst_repo_path is None:
                 dst_repo_path = arg
+                in_place = False
             else:
                 usage()
                 echo0('You specified an extra argument: "{}"'
@@ -1447,30 +1589,56 @@ def main():
                 return 1
     echo1("options={}".format(options))
 
-    if dst_repo_path is None:
-        sys.stderr.write(
-            "Error: You must specify a destination Marlin directory"
-        )
-        try_dst = None
-        HOME = pathlib.Path.home()
-        try_dsts = [
-            os.path.join(HOME, "Downloads", "git", "MarlinFirmware", "Marlin"),
-            os.path.join(HOME, "git", "MarlinFirmware", "Marlin"),
-        ]
-        found_dst = None
-        for try_dst in try_dsts:
-            if os.path.isdir(try_dst):
-                found_dst = try_dst
-                break
-        if found_dst is not None:
-            sys.stderr.write(
-                ' such as via:\n  {} "{}"\n'.format(sys.argv[0], found_dst)
-            )
-        else:
-            sys.stderr.write(".\n")
-        sys.stderr.flush()
+    repo = None
+    if dst_repo_path is not None:
+        repo = get_repo(dst_repo_path)
+    else:
+        try_current_path = os.path.realpath(".")
+        repo = get_repo(try_current_path)
+        if repo is not None:
+            dst_repo_path = try_current_path
+
+    if repo is None:
+        # An error should have already been shown in this case.
         return 1
-    dstMarlin = MarlinInfo(dst_repo_path)
+
+    echo0("Stats:")
+    # echo0(dir(repo))
+    echo0('  active_branch="{}"'.format(repo.active_branch))
+    # echo0('  tag="{}"'.format(repo.tag("refs/tags/"+versionTagStr)))
+    # echo0('  tree="{}"'.format(repo.tree()))  # hash
+    # echo0('  head="{}"'.format(repo.head))  # usually "HEAD"
+    # echo0('  remote="{}"'.format(repo.remote()))  # usually "origin"
+    echo0('  commit="{}"'.format(repo.commit()))
+    changed = list(repo.index.diff(None))
+    if len(changed) > 0:
+        echo0("  changed:")
+        for item in changed:
+            echo0('  - "{}"'.format(item.a_path))
+    else:
+        echo0("  changed: None")
+
+    # If the code gets this far, dst_repo_path is guaranteed
+    #   either by sequential arg
+    #   *or* if "." is a repo (see case above).
+
+    dstMarlin = MarlinInfo(dst_repo_path, repo=repo)
+    if not dstMarlin.backup_config():
+        raise RuntimeError(
+            "backup_config() failed. See output above for more info."
+        )
+    if in_place:
+        try:
+            srcMarlin = MarlinInfo(dstMarlin.backup_dir())
+        except FileNotFoundError as ex:
+            raise FileNotFoundError(
+                'The backup did not produce a valid Marlin at "{}": {}'
+                ''.format(dstMarlin.backup_dir(), ex)
+            )
+        echo0('Modifying in place (setting source to backup: "{}")'
+              ''.format(srcMarlin.m_path))
+    # else it was already set to os.getcwd()
+
     echo0('dst_repo_path="{}"'.format(dst_repo_path))
     echo0('source Configuration.h, _adv versions: {}'
           ''.format(srcMarlin.get_confs_versions()))
