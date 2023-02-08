@@ -1067,7 +1067,8 @@ class MarlinInfo:
             return False
 
         backup_dir = self.backup_dir()
-        changed_relpaths = [str(s) for s in self.repo.index.diff(None)]
+        changed_relpaths = [c.a_path for c in self.repo.index.diff(None)]
+        # a and b are the left and right side of the diff.
         for relpath in MarlinInfo.TRANSFER_RELPATHS:
             old = os.path.join(self.m_path, relpath)
             bak = os.path.join(backup_dir, relpath)
@@ -1083,6 +1084,13 @@ class MarlinInfo:
                         ' that a clean copy can be created at "{}".'
                         ''.format(old, bak)
                     )
+                '''
+                else:
+                    raise NotImplementedError(
+                        '"{}" is not in {}'
+                        ' (should be no problem if pathing is correct)'
+                        ''.format(relpath, changed_relpaths))
+                '''
                 shutil.copy(old, bak)
                 echo0('- backed up "{}"'.format(bak))
             else:
@@ -1631,10 +1639,12 @@ def main():
         try:
             srcMarlin = MarlinInfo(dstMarlin.backup_dir())
         except FileNotFoundError as ex:
-            raise FileNotFoundError(
+            echo0()
+            echo0(
                 'The backup did not produce a valid Marlin at "{}": {}'
                 ''.format(dstMarlin.backup_dir(), ex)
             )
+            raise
         echo0('Modifying in place (setting source to backup: "{}")'
               ''.format(srcMarlin.m_path))
     # else it was already set to os.getcwd()
@@ -1654,6 +1664,8 @@ def main():
         return 1
     this_marlin_name = os.path.split(srcMarlin.m_path)[1]
     this_data_path = os.path.join(MY_CACHE_DIR, "tmp", this_marlin_name)
+    if os.path.isdir(this_data_path):
+        shutil.rmtree(this_data_path)
     if not os.path.isdir(this_data_path):
         os.makedirs(this_data_path)
     results = srcMarlin.copy_to(this_data_path)
