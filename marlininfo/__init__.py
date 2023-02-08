@@ -642,8 +642,10 @@ R2X_14T_C_VALUES = {
     'HOTEND_OFFSET_X': "{ 0.0, 34.00 }",  # assumes EXTRUDERS is 2
     'HOTEND_OFFSET_Y': "{ 0.0, 0.00 }",  # assumes EXTRUDERS is 2
     'HOTEND_OFFSET_Z': "{ 0.0, -0.00 }",  # assumes EXTRUDERS is 2
-    'TEMP_SENSOR_0': 11,
-    'TEMP_SENSOR_1': 11,
+    'TEMP_SENSOR_0': 11,  # 11 works for 100K Ohm thermistor such as
+    # [HiLetgo NTC 3950](https://www.amazon.com/gp/product/B07V6YBFSY/
+    # ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
+    'TEMP_SENSOR_1': 11,  # removed later if nozzles == 1
     'TEMP_SENSOR_BED': 11,
     'TEMP_BED_WINDOW': 3,
     'TEMP_BED_HYSTERESIS': 8,
@@ -1829,6 +1831,7 @@ def main():
             thisMarlin.set_c("DEFAULT_MAX_ACCELERATION", "{ 2000, 2000, 200, 10000 }")
             thisMarlin.set_c("E1_DRIVER_TYPE", None)
             thisMarlin.driver_names.remove("E1_DRIVER_TYPE")
+            thisMarlin.set_c("TEMP_SENSOR_1", None)
         elif nozzles == 2:
             pass
         else:
