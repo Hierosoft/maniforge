@@ -29,10 +29,17 @@
 ;M109 S210 ; nozzle temp
 M280 P0 S160
 G4 P100 ; delay for BLTouch
-M420 S1 ; Restore manual mesh instead of G29 re-probing (www.youtube.com/watch?v=eF060dBEnfs)
+; M420 S1 ; Restore manual mesh instead of G29 re-probing (www.youtube.com/watch?v=eF060dBEnfs)
 ; ^ NOTE that braces even in comments cause a parsing error in PrusaSlicer
+
 G28 ; home
+; G28 turns leveling off!! Turn on leveling on: G29 A ; or M420 S1
+; See <https://marlinfw.org/docs/gcode/G029-ubl.html>
 ; G29 ; auto bed leveling
+G29 A ; enable bed leveling (emulates M420 S1 if UBL; not required if RESTORE_LEVELING_AFTER_G28)
+; M420 S1 ; already done by G29 A if AUTO_BED_LEVELING_UBL
+; M420 S1 ; enable bed leveling *if* there is a valid mesh.
+; Use G29 L1 in filament code if PLA bed temp mesh is stored in the first slot
 
 ; INFO: The bed temperature is only correct when the other extruder is disabled in Cura!
 ; M140 S{material_bed_temperature_layer_0} ; Set Heat Bed temperature
@@ -80,7 +87,7 @@ M190 S{material_bed_temperature_layer_0, initial_extruder_nr}
 
 G92 E0 ; added by Poikilos
 ; G1 X60.0 Y2.0 Z0.32 F500.0; added by Poikilos
-G1 X50 Y1.5 Z0.22 F9000; added by Poikilos
+G1 X50 Y2.5 Z0.22 F9000; added by Poikilos
 ; G1 X50 Y2.5 Z0.22 F(travel_speed); added by Poikilos; doesn't work due to Cura issue 10636
 ; Purge line from "How to do a nozzle wipe before every print - Gcode Scripts part 2" (https://www.youtube.com/watch?v=6csbJ5965Bk) Nov 30, 2016 by Maker's Muse
 ; ^ NOTE that braces even in comments cause a parsing error in PrusaSlicer
@@ -90,9 +97,9 @@ G1 X50 Y1.5 Z0.22 F9000; added by Poikilos
 ; G1 X100 E12.5 F500.0 ; finish purge line
 ; G1 X110 E18 F500.0 ; start purge (changed by Poikilos; doubled E)
 ; G1 X110 F{travel_speed} ; start purge (changed by Poikilos; no E)
-G1 X110 E45 F500.0; start purge (changed by Poikilos)
-; G1 X35 Y0.5 E45 F500.0 ; finish purge line (changed to .75E per 8mm & longer total by Poikilos; E was 12.5, distance was ~30)
-G1 X70 Y0.5 E45 F500.0 ; finish purge line (changed to longer total by Poikilos; E was 12.5, distance was ~30)
-; ^ To cross the bump and get wiped, the X here must be further to the left than the original start in case the filament didn't actually start extruding yet at the starting point.
+G1 X110 Y2.5 E22 F500.0; start purge (changed by Poikilos, then from E45 to 22)
+; G1 X35 Y0.5 E22 F500.0 ; finish purge line (changed to .75E per 8mm & longer total by Poikilos, then from E45 to 22; E was 12.5, distance was ~30)
+G1 X70 Y1.25 E22 F500.0 ; finish purge line (changed to longer total by Poikilos, then from E45 to 22; E was 12.5, distance was ~30)
+; ^ To cross the bump and get wiped, the X here must be further to the right than the original start in case the filament didn't actually start extruding yet at the starting point.
 G1 Y0.0 F250.0 ; get behind the bump so nozzle gets wiped again by the bump on the way out from here (added by Poikilos)
 G92 E0 ; added by Poikilos
