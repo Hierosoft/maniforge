@@ -4,6 +4,10 @@ This is a collection of settings, including ones I generally always change if th
 ## Cura
 I always fix the following defaults.
 
+### Flow
+- Skirt/Brim Flow Rate: around 130%
+  - At 100%, the lines won't even touch! The reason for the issue may be Cura not accounting for line width when producing brim G-code (See <https://community.ultimaker.com/topic/32149-question-regarding-spacing-between-brim-lines/>).
+
 ### Walls
 - (optional) Minimum Wall Line Width: .2 (default 0.34)
 
