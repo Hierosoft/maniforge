@@ -1506,7 +1506,7 @@ def get_repo(path):
         repo = Repo(path)
     except git.exc.InvalidGitRepositoryError:
         pass
-    if repo.bare:
+    if (repo is not None) and repo.bare:
         echo0("The repo is bare.")
         repo = None
     if repo is None:
