@@ -83,23 +83,27 @@ M190 S{material_bed_temperature_layer_0, initial_extruder_nr}
 ; G1 X110 E18 F500.0 ; start purge (changed by Poikilos; doubled E)
 ; G1 X110 F3000.0 ; start purge (changed by Poikilos; no E)
 ; G1 X80 Y0.5 E30 F500.0 ; finish purge line (changed by Poikilos; E was 12.5)
-; G1 Y0.5 F250.0 ; get behind the bump to wipe more on the way (added by Poikilos)
+; G1 Y0.5 F250.0 ; get behind the line to wipe more on the way (added by Poikilos)
 
-G92 E0 ; added by Poikilos
-; G1 X60.0 Y2.0 Z0.32 F500.0; added by Poikilos
-G1 X50 Y2.5 Z0.22 F9000; added by Poikilos
-; G1 X50 Y2.5 Z0.22 F(travel_speed); added by Poikilos; doesn't work due to Cura issue 10636
-; Purge line from "How to do a nozzle wipe before every print - Gcode Scripts part 2" (https://www.youtube.com/watch?v=6csbJ5965Bk) Nov 30, 2016 by Maker's Muse
-; ^ NOTE that braces even in comments cause a parsing error in PrusaSlicer
-; G1 Y2.0 F500.0 ; move out of print volume
-; ^ changed from -3 by Poikilos
-; G1 X60.0 E9 F500.0 ; start purge
-; G1 X100 E12.5 F500.0 ; finish purge line
-; G1 X110 E18 F500.0 ; start purge (changed by Poikilos; doubled E)
-; G1 X110 F{travel_speed} ; start purge (changed by Poikilos; no E)
-G1 X110 Y2.5 E22 F500.0; start purge (changed by Poikilos, then from E45 to 22)
-; G1 X35 Y0.5 E22 F500.0 ; finish purge line (changed to .75E per 8mm & longer total by Poikilos, then from E45 to 22; E was 12.5, distance was ~30)
-G1 X70 Y1.25 E22 F500.0 ; finish purge line (changed to longer total by Poikilos, then from E45 to 22; E was 12.5, distance was ~30)
-; ^ To cross the bump and get wiped, the X here must be further to the right than the original start in case the filament didn't actually start extruding yet at the starting point.
-G1 Y0.0 F250.0 ; get behind the bump so nozzle gets wiped again by the bump on the way out from here (added by Poikilos)
-G92 E0 ; added by Poikilos
+
+G92 E0 ; Say this offset is 0
+G90 ; absolute positioning (G91 is relative)
+G1 X0 Y5 F9000
+; ^ X0 to go off the bed a single-extruder configuration.
+; G1 X50 Y2.5 Z0.22 F(travel_speed); doesn't work due to Cura issue 10636
+; ^ parenthesis since braces even in comments cause a parsing error in PrusaSlicer
+G1 X0 Y150 E44 F500.0 ; Purge forward. PLA max volumetric speed: about E22mm per 60mm 500mm/minute
+; ^ higher volumetric speed may be possible without line causing back pressure
+G1 Z0.05 F8000
+; ^ Z ~0 to wipe off nozzle on edge of bed
+; G1 Y1.3 F12000.0
+; G1 X1.0 Y5 E44 F500.0 ; Purge backward.
+; ^ Get behind the first line so nozzle gets wiped again by the line on the way out from here.
+; Try to toss the line off of the bed (usually not possible without cooling, but such a delay causes purge to be useless, so skip everything below):
+; G1 Y0 F12000.0
+; G1 X2.4 F12000.0
+; G1 Y10 Z-0.1 F12000.0
+; G1 X0 Y150 F12000.0
+; G1 X0 Y0 F12000.0
+; G1 Z0 F12000.0
+; G92 E-5 ; Say this offset is -1 (force extra extrusion at start)
