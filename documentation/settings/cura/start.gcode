@@ -88,14 +88,19 @@ M190 S{material_bed_temperature_layer_0, initial_extruder_nr}
 
 G92 E0 ; Say this offset is 0
 G90 ; absolute positioning (G91 is relative)
-G1 X0 Y5 F9000
-; ^ X0 to go off the bed a single-extruder configuration.
+G1 X-5 Y5 F9000
+; ^ X<0 to go off the bed a single-extruder configuration.
+G1 Z0 F9000
+; ^ Do z last in case there is junk hanging off of the nozzle
 ; G1 X50 Y2.5 Z0.22 F(travel_speed); doesn't work due to Cura issue 10636
 ; ^ parenthesis since braces even in comments cause a parsing error in PrusaSlicer
-G1 X0 Y150 E44 F500.0 ; Purge forward. PLA max volumetric speed: about E22mm per 60mm 500mm/minute
+G1 X-1 Y150 E44 F500.0 ; Purge backward. PLA max volumetric speed: about E22mm per 60mm 500mm/minute
 ; ^ higher volumetric speed may be possible without line causing back pressure
-G1 Z0.05 F8000
-; ^ Z ~0 to wipe off nozzle on edge of bed
+G1 Z0.0 F8000
+; ^ Z ~0 to prepare to wipe off nozzle on edge of bed
+G1 X0.0 F8000
+G1 X1.0 Z0.05 F8000
+; ^ actually wipe on edge of bed
 ; G1 Y1.3 F12000.0
 ; G1 X1.0 Y5 E44 F500.0 ; Purge backward.
 ; ^ Get behind the first line so nozzle gets wiped again by the line on the way out from here.
