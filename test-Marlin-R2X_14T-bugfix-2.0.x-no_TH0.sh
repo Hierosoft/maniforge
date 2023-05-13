@@ -2,10 +2,11 @@
 MY_DIR=`realpath .`
 me=`basename "$0"`
 MY_DIR_NAME=`basename $MY_DIR`
+TRY_NAME="Marlin-bugfix-2.0.x-base"
 FORMER_PWD="`pwd`"
-if [ "$MY_DIR_NAME" != "Marlin-bugfix-2.0.x-base" ]; then
+if [ "$MY_DIR_NAME" != "$TRY_NAME" ]; then
     echo "You are not in $MY_DIR_NAME. Trying cd..."
-    cd Marlin-bugfix-2.0.x-base
+    cd "$TRY_NAME"
     code=$?
     if [ $code -ne 0 ]; then
         exit $code
