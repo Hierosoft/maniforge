@@ -913,6 +913,9 @@ R2X_14T_C_A_VALUES = {
     # 'BABYSTEP_ZPROBE_OFFSET': "",  # conflicts with MESH_BED_LEVELING
     'LIN_ADVANCE': "",  # 0 for ABS (only Klipper pressure advance works for ABS, not Marlin linear advance)!
     'ALLOW_LOW_EJERK': "",  # allow <10 (recommended for direct drive in Marlin's own comments)
+    'INPUT_SHAPING_X': "",
+    'INPUT_SHAPING_Y': "",
+    'SHAPING_MENU': "",
 }
 
 # TODO: implement per-machine comments.
