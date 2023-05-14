@@ -57,6 +57,32 @@ from subprocess import (
     Popen,
 )
 
+from .find_pycodetool import pycodetool  # noqa: F401
+# ^ also works for submodules since changes sys.path
+
+from .find_hierosoft import hierosoft
+# ^ also works for submodules since changes sys.path
+
+# from hierosoft.logging import (
+#     to_syntax_error,  # (path, lineN, msg, col=None)
+#     echo_SyntaxWarning,  # (path, lineN, msg, col=None)
+#     raise_SyntaxError,  # (path, lineN, msg, col=None)
+# )
+from pycodetool.parsing import (
+    # substring_after,
+    # find_after,
+    get_cdef,
+    # block_uncomment_line,
+    COMMENTED_DEF_WARNING,
+    # find_non_whitespace,
+    # insert_lines,
+    # write_lines,
+    SourceFileInfo,
+    toPythonLiteral,
+    cdefs_to_d,
+    ECLineInfo,
+)
+
 MODULE_DIR = os.path.dirname(__file__)
 REPO_DIR = os.path.dirname(MODULE_DIR)
 REPOS_DIR = os.path.dirname(REPO_DIR)
@@ -71,40 +97,8 @@ MY_CONFIG_DIR = os.path.join(CONFIGS_DIR, "marlininfo")
 
 MY_CACHE_DIR = os.path.join(CACHES_DIR, "marlininfo")
 
-for try_repos_dir in [REPO_DIR, REPOS_DIR]:
-    try_repo = os.path.join(try_repos_dir, "pycodetool")
-    if os.path.isfile(os.path.join(try_repo, "pycodetool", "__init__.py")):
-        sys.path.insert(0, try_repo)
-        break
-
 if sys.version_info.major < 3:
-    input = raw_input
-
-from .find_pycodetool import pycodetool
-# ^ also works for submodules since changes sys.path
-
-
-from .find_hierosoft import hierosoft
-# ^ also works for submodules since changes sys.path
-
-from hierosoft.logging import (
-    to_syntax_error,  # (path, lineN, msg, col=None)
-    echo_SyntaxWarning,  # (path, lineN, msg, col=None)
-    raise_SyntaxError,  # (path, lineN, msg, col=None)
-)
-from pycodetool.parsing import (
-    substring_after,
-    find_after,
-    get_cdef,
-    block_uncomment_line,
-    COMMENTED_DEF_WARNING,
-    find_non_whitespace,
-    insert_lines,
-    write_lines,
-    SourceFileInfo,
-    toPythonLiteral,
-    cdefs_to_d,
-)
+    input = raw_input  # noqa: F821
 
 A3S_TOP_LINES_FLAG = "#pragma once"
 A3S_TOP_LINES = [
@@ -152,17 +146,29 @@ TOP_C_A_LINES = {  # This is the same as TOP_C_LINES for now.
 MOVED_TPU = {
     'PREHEAT_2_LABEL': '"TPU"',
     'PREHEAT_2_TEMP_HOTEND': 210,
-    'PREHEAT_2_TEMP_BED': 45,
+    'PREHEAT_2_TEMP_BED': 30,
     'PREHEAT_2_TEMP_CHAMBER': 35,
     'PREHEAT_2_FAN_SPEED': 0,
 }
 
+# TODO: MOVED_TPU_COMMENTS
+MOVED_TPU_COMMENTS = {
+    'PREHEAT_2_TEMP_HOTEND': " // ~210 for TPU, 170 for ATARAXIA ART Flexible PLA+ or it blobs all over",
+    'PREHEAT_2_TEMP_BED': "// ~40 for TPU, 30 for ATARAXIA ART Flexible PLA+ on FilaPrint",
+}
+
 MOVED_ABS = {
     'PREHEAT_3_LABEL': '"ABS"',
-    'PREHEAT_3_TEMP_HOTEND': 245,
-    'PREHEAT_3_TEMP_BED': 105,
+    'PREHEAT_3_TEMP_HOTEND': 240,
+    'PREHEAT_3_TEMP_BED': 110,
     'PREHEAT_3_TEMP_CHAMBER': 35,
     'PREHEAT_3_FAN_SPEED': 0,
+}
+
+# TODO: MOVED_ABS_COMMENTS
+MOVED_ABS_COMMENTS = {
+    'PREHEAT_3_TEMP_HOTEND': " // 240 for FilaPrint, otherwise 245",
+    'PREHEAT_3_TEMP_BED': "// 110 for FilaPrint",
 }
 
 MOVED_PETG = {
@@ -171,6 +177,11 @@ MOVED_PETG = {
     'PREHEAT_4_TEMP_BED': 83,
     'PREHEAT_4_TEMP_CHAMBER': 35,
     'PREHEAT_4_FAN_SPEED': 0,
+}
+
+MOVED_PETG_COMMENTS = {
+    'PREHEAT_4_TEMP_HOTEND': " // 230 for FilaPrint, otherwise ~250",
+    'PREHEAT_4_TEMP_BED': "// 60 for FilaPrint, otherwise 83",
 }
 
 tpu = MOVED_TPU
@@ -193,11 +204,36 @@ petg_lines = [  # These will be overwritten if moved_ dicts above are used.
     '#define PREHEAT_4_FAN_SPEED     {}'.format(petg['PREHEAT_4_FAN_SPEED']),
 ]
 
+# TODO: AAFPP_LINES
+# AAFPP is ATARAXIA ART Flexible PLA+ (behaves like [and probably is] "soft PLA")
+AAFPP_LINES = [
+    '#define PREHEAT_5_LABEL       "AAFPLA+"',
+    '#define PREHEAT_5_TEMP_HOTEND 170 // ~210 for TPU, 170 for ATARAXIA ART Flexible PLA+ or it blobs all over',
+    '#define PREHEAT_5_TEMP_BED     30 // ~40 for TPU, 30 for ATARAXIA ART Flexible PLA+ on FilaPrint',
+    '#define PREHEAT_5_TEMP_CHAMBER 35',
+    '#define PREHEAT_5_FAN_SPEED     0',
+]
+
+'''
+AAFPP = {
+    "PREHEAT_5_LABEL": "AAFPLA+",
+    "PREHEAT_5_TEMP_HOTEND": "170",
+    "PREHEAT_5_TEMP_BED": "30",
+    "PREHEAT_5_TEMP_CHAMBER": "35",
+    "PREHEAT_5_FAN_SPEED": "0",
+}
+'''
+
+AAFPP_COMMENTS = {
+    "PREHEAT_5_TEMP_HOTEND": "~210 for TPU, 170 for ATARAXIA ART Flexible PLA+ or it blobs all over",
+    "PREHEAT_5_TEMP_BED": "~40 for TPU, 30 for ATARAXIA ART Flexible PLA+ on FilaPrint",
+}
+
 tpu_lines_flag = "#define PREHEAT_2_FAN_SPEED"
 petg_lines_flag = "#define PREHEAT_3_FAN_SPEED"
-
+AAFPP_lines_flag = "#define PREHEAT_4_FAN_SPEED"
 BTT_TFT_URL = "https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware"
-LIN_ADVANCE_K_URL = (
+ADVANCE_K_URL = (
     "https://jgmakerforum.com/discussion/259/beta-jgaurora-a5-firmware-1-1-9c"
 )
 BTT_TFT_DOC_COMM = ("  // ^ recommended for BTT TFT (See <{}>)"
@@ -250,9 +286,9 @@ A3S_C_A_COMMENTS = {
          " for 2 Z steppers"
          "".format(BTT_TFT_URL)),
     ],
-    'LIN_ADVANCE_K': [
+    'ADVANCE_K': [  # formerly LIN_ADVANCE K
         "  // ^ 1.05 for JGAurora A3S according to Cova on",
-        "  //   <{}>".format(LIN_ADVANCE_K_URL),
+        "  //   <{}>".format(ADVANCE_K_URL),
     ],
 }
 
@@ -264,20 +300,34 @@ POIKILOS_C_VALUES = {  # Add more features. They should usually work.
     'PREHEAT_1_TEMP_HOTEND': 205,
     'PREHEAT_1_TEMP_BED': 63,
     'PREHEAT_1_FAN_SPEED': 0,
+    'PREHEAT_5_LABEL': '"AAFPLA+"',
+    'PREHEAT_5_TEMP_HOTEND': 170,
+    'PREHEAT_5_TEMP_BED': 30,
+    # 'PREHEAT_5_TEMP_CHAMBER': 35,
+    'PREHEAT_5_FAN_SPEED': 0,
     'NOZZLE_PARK_FEATURE': "",
     'PRINTCOUNTER': "",
     'INDIVIDUAL_AXIS_HOMING_MENU': "",
     'PIDTEMPBED': "",
-    'PROBING_BED_TEMP': 63,
-    # PROBING_NOZZLE_TEMP: See printer-specific values.
+    'PROBING_BED_TEMP': 63,  # See comment!
+    # PROBING_NOZZLE_TEMP: See BLTouch (~~or~~ formerly printer)
     'LEVELING_BED_TEMP': 63,
     'MESH_TEST_HOTEND_TEMP': 220,
     'MESH_TEST_BED_TEMP': 63,
     'NOZZLE_CLEAN_FEATURE': "",
+    'STARTUP_TUNE': ("{ 698, 300, 0, 50, 523, 50, 0, 25, 494, 50, 0, 25,"
+                     " 523, 100, 0, 50, 554, 300, 0, 100, 523, 300 }"),
+    # default in bugfix-2.1.x 4c033c3e but disabled
+    'EXTRUDE_MAXLENGTH': 201,
 }
+# TODO: Evaluate whether should be on (off by default, new in Marlin
+#   bugfix-2.1.x <= 4c033c3e `//#define Z_SAFE_HOMING_POINT_ABSOLUTE
+#   // Ignore home offsets (M206) for Z homing position`
+
 POIKILOS_C_A_VALUES = {
     'SOUND_MENU_ITEM': "",  # (add a mute menu item)
-    'LCD_SET_PROGRESS_MANUALLY': "",  # (Allow M73 to set %)
+    'SET_PROGRESS_MANUALLY': "",  # Allow M73 to set %
+    # ^ formerly 'LCD_SET_PROGRESS_MANUALLY': "",
     'ARC_SUPPORT': "",  # "Disable this feature to save ~3226 bytes"
     # ^ "G2/G3 Arc Support"
     'EMERGENCY_PARSER': "",
@@ -289,13 +339,27 @@ POIKILOS_C_A_VALUES = {
     'HOME_BEFORE_FILAMENT_CHANGE': "",  # Prevent oozing and melting workpiece
     'LCD_INFO_MENU': "",  # not tried with MKS TFT28 V3.0
     'LCD_TIMEOUT_TO_STATUS': 15000,   # uncomment it only
-    'SQUARE_WAVE_STEPPING': "",
+    'EDGE_STEPPING': "",  # Formerly SQUARE_WAVE_STEPPING
     # 'TMC_DEBUG': "",  # This was on. See if it is necessary for anything.
 }
 
 
 # Yeah, there really are no comments. There aren't dups elsewhere.
 POIKILOS_C_COMMENTS = {
+    'PREHEAT_1_TEMP_HOTEND': "205 for FilaPrint",
+    'PREHEAT_1_TEMP_BED': "63 for FilaPrint",
+    'PREHEAT_2_TEMP_HOTEND': "~210 for TPU, 170 for ATARAXIA ART Flexible PLA+ or it blobs all over ",
+    'PREHEAT_2_TEMP_BED': "~40 for TPU, 30 for ATARAXIA ART Flexible PLA+ on FilaPrint ",
+    'PREHEAT_3_TEMP_HOTEND': "240 for FilaPrint, otherwise 245",
+    'PREHEAT_3_TEMP_BED': "110 for FilaPrint",
+    'PREHEAT_4_TEMP_HOTEND': "230 for FilaPrint, otherwise ~250",
+    'PREHEAT_4_TEMP_BED': "60 for FilaPrint, otherwise 83",
+    'PREHEAT_5_TEMP_HOTEND': "~210 for TPU, 170 for ATARAXIA ART Flexible PLA+ or it blobs all over",
+    'PREHEAT_5_TEMP_BED': "~40 for TPU, 30 for ATARAXIA ART Flexible PLA+ on FilaPrint",
+    'ENABLE_LEVELING_FADE_HEIGHT': "default enabled is ok (when using probe); Enable fading from mesh level to flat.",
+    'DEFAULT_LEVELING_FADE_HEIGHT': "default 10 is ok: change from mesh shape (of bed) to flat over this many mm.",
+    'PROBING_BED_TEMP': "Set high since *does* wait for cooling & is after home!",
+    'EXTRUDE_MAXLENGTH': "200 is default, but is triggered by webapp based on CNC Kitchen Flow Test which uses 200 exactly (after .8)",
 }
 POIKILOS_C_A_COMMENTS = {
 }
@@ -375,7 +439,7 @@ A3S_C_VALUES = {  # include quotes explicitly for strings.
     'DEFAULT_bedKp': "60.40",
     'DEFAULT_bedKi': "11.52",
     'DEFAULT_bedKd': "79.16",
-    'EXTRUDE_MAXLENGTH': 1000,
+    'EXTRUDE_MAXLENGTH': 1000,  # Such as for loading
     'DEFAULT_MAX_ACCELERATION': "{ 1000, 500, 100, 5000 }",
     'DEFAULT_ACCELERATION': "800",
     'DEFAULT_RETRACT_ACCELERATION': "800",
@@ -401,7 +465,7 @@ A3S_C_VALUES = {  # include quotes explicitly for strings.
     'LCD_BED_TRAMMING': "",
     # 'LEVEL_BED_CORNERS': "",  # renamed to LCD_BED_TRAMMING in later versions.
     'EEPROM_SETTINGS': "",
-    'SDSUPPORT': "",
+    'SDSUPPORT': "",  # Replaced by HAS_MEDIA (not in Configuration_adv.h)? Back in e41dc27
 
     'SPEAKER': "",  # tone (instead of beep)
     # 'SPEAKER': "",  # *incompatible now* with mega2560
@@ -423,9 +487,14 @@ A3S_C_VALUES = {  # include quotes explicitly for strings.
     # ^ default z is 6 which is too slow for first touch of z homing
     'Z_PROBE_FEEDRATE_FAST': "(12*60)",
     # ^ 6*60 is way too slow for first touch of z homing
-    'X_MIN_ENDSTOP_INVERTING': True,
-    'Y_MIN_ENDSTOP_INVERTING': True,
-    'Z_MIN_ENDSTOP_INVERTING': True,
+    # 'X_MIN_ENDSTOP_INVERTING': True,
+    # 'Y_MIN_ENDSTOP_INVERTING': True,
+    # 'Z_MIN_ENDSTOP_INVERTING': True,  # later replaced with MAX if moved to MAX!
+    # ^ Changed to False if BLTouch
+    # ^ Changed in bugfix-2.1.x <= 4c033c3e:
+    'X_MAX_ENDSTOP_HIT_STATE': "LOW",
+    'Y_MAX_ENDSTOP_HIT_STATE': "LOW",
+    'Z_MIN_ENDSTOP_HIT_STATE': "LOW",  # later replaced with MAX if moved to MAX!
     # Inversions below are flipped vs Marlin 1 recommended upstream
     #   settings (by unofficial JGMaker forum) for some reason:
     'INVERT_X_DIR': False,
@@ -471,7 +540,7 @@ MATERIALS = {  # formerly K_FACTORS { 'PLA' ... etc
         ),
     },
 }
-# Firmware default is set via LIN_ADVANCE_K.
+# Firmware default is set via ADVANCE_K.
 # Set later:
 # M900  ; report current value (get K)
 # M900 K0.56 ; set K
@@ -496,7 +565,7 @@ A3S_C_A_VALUES = {  # MKS TFT28 V3.0
     'BABYSTEP_MULTIPLICATOR_Z': 5,
     'BABYSTEP_MULTIPLICATOR_XY': 5,
     'DOUBLECLICK_FOR_Z_BABYSTEPPING': "",
-    'LIN_ADVANCE_K': "1.05",  # see LIN_ADVANCE_K_URL
+    'ADVANCE_K': "1.05",  # see ADVANCE_K_URL. Formerly LIN_ADVANCE_K
     # TODO: ^ Use MATERIALS dict & let the user choose.
     'LONG_FILENAME_HOST_SUPPORT': None,
     'SDCARD_CONNECTION': None,
@@ -529,7 +598,6 @@ BTT_TFT_C_COMMENTS = {
 }
 
 BTT_TFT_C_A_VALUES = {
-    'LONG_FILENAME_HOST_SUPPORT': "",
     'AUTO_REPORT_SD_STATUS': "",
     'SDCARD_CONNECTION': "ONBOARD",
     'SERIAL_FLOAT_PRECISION': 4,
@@ -543,6 +611,13 @@ BTT_TFT_C_A_VALUES = {
     'LONG_FILENAME_HOST_SUPPORT': "",  # TODO: test this on MKS TFT28
     'SCROLL_LONG_FILENAMES': "",  # TODO: test this on MKS TFT28
 }
+# TODO: config.ini is used by PlatformIO
+# - <https://marlinfw.org/docs/configuration/config-ini.html>
+# - *but* Auto Build Marlin is recommended by Marlin
+#   - Auto Build Marlin eliminates the need to edit platformio.ini
+#     - <https://marlinfw.org/docs/configuration/config-ini.html>
+#     - but automatically installs PlatformIO...so do we need to edit
+#       H files at all??
 BTT_TFT_C_A_COMMENTS = {
     'LONG_FILENAME_HOST_SUPPORT': [
         BTT_TFT_DOC_COMM,
@@ -562,6 +637,9 @@ BTT_TFT_C_A_COMMENTS = {
     'AUTO_REPORT_POSITION': [
         BTT_TFT_DOC_COMM.strip(),
     ],
+    'AUTO_REPORT_REAL_POSITION': [
+        'TODO: See if this is necessary',
+    ],
     'M115_GEOMETRY_REPORT': [
         BTT_TFT_DOC_COMM,
     ],
@@ -576,14 +654,53 @@ BTT_TFT_C_A_COMMENTS = {
 # TODO: On A3S, ask for probe and use BLTOUCH values (See R2X_14T):
 
 BLTOUCH_C_VALUES = {
+    # region moved from R2X_14T and deleted redundant
+    'Z_MIN_PROBE_PIN': None,  # See comment regarding BTT SKR V1.4 *
+    'USE_PROBE_FOR_Z_HOMING': "",
+    'Z_HOME_DIR': "-1",
+    'BLTOUCH': "",
+    'NOZZLE_TO_PROBE_OFFSET': "{ -35, 0, -2.7737 }",  # See comment
+    'PROBING_MARGIN': 24,
+    'MULTIPLE_PROBING': 2,
+    'EXTRA_PROBING': 1,
+    'Z_CLEARANCE_DEPLOY_PROBE': 15,
+    'Z_CLEARANCE_MULTI_PROBE': 2,
+    'PROBING_HEATERS_OFF': "",  # Off prevents interference (induction).
+    'PROBING_FANS_OFF': "",
+    'PREHEAT_BEFORE_PROBING': None,
+    # 'PROBING_NOZZLE_TEMP': 150,
+    'PREHEAT_BEFORE_LEVELING': "",
+    'LEVELING_NOZZLE_TEMP': 35,  # if PREHEAT_BEFORE_LEVELING
+    'LEVELING_BED_TEMP': 63,  # if PREHEAT_BEFORE_LEVELING
+    'GRID_MAX_POINTS_X': 5,
+    # ^ GRID_MAX_POINTS_Y is set to GRID_MAX_POINTS_X by default.
+    'EXTRAPOLATE_BEYOND_GRID': "",
+    # 'LCD_BED_LEVELING': "",
+    'LCD_BED_TRAMMING': None,
+    # 'LEVEL_BED_CORNERS': None,  # renamed to LCD_BED_TRAMMING
+    'Z_SAFE_HOMING': "",
+    # endregion moved from R2X_14T and deleted redundant
+
     'Z_MIN_PROBE_REPEATABILITY_TEST': "",
     # 'AUTO_BED_LEVELING_BILINEAR': "",
     'G26_MESH_VALIDATION': "",
     'MESH_TEST_HOTEND_TEMP': 220,
     'MESH_TEST_BED_TEMP': 63,
-    'USE_ZMIN_PLUG': None,
+    'MIN_SOFTWARE_ENDSTOP_Z': None,  # (formerly 'USE_ZMIN_PLUG': None)
+    # ^ commented out for BLTouch as per
+    #   <https://gist.github.com/wess/d48057846ab8272075521549562aac9e>
     'Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN': None,
+    'MAX_SOFTWARE_ENDSTOPS': None,  # OFF since other 2 are hardware & this is 3
+    # MAX_SOFTWARE_ENDSTOP_Z is already on by default, but off if hardware zmax
     'AUTO_BED_LEVELING_UBL': "",
+    'UBL_MESH_WIZARD': "",
+    # 'Z_MIN_ENDSTOP_INVERTING': False,  # moving-pin probe
+    # 'Z_MIN_PROBE_ENDSTOP_INVERTING': False,  # moving-pin probe
+    # ^ Changed to:
+    'Z_MIN_ENDSTOP_HIT_STATE': "HIGH",
+    'Z_MIN_PROBE_ENDSTOP_HIT_STATE': "HIGH",
+    # ^ *Both* HIGH for BLTouch according to
+    #   <https://all3dp.com/2/how-to-set-up-marlin-for-auto-bed-leveling/>
     # ^ "superset" of the previous bed leveling methods, with an
     #   "optimized line-splitting algorithm"
     #   -<https://marlinfw.org/docs/features/unified_bed_leveling.html>
@@ -601,16 +718,25 @@ BLTOUCH_C_COMMENTS = {
         " // specified in the BLTouch Smart V3.1 manual"
         " but UBL supercedes it and MESH_BED_LEVELING"
     ),
-    'USE_ZMIN_PLUG': '// commented out as per BLTouch Smart V3.1 manual',
+    # 'USE_ZMIN_PLUG': '// commented out as per BLTouch Smart V3.1 manual',
     'Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN': (
         "  // commented as per the BLTouch Smart V3.1 manual",
     ),
-}
-
-ZMAX_COMMENTS = {
+    'Z_MIN_PROBE_PIN': [
+        ("// ^ already defined as P0_10 in"
+         " Marlin\\src\\pins\\lpc1768\\pins_BTT_SKR_V1_4.h"),
+        ("//   (and Marlin\\src\\pins\\lpc1769\\pins\\BTT_SKR_V1_4_TURBO.h"
+         " includes it)."),
+    ],
+    'NOZZLE_TO_PROBE_OFFSET': (
+        "// -35,0,-2.56 works on FlexionHT (may drift to -2.7737),"
+        " otherwise x is -36 such as for a hand-machined cooling block"
+        " (z=+3.65 when not deployed; 6.07 using dial and 0.1mm feeler gauge),"
+    ),
     'USE_PROBE_FOR_Z_HOMING': (
-        '// Commented when using max endstop with probe (See <https://www.instructables.com/Dual-Z-Max-and-Probe-for-Z-Min/>)'
-    )
+        '// Commented when using max endstop with probe?? (See <https://www.instructables.com/Dual-Z-Max-and-Probe-for-Z-Min/>)'
+    ),
+    # 'UBL_MESH_WIZARD': '         // Run several commands in a row to get a complete mesh',
 }
 
 BLTOUCH_C_A_VALUES = {
@@ -622,12 +748,24 @@ BLTOUCH_C_A_VALUES = {
     'PROBE_OFFSET_WIZARD': "",
     'PROBE_OFFSET_WIZARD_START_Z': -4.0,
     'PROBE_OFFSET_WIZARD_XY_POS': "{ X_CENTER, Y_CENTER }",  # uncomment it only
+    'ENDSTOPS_ALWAYS_ON_DEFAULT': None,  # MUST BE OFF!!! (See comments)
 }
+
+
 BLTOUCH_C_A_COMMENTS = {
     'PROBE_OFFSET_WIZARD_XY_POS': [
         ("      // ^ Set x to halfway (-35) between E0 and probe (-70)"
          " so they straddle the center"),
     ],
+    'ENDSTOPS_ALWAYS_ON_DEFAULT': [
+        '^ "stay on (by default) even when not homing"',
+        ('  I tried this to avoid'
+         ' <https://github.com/MarlinFirmware/Marlin/issues/25401>)'),
+        '  but it *prevents homing from ever working* with BLTOUCH',
+        ('  - The software endstop is apparently hit'
+         ' (according to marlin error) around 17mm'
+        '  before it can home!'),
+    ]
 }
 
 R2X_14T_C_VALUES = {
@@ -635,6 +773,8 @@ R2X_14T_C_VALUES = {
         '"(marlininfo by Jake Gustafson, BTT SKR V1.4 Turbo + TFT35'
         ' for Replicator 2X but with thermistors)"'
     ),  # + " // Who made the changes." comment is preserved by marlininfo
+    'Z_PROBE_FEEDRATE_FAST': "(4*60)",
+    'Z_PROBE_FEEDRATE_SLOW': "(Z_PROBE_FEEDRATE_FAST / 5)",  # default= ... / 2
     'CUSTOM_MACHINE_NAME': '"R2X 14T"',
     'SERIAL_PORT_2': -1,
     'MOTHERBOARD': "BOARD_BTT_SKR_V1_4_TURBO",
@@ -659,18 +799,37 @@ R2X_14T_C_VALUES = {
     'DEFAULT_bedKp': 33.3357,
     'DEFAULT_bedKi': 4.0417,
     'DEFAULT_bedKd': 68.7382,
-    'USE_XMIN_PLUG': None,
-    'USE_YMIN_PLUG': None,
-    'USE_XMAX_PLUG': "",
-    'USE_YMAX_PLUG': "",
+    # 'USE_XMIN_PLUG': None,
+    # 'USE_YMIN_PLUG': None,
+    # 'USE_XMAX_PLUG': "",
+    # 'USE_YMAX_PLUG': "",
+    # ^ deprecated in bugfix-2.1.x <= 4c033c3e for MIN_SOFTWARE_ENDSTOPS:
+    'MIN_SOFTWARE_ENDSTOPS': "",  # since always at least x & y are hardware
+    'MIN_SOFTWARE_ENDSTOP_X': "",  # since max is hardware
+    'MIN_SOFTWARE_ENDSTOP_Y': "",  # since max is hardware
+    'MIN_SOFTWARE_ENDSTOP_Z': None,  # turned on later if bltouch_enabled
+    'MAX_SOFTWARE_ENDSTOPS': "",  # Turned off if BLTouch (other 2 are hardware)
+    'MAX_SOFTWARE_ENDSTOP_Z': "",  # commented (set to None) later if zmax
     'ENDSTOPPULLUP_ZMIN_PROBE': "",
-    'X_MIN_ENDSTOP_INVERTING': True,
-    'Y_MIN_ENDSTOP_INVERTING': True,
-    'Z_MIN_ENDSTOP_INVERTING': True,
-    'X_MAX_ENDSTOP_INVERTING': True,
-    'Y_MAX_ENDSTOP_INVERTING': True,
-    'Z_MAX_ENDSTOP_INVERTING': True,
-    'Z_MIN_PROBE_ENDSTOP_INVERTING': False,
+    # 'X_MIN_ENDSTOP_INVERTING': True,
+    # 'Y_MIN_ENDSTOP_INVERTING': True,
+    # 'Z_MIN_ENDSTOP_INVERTING': True,
+    # 'X_MAX_ENDSTOP_INVERTING': True,
+    # 'Y_MAX_ENDSTOP_INVERTING': True,
+    # 'Z_MAX_ENDSTOP_INVERTING': True,
+    # 'Z_MIN_PROBE_ENDSTOP_INVERTING': False,
+    # ^ True is replaced by LOW (default is HIGH):
+    # 'X_MIN_ENDSTOP_HIT_STATE': "LOW",  # There is no hardware min
+    'X_MAX_ENDSTOP_HIT_STATE': "LOW",
+    # 'Y_MIN_ENDSTOP_HIT_STATE': "LOW",  # There is no hardware min
+    'Y_MAX_ENDSTOP_HIT_STATE': "LOW",
+    'Z_MIN_ENDSTOP_HIT_STATE': "LOW",  # BLTouch: HIGH
+    # ^ HIGH for BLTouch according to
+    #   <https://all3dp.com/2/how-to-set-up-marlin-for-auto-bed-leveling/>
+    # ^ BLTouch is also LOW (formerly 'Z_MIN_PROBE_ENDSTOP_INVERTING': True)
+    'Z_MAX_ENDSTOP_HIT_STATE': "HIGH",  # It only exists if zmax is custom
+    # ^ High for some reason, even though factory one was inverted
+    'Z_MIN_PROBE_ENDSTOP_HIT_STATE': "HIGH",
     # ^ These settings are necessary for the stock endstops that have circuits.
     #   For these, PULLUP defines (that raise a partial state to a binary
     #   state) shouldn't be necessary due to the circuits
@@ -682,7 +841,7 @@ R2X_14T_C_VALUES = {
     #   M119
     'DISTINCT_E_FACTORS': "",
     'DEFAULT_AXIS_STEPS_PER_UNIT': (
-        "{ 88.888889, 88.888889, 400, 92.61898734177215189873, 92.61898734177215189873 }"
+        "{ 88.888889, 88.888889, 400, 92.61898734177215189873, 92.61898734177215189873 }"  # noqa: E501
     ), # 5 entries assumes EXTRUDERS is 2; See also comment
     'DEFAULT_MAX_FEEDRATE': "{ 200, 200, 5, 25, 25 }",  # assumes EXTRUDERS is 2
     'DEFAULT_MAX_ACCELERATION': "{ 2000, 2000, 200, 10000, 10000 }",
@@ -690,31 +849,22 @@ R2X_14T_C_VALUES = {
     'DEFAULT_ACCELERATION': 850, # formerly 2000...but that's more jerky
     'DEFAULT_RETRACT_ACCELERATION': 2000,
     'DEFAULT_TRAVEL_ACCELERATION': 850,
-    'DEFAULT_EJERK': 3.5,  # Higher is more jerky.
-    'S_CURVE_ACCELERATION': "",  # See comment
-    'USE_PROBE_FOR_Z_HOMING': "",
-    'Z_MIN_PROBE_PIN': None,  # See comment regarding BTT SKR V1.4 *
-    'BLTOUCH': "",
-    'NOZZLE_TO_PROBE_OFFSET': "{ -35, 0, -2.56 }",  # See comment
-    'PROBING_MARGIN': 24,
-    'Z_PROBE_FEEDRATE_FAST': "(4*60)",
-    'Z_PROBE_FEEDRATE_SLOW': "(Z_PROBE_FEEDRATE_FAST / 5)",  # default= ... / 2
-    'MULTIPLE_PROBING': 2,
-    'EXTRA_PROBING': 1,
-    'Z_CLEARANCE_DEPLOY_PROBE': 15,
-    'Z_CLEARANCE_MULTI_PROBE': 2,
-    'Z_MIN_PROBE_REPEATABILITY_TEST': "",
-    'PROBING_HEATERS_OFF': "",  # Off prevents interference (induction).
-    'PROBING_FANS_OFF': "",
-    'PREHEAT_BEFORE_PROBING': "",
-    'PROBING_NOZZLE_TEMP': 150,
+    'ADVANCE_K': .44,  # Default .22 is right for most rigid materials
+    # ^ 0 or S_CURVE_ACCELERATION is recommended by a Marlin comment for ABS!
+    'DEFAULT_EJERK': 3.5,  # Higher is more jerky. May be used by linear advance
+    'ALLOW_LOW_EJERK': "",
+    # ^ "DEFAULT_EJERK value of <10. Recommended for direct drive"
+    # 'S_CURVE_ACCELERATION': "",  # See comment
+    'LIN_ADVANCE': "",  # Works OK on direct drive except for ABS
+    # ^ See Marlin's own comments in unmodified Configuration.h itself
     'INVERT_X_DIR': True,
     'INVERT_Z_DIR': True,
     'INVERT_E1_DIR': True,
     'X_HOME_DIR': 1,
     'Y_HOME_DIR': 1,
-    'X_BED_SIZE': 241,  # formerly 236; 242 would center the nozzle on the edge with FlexionHT, or still be on with that plus FilaPrint
-    'Y_BED_SIZE': 133,  # TODO: See if bigger/smaller with FlexionHT vs custom
+    'X_BED_SIZE': 242,  # See comment
+    'X_MIN_POS': -5,
+    'Y_BED_SIZE': 153,  # See comment
     'Z_MAX_POS': 150,
     # ^ TODO: Z_MAX_POS may be as small as 123 with aluminum z axis assembly
     #   depending on screw tightness)
@@ -723,20 +873,23 @@ R2X_14T_C_VALUES = {
     #   manually after homing; tried 115 before that) and see if is still ok.
     #   - Set to 0 until Marlin bug is fixed! See marlininfo issue
     #     [#22](https://github.com/poikilos/marlininfo/issues/22)
-    'LEVELING_NOZZLE_TEMP': 150,  # if PREHEAT_BEFORE_LEVELING
-    'LEVELING_BED_TEMP': 63,  # if PREHEAT_BEFORE_LEVELING
-    'GRID_MAX_POINTS_X': 5,
-    # ^ GRID_MAX_POINTS_Y is set to GRID_MAX_POINTS_X by default.
-    'EXTRAPOLATE_BEYOND_GRID': "",
-    # 'LCD_BED_LEVELING': "",
-    'LCD_BED_TRAMMING': None,
-    # 'LEVEL_BED_CORNERS': None,  # renamed to LCD_BED_TRAMMING
-    'Z_SAFE_HOMING': "",
     'EEPROM_SETTINGS': "",
-    'SDSUPPORT': "",
+    'SDSUPPORT': "", # deprecated, handled by HASMEDIA macro now? Back in e41dc27
     # 'NEOPIXEL_PIN': "",  # Not tried, but may be a way to rig builtin ones
     'SPEAKER': "",  # *incompatible* with mega2560 (so only enabled here)
 }
+
+
+# TODO: add the comments from ZMAX_COMMENTS?
+# Define min and max to prevent grinding the z axis follower
+#   at the top of the range. All of these settings are
+#   necessary to get Marlin to do it. See also:
+# "z home dir must be 1 for z max homing."
+# - Repetier
+#   <forum.repetier.com/discussion/comment/30062/#Comment_30062>
+# It is ok to home with the ZMAX endstop instead of the
+#   probe (and necessary to use it with the probe as min):
+
 
 R2X_14T_C_A_VALUES = {
     'EXPERIMENTAL_SCURVE': None,  # See Configuration.h comment for S_CURVE_ACCELERATION
@@ -746,7 +899,8 @@ R2X_14T_C_A_VALUES = {
     'WATCH_TEMP_INCREASE': 7,
     # 'THERMAL_PROTECTION_BED_PERIOD': 20,  # default is 20
     'THERMAL_PROTECTION_BED_HYSTERESIS': 8,
-    'WATCH_BED_TEMP_INCREASE': 4,
+    'WATCH_BED_TEMP_PERIOD': 70, # See WATCH_BED_TEMP_INCREASE comment.
+    'WATCH_BED_TEMP_INCREASE': 3, # See comment.
     'HOTEND_IDLE_TIMEOUT': "",
     'HOTEND_IDLE_TIMEOUT_SEC': "(30*60)",  # long: don't interrupt UBL
     'HOTEND_IDLE_MIN_TRIGGER': 140,
@@ -757,6 +911,8 @@ R2X_14T_C_A_VALUES = {
     'BABYSTEPPING': "",
     'DOUBLECLICK_FOR_Z_BABYSTEPPING': "",
     # 'BABYSTEP_ZPROBE_OFFSET': "",  # conflicts with MESH_BED_LEVELING
+    'LIN_ADVANCE': "",  # 0 for ABS (only Klipper pressure advance works for ABS, not Marlin linear advance)!
+    'ALLOW_LOW_EJERK': "",  # allow <10 (recommended for direct drive in Marlin's own comments)
 }
 
 # TODO: implement per-machine comments.
@@ -777,6 +933,13 @@ R2X_14T_C_COMMENTS = {
         '  // #define DEFAULT_bedKd 853.97',
         '  // ^ 60 C, not enclosed:',
     ],
+    'X_BED_SIZE': [
+        ' // ^ formerly 236; 242 would center the nozzle on the edge with FlexionHT,',
+        ' //   or still be on with that plus FilaPrint. 243 allows purging and wiping',
+        ' //   to occur *off the edge to keep entire build width clean*.'
+    ],
+    'X_MIN_POS': "Allow left nozzle to go off bed for purge & wipe.",
+    'Y_BED_SIZE': ' // 133-134 with custom front duct; 152 factory spec; 153 measured',
     'DEFAULT_AXIS_STEPS_PER_UNIT': [
         '/*',
         'Extrusion:',
@@ -816,17 +979,7 @@ R2X_14T_C_COMMENTS = {
         "//   counterproductive at least for ABS on direct drive",
         "//   (Marlin's calibration test only looks correct on K=0 line).",
     ],
-    'Z_MIN_PROBE_PIN': [
-        ("// ^ already defined as P0_10 in"
-         " Marlin\\src\\pins\\lpc1768\\pins_BTT_SKR_V1_4.h"),
-        ("//   (and Marlin\\src\\pins\\lpc1769\\pins\\BTT_SKR_V1_4_TURBO.h"
-         " includes it)."),
-    ],
-    'NOZZLE_TO_PROBE_OFFSET': (
-        "// -35,0,-2.56 works on FlexionHT, otherwise x is -36 such as"
-        " for a hand-machined cooling block"
-        " (z=+3.65 when not deployed; 6.07 using dial and 0.1mm feeler gauge),"
-    ),
+    'ADVANCE_K': "The default .22 is ok for most materials, but use .44 for ATARAXIA ART Flexible PLA+, bed=30C, nozzle=170C. '(mm) Compression length applying to all extruders'",  # noqa: E501
     'Z_PROBE_FEEDRATE_FAST': [
         "// This Poikilos setting (4*60 based on HOMING_FEEDRATE_MM_M",
         "//   --The old setting was formerly HOMING_FEEDRATE_Z)",
@@ -839,13 +992,65 @@ R2X_14T_C_COMMENTS = {
 }
 
 R2X_14T_C_A_COMMENTS = {
+    # 'WATCH_BED_TEMP_INCREASE': "See WATCH_BED_TEMP_INCREASE comment.",
     'WATCH_BED_TEMP_INCREASE': [
         ("  // ^ Based on approximate stopwatch readings,"
          " the Replicator 2X bed heats"),
         "  //   at 1C per 8s to up to about 27s at first!",
         "  //   When the bed first starts heating, it is very slow,",
         "  //   even if you reset it and start around 35C.",
+        "  //   Between 80 and 110, it can still do thermal shutdown",
+        "  //   at WATCH_BED_TEMP_PERIOD 60 WATCH_BED_TEMP_INCREASE 4.",
     ],
+}
+
+
+LOW_CUSTOM_ZMAX_VALUES = {
+    'Z_MAX_ENDSTOP_HIT_STATE': "LOW",
+    'MAX_SOFTWARE_ENDSTOP_Z': None,
+    'MAX_SOFTWARE_ENDSTOPS': None,
+    # ^ Moved to BLTOUCH config.
+    'Z_MAX_POS': 150,  # actual: 150 (factory spec = custom zmax (after worn??))
+    # Set bigger than actual to test custom zmax
+    # No comments below seem to matter actually.
+    # ^ Don't set Z_MAX_POS too high or Marlin might give up (It
+    #   may determine the bed is floating more than 25 mm above
+    #   the endstop if set to the factory build volume's 155
+    #   height).
+    #   Z_MAX_POS is actually about 148.7 (to 150.7...worn in??) with Poikilos'
+    #   printable ZMAX endstop holder (and the FilaPrint bed
+    #   treatment), but setting it to that
+    #   may cause Marlin to give up if you get to 0 before the
+    #   probe triggers (such as if your springs aren't tightened
+    #   as much as mine)--remember, homing is done at max then
+    #   probing happens by approaching 0 from there.
+}
+
+
+'''
+
+# This is wrong, apparently. See BLTouch config instead.
+use_z_probe_for_homing = False
+if use_z_probe_for_homing:
+    thisMarlin.set_c("USE_PROBE_FOR_Z_HOMING", None)
+    thisMarlin.set_c("Z_HOME_DIR", 1)
+else:
+    thisMarlin.set_c("USE_PROBE_FOR_Z_HOMING", "")
+    thisMarlin.set_c("Z_HOME_DIR", -1)
+'''
+
+
+LOW_CUSTOM_ZMAX_COMMENTS = {
+    'Z_MAX_ENDSTOP_HIT_STATE':
+        "LOW (formerly Z_MAX_ENDSTOP_INVERTING true + USE_ZMAX_PLUG)",
+    'MAX_SOFTWARE_ENDSTOPS': [
+        "  // ^ X&Y are hardware, so *all* are if zmax_answer",
+        "  // Note that ZMAX_PLUG is POWERDET according to",
+        "  // Marlin\Marlin\src\pins\lpc1768\pins_BTT_SKR_V1_4.h",
+        "  // *not* on the same row as the ZMIN plugs according to the",
+        "  // board diagram, but is the one next to EXP1.",
+        "  // *The pin must be enabled* (See Configuration_adv.h)!",
+    ]
 }
 
 
@@ -958,7 +1163,7 @@ class MarlinInfo:
             of path if path is a Marlin/Marlin directory).
         '''
         self._loaded_repo_path = None
-        sub = os.path.split(path)[1]
+        # sub = os.path.split(path)[1]
         MarlinMarlin = os.path.join(path, "Marlin")
         self.c_path = os.path.join(path, MarlinInfo.C_REL)
         self.c_a_path = os.path.join(path, MarlinInfo.C_A_REL)
@@ -1129,8 +1334,8 @@ class MarlinInfo:
         Marlin/Configuration.h along with the line number and error
         if any.
         '''
-        relpath = MarlinInfo.C_REL
-        fi = self.file_metas[relpath]
+        # relpath = MarlinInfo.C_REL
+        # fi = self.file_metas[relpath]
         return get_cdef(self.c_path, name)
 
     def get_c_a(self, name):
@@ -1139,8 +1344,8 @@ class MarlinInfo:
         Marlin/Configuration_adv.h along with the line number and error
         if any.
         '''
-        relpath = MarlinInfo.C_A_REL
-        fi = self.file_metas[relpath]
+        # relpath = MarlinInfo.C_A_REL
+        # fi = self.file_metas[relpath]
         return get_cdef(self.c_a_path, name)
 
     def get_relative(self, path):
@@ -1328,7 +1533,7 @@ class MarlinInfo:
                 ''.format(os.path.join(self.mm_path, relpath))
             )
         fi = self.file_metas[relpath]
-        new_line = None
+        # new_line = None
         lines, unaffected_items = fi.set_cached(name, value, comments=comments)
         self._changed += lines
         self._not_changed += unaffected_items
@@ -1716,6 +1921,7 @@ def main():
     # since the last line of tpu_lines_flag is the flag for petg_lines):
     thisMarlin.insert_c(tpu_lines, after=tpu_lines_flag)
     thisMarlin.insert_c(petg_lines, after=petg_lines_flag)
+    thisMarlin.insert_c(AAFPP_LINES, after=AAFPP_lines_flag)
 
     thisMarlin.set_multiple_c(MOVED_ABS)
     thisMarlin.set_multiple_c(MOVED_TPU)
@@ -1727,7 +1933,7 @@ def main():
         POIKILOS_C_A_VALUES,
         comment_d=POIKILOS_C_A_COMMENTS,
     )
-    previous_verbosity = get_verbosity()
+    # previous_verbosity = get_verbosity()
     # set_verbosity(2)
     echo2("* setting Configuration.h values for {}".format(machine))
     thisMarlin.set_multiple_c(
@@ -1772,10 +1978,12 @@ def main():
                                   comment_d=BTT_TFT_C_COMMENTS)
         thisMarlin.set_multiple_c_a(BTT_TFT_C_A_VALUES,
                                     comment_d=BTT_TFT_C_A_COMMENTS)
-        thisMarlin.set_multiple_c(BLTOUCH_C_VALUES,
-                                  comment_d=BLTOUCH_C_COMMENTS)
-        thisMarlin.set_multiple_c_a(BLTOUCH_C_A_VALUES,
-                                    comment_d=BLTOUCH_C_A_COMMENTS)
+        bltouch_enabled = True
+        if bltouch_enabled:
+            thisMarlin.set_multiple_c(BLTOUCH_C_VALUES,
+                                      comment_d=BLTOUCH_C_COMMENTS)
+            thisMarlin.set_multiple_c_a(BLTOUCH_C_A_VALUES,
+                                        comment_d=BLTOUCH_C_A_COMMENTS)
 
         th_answer = options.get("T0")
         if th_answer is None:
@@ -1823,6 +2031,7 @@ def main():
         if nozzles == 1:
             thisMarlin.set_c_a("MULTI_NOZZLE_DUPLICATION", None)
             thisMarlin.set_c("EXTRUDERS", 1)
+            thisMarlin.set_c("DISTINCT_E_FACTORS", None)
             # All of the following should have only one extruder element
             #   instead of the last value being duplicated in the case
             #   of having two:
@@ -1855,48 +2064,8 @@ def main():
                 else:
                     echo0("Specify y/yes or n/no.")
         if zmax_answer is True:
-            thisMarlin.set_c("USE_ZMAX_PLUG", "")
-            # Note that ZMAX_PLUG is POWERDET according to
-            # Marlin\Marlin\src\pins\lpc1768\pins_BTT_SKR_V1_4.h
-            # *not* on the same row as the ZMIN plugs according to the
-            # board diagram, but is the one next to EXP1.
+            thisMarlin.set_multiple_c(LOW_CUSTOM_ZMAX_VALUES)
 
-            # TODO: add the comments from ZMAX_COMMENTS?
-
-            # Define min and max to prevent grinding the z axis follower
-            #   at the top of the range. All of these settings are
-            #   necessary to get Marlin to do it. See also:
-            # "z home dir must be 1 for z max homing."
-            # - Repetier
-            #   <forum.repetier.com/discussion/comment/30062/#Comment_30062>
-            thisMarlin.set_c("USE_ZMIN_PLUG", "")
-            thisMarlin.set_c("USE_XMAX_PLUG", "")
-            thisMarlin.set_c("USE_YMAX_PLUG", "")
-            thisMarlin.set_c("USE_ZMAX_PLUG", "")
-            # It is ok to home with the ZMAX endstop instead of the
-            #   probe (and necessary to use it with the probe as min):
-            use_z_probe_for_homing = False
-            if use_z_probe_for_homing:
-                thisMarlin.set_c("USE_PROBE_FOR_Z_HOMING", None)
-                thisMarlin.set_c("Z_HOME_DIR", 1)
-            else:
-                thisMarlin.set_c("USE_PROBE_FOR_Z_HOMING", "")
-                thisMarlin.set_c("Z_HOME_DIR", -1)
-            thisMarlin.set_c("Z_MAX_POS", 150)
-            # ^ Don't set Z_MAX_POS too high or Marlin might give up (It
-            #   may determine the bed is floating more than 25 mm above
-            #   the endstop if set to the factory build volume's 155
-            #   height).
-            #   Z_MAX_POS is actually about 148.7 with Poikilos'
-            #   printable ZMAX endstop holder (and the FilaPrint bed
-            #   treatment), but setting it to that
-            #   may cause Marlin to give up if you get to 0 before the
-            #   probe triggers (such as if your springs aren't tightened
-            #   as much as mine)--remember, homing is done at max then
-            #   probing happens by approaching 0 from there.
-
-        else:
-            thisMarlin.set_c("USE_ZMAX_PLUG", None)
         # Always invert endstops that make a connection when triggered.
         #   (already done in BLTouch config further up--see
         #   (X|Y|Z)_(MIN|MAX)_ENDSTOP_INVERTING).
@@ -1910,7 +2079,7 @@ def main():
         tft_ans = input("Use a BTT TFT (y/n)? ").lower()
         if tft_ans not in ['y', 'n']:
             raise ValueError("You must choose y/n for yes/no")
-        tft_v = ""
+        # tft_v = ""
         if tft_ans == "y":
             thisMarlin.set_multiple_c(
                 BTT_TFT_C_VALUES,
@@ -1931,7 +2100,7 @@ def main():
     else:
         usage()
         raise NotImplementedError('machine="{}"'.format(machine))
-    default_s = driver_types[0]
+    # default_s = driver_types[0]
     if driver_type is None:
         echo0("Please specify --driver-type such as one of {} and try again."
               "".format(driver_types))
@@ -2047,9 +2216,12 @@ def main():
         for info in thisMarlin._not_changed:
             why = None
             newV = info._v
-            newLineI = info._i
+            # newLineI = info._i
             newName = info._n
-            oldV, oldLineN, oldName, oldErr = srcMarlin.get_cached_rel(info._n, info._path)
+            oldV, oldLineN, oldName, oldErr = srcMarlin.get_cached_rel(
+                info._n,
+                info._path,
+            )
             relpath = srcMarlin.get_relative(info._path)
 
             if oldLineN > -1:
