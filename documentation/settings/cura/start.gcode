@@ -32,6 +32,7 @@ G4 P100 ; delay for BLTouch
 ; M420 S1 ; Restore manual mesh instead of G29 re-probing (www.youtube.com/watch?v=eF060dBEnfs)
 ; ^ NOTE that braces even in comments cause a parsing error in PrusaSlicer
 
+G28 Z ; home Z (try to avoid griding against ZMAX :( https://github.com/MarlinFirmware/Marlin/issues/25401
 G28 ; home
 ; G28 turns leveling off!! Turn on leveling on: G29 A ; or M420 S1
 ; See <https://marlinfw.org/docs/gcode/G029-ubl.html>
@@ -112,3 +113,4 @@ G1 X1.0 Z0.05 F8000
 ; G1 X0 Y0 F12000.0
 ; G1 Z0 F12000.0
 ; G92 E-5 ; Say this offset is -1 (force extra extrusion at start)
+G0 F12000 X90 Y50 Z0.16 ; Move to a point near center at high feedrate to avoid losing nozzle pressure (G0 is same as G1 but G0 is recommended for non-print moves for compatibility)
