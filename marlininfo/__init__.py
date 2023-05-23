@@ -118,7 +118,7 @@ R2X_14T_TOP_LINES = [
     '#define CONFIG_EXAMPLES_DIR "R2X_14T"',
     '',
     '/**',
-    ' * MakerBot Replicator 2X with BTT SKR V1.4 Turbo, TFT35 and',
+    ' * MakerBot Replicator 2X with BTT SKR V1.4 Turbo, TFT35 V3.0 and',
     ' * thermistors not thermocouples (The R2X 14T build is documented',
     ' * at <https://github.com/poikilos/r2x_14t>)',
     ' * Authors: Jake Gustafson',
@@ -939,10 +939,11 @@ R2X_14T_C_COMMENTS = {
     'X_BED_SIZE': [
         ' // ^ formerly 236; 242 would center the nozzle on the edge with FlexionHT,',
         ' //   or still be on with that plus FilaPrint. 243 allows purging and wiping',
-        ' //   to occur *off the edge to keep entire build width clean*.'
+        ' //   to occur *off the edge to keep entire build width clean*.',
+        ' //   Actual surface: 248',
     ],
     'X_MIN_POS': "Allow left nozzle to go off bed for purge & wipe.",
-    'Y_BED_SIZE': ' // 133-134 with custom front duct; 152 factory spec; 153 measured',
+    'Y_BED_SIZE': ' // 133-134 with custom front duct; 152 factory spec; 153 measured (actual surface: 165)',
     'DEFAULT_AXIS_STEPS_PER_UNIT': [
         '/*',
         'Extrusion:',
