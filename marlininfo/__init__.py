@@ -939,11 +939,12 @@ R2X_14T_C_COMMENTS = {
     'X_BED_SIZE': [
         ' // ^ formerly 236; 242 would center the nozzle on the edge with FlexionHT,',
         ' //   or still be on with that plus FilaPrint. 243 allows purging and wiping',
-        ' //   to occur *off the edge to keep entire build width clean*.',
-        ' //   Actual surface: 248',
+        ' //   to occur *off the edge to keep entire build width clean*',
+        ' //   but using a negative number for X_MIN_POS prevents slicing problems',
+        ' //   Actual surface X: 248.5',
     ],
     'X_MIN_POS': "Allow left nozzle to go off bed for purge & wipe.",
-    'Y_BED_SIZE': ' // 133-134 with custom front duct; 152 factory spec; 153 measured (actual surface: 165)',
+    'Y_BED_SIZE': ' // 133-134 with custom front duct; 152 factory spec; 153 measured but may touch x rail & push motor back 1 step! (actual surface Y: 165)',
     'DEFAULT_AXIS_STEPS_PER_UNIT': [
         '/*',
         'Extrusion:',
