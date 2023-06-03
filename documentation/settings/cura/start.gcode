@@ -1,5 +1,12 @@
+; M104 S230
+; M105
+; M109 S230
+; M82 ;absolute extrusion mode
 
-; Note that Cura automatically adds more before the below start G-code, such as setting the current tool to the initial extruder (See documentation/settings/cura/automatically_added_by_Cura-example.gcode on <https://github.com/poikilos/r2x_14t>).
+; Note that Cura automatically adds the code above before the below start G-code,
+;   such as setting the current tool to the initial extruder
+;   (See documentation/settings/cura/automatically_added_by_Cura-example.gcode
+;   on <https://github.com/poikilos/r2x_14t>).
 
 ; Cura variables reference:
 ; <http://files.fieldofview.com/cura/Replacement_Patterns.html>
@@ -27,20 +34,26 @@
 ; {material_bed_temp_wait}
 ; ^ {material_bed_temp_wait}
 ;M109 S210 ; nozzle temp
-M280 P0 S160
+M280 P0 S160 ; BLTouch alarm release
 G4 P100 ; delay for BLTouch
 ; M420 S1 ; Restore manual mesh instead of G29 re-probing (www.youtube.com/watch?v=eF060dBEnfs)
 ; ^ NOTE that braces even in comments cause a parsing error in PrusaSlicer
 
-G28 Z ; home Z (try to avoid griding against ZMAX :( https://github.com/MarlinFirmware/Marlin/issues/25401
+; G28 Z ; home Z (try to avoid griding against ZMAX :( https://github.com/MarlinFirmware/Marlin/issues/25401
+; ^ commented to avoid "Must home X and Y axes first" error if Klipper set to not move before homing
 G28 ; home
 ; G28 turns leveling off!! Turn on leveling on: G29 A ; or M420 S1
 ; See <https://marlinfw.org/docs/gcode/G029-ubl.html>
 ; G29 ; auto bed leveling
-G29 A ; enable bed leveling (emulates M420 S1 if UBL; not required if RESTORE_LEVELING_AFTER_G28)
-; M420 S1 ; already done by G29 A if AUTO_BED_LEVELING_UBL
+; G29 A ; enable bed leveling (emulates M420 S1 if UBL; not required if RESTORE_LEVELING_AFTER_G28)
+; ^ Klipper's G29 macro (only avail if G29.cfg is included!) probes the bed even with just param A.
+M420 S1 ; already done by G29 A if AUTO_BED_LEVELING_UBL
+; ^ Only available in Klipper using Poikilos' macro
+; BED_MESH_PROFILE LOAD="mesh1"
+; ^ Klipper only
 ; M420 S1 ; enable bed leveling *if* there is a valid mesh.
 ; Use G29 L1 in filament code if PLA bed temp mesh is stored in the first slot
+
 
 ; INFO: The bed temperature is only correct when the other extruder is disabled in Cura!
 ; M140 S{material_bed_temperature_layer_0} ; Set Heat Bed temperature
@@ -91,10 +104,11 @@ G92 E0 ; Say this offset is 0
 G90 ; absolute positioning (G91 is relative)
 G1 X-5 Y5 F9000
 ; ^ X<0 to go off the bed a single-extruder configuration.
-G1 Z0 F9000
+G1 Z0.1 F9000 ; formerly Z0, but that is prevented by klipper bed leveling (probe offset calibrated to 0 can cause negative moves)
 ; ^ Do z last in case there is junk hanging off of the nozzle
-; G1 X50 Y2.5 Z0.22 F(travel_speed); doesn't work due to Cura issue 10636
+; G1 X50 Y2.5 Z0.32 F(travel_speed); doesn't work due to Cura issue 10636
 ; ^ parenthesis since braces even in comments cause a parsing error in PrusaSlicer
+; ^ .32 if zmin or probe calibrated to 0, but should be .22 if using .1mm paper or feeler gauge
 G1 X-1 Y150 E44 F500.0 ; Purge backward. PLA max volumetric speed: about E22mm per 60mm 500mm/minute
 ; ^ higher volumetric speed may be possible without line causing back pressure
 G1 Z0.0 F8000
@@ -112,5 +126,5 @@ G1 X1.0 Z0.05 F8000
 ; G1 X0 Y150 F12000.0
 ; G1 X0 Y0 F12000.0
 ; G1 Z0 F12000.0
-; G92 E-5 ; Say this offset is -1 (force extra extrusion at start)
-G0 F12000 X90 Y50 Z0.16 ; Move to a point near center at high feedrate to avoid losing nozzle pressure (G0 is same as G1 but G0 is recommended for non-print moves for compatibility)
+; G92 E-5 ; Say this offset is negative (force extra extrusion at start)
+G0 F12000 X98.634 Y61.997 Z0.2; Move to center at high feedrate to avoid losing nozzle pressure (G0 is same as G1 but G0 is recommended for non-print moves for compatibility)
