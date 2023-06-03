@@ -6,13 +6,12 @@ If you only need one printer, overwrite your cura directory in %APPDATA% (or in 
 To add an additional printer instead, complete all of the steps in the "Add it as an additional printer" section.
 
 ##### Add it as an additional printer
-- Preferences, Configure Cura
-  - Printers, Add
-    - Add a non-networked printer
-    - In the "Custom" category choose "Custom FFF Printer" then click Add.
-    - Paste the contents of [documentation/settings/cura/start.gcode](start.gcode) into the "Start G-code" field.
-    - Paste the contents of [documentation/settings/cura/end.gcode](end.gcode) into the "End G-code" field.
-    - Fill out the additional sections using the information below:
+Preferences, Configure Cura. Printers, Add.
+- Add a non-networked printer
+- In the "Custom" category choose "Custom FFF Printer" then click Add.
+- Paste the contents of [documentation/settings/cura/start.gcode](start.gcode) into the "Start G-code" field.
+- Paste the contents of [documentation/settings/cura/end.gcode](end.gcode) into the "End G-code" field.
+- Fill out the additional sections using the information below:
 
 Printer Settings:
 - W (Width): 236
