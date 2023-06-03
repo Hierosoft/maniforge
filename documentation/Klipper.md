@@ -1,17 +1,13 @@
-Installs (optionally):
-1) CancelObject			6) PrintTimeGenius
-2) Bed Visualizer		7) UI Customizer
-3) Firmware Updater
-4) Terminal Commands Extended:
-5) Active Filters Extended
 
-Change ustreamer camera resolution:
-```
-sudo nano /etc/systemd/system/cam_octoprint.service
-#change Exec as necessary then save
-sudo systemctl daemon-reload
-sudo systemctl restart cam_octoprint
-```
+## Install
+- Install OS:
+  - IF raspberry pi, install lite image
+  - IF x86, install Desktop then run
+    - IF bullseye won't install, install buster then run:
+      `git clone https://github.com/Poikilos/linux-preinstall && sudo ./utilities-server/raspberry_pi_os/remove_desktop_environment.sh && sudo ./utilities-server/raspberry_pi_os/debian-buster-to-bullseye.sh`
+- Log in as pi user (sudoer)
+- sudo apt install -y git
+- git clone https://github.com/th33xitus/kiauh
 
 Go to the web interface (<http://$HOST:5000/>) to set the stream URL.
 Settings, Features, Webcam & Timelapse (URLs below are for ustreamer):
@@ -21,8 +17,6 @@ Settings, Features, Webcam & Timelapse (URLs below are for ustreamer):
 
 Install Klipper firmware (These instructions assume BTT SKR 1.4 Turbo):
 (See [Ender 6 - Klipper on SKR Board with stock touchscreen](https://www.youtube.com/watch?v=t1FgE3OgUA8))
-- `git clone https://github.com/Klipper3d/klipper`
-- run `./klipper/scripts/install-octopi.sh`
 - `make menuconfig`
 - [x] Enable extra low-level configuration options
 - Micro-controller Architecture (LPC176x (Smoothieboard))
@@ -55,3 +49,37 @@ make flash FLASH_DEVICE=$BTT_DEV
   3. `make clean`
   4. `sudo cp out/klipper.bin /mnt/$DRIVE/firmware.bin` (If says IO error, confirm steps 1-2 are done correctly.
 - `cp config/generic-bigtreetech-skr-v1.4.cfg /home/pi/printer.cfg`
+- In the web interface, go to Settings then:
+  - Under "Printer" choose:
+    - port
+    - Baudrate (115200 for BTT SKR V1.4 Turbo if configured as recommended)
+  - Under "Plugins", "OctoKlipper" enter the serial port selected above.
+
+
+## Troubleshooting
+No error is logged
+Try: `/home/pi/klippy-env/bin/python /home/pi/klipper/klippy/klippy.py /home/pi/printer.cfg`
+(or other paths: See the /etc/default/klipper file).
+
+## Didn't work
+(OctoPrint couldn't connect, and when config was bad, didn't show the error shown [neither did journalctl!] if running service manually
+but it may have failed due to pi missing from the `dialout` group, which kiauh detected was the case)
+- `su pi`
+- `sudo adduser $USER dialout  # done automatically by kiauh`
+- `git clone https://github.com/Klipper3d/klipper`
+- run `./klipper/scripts/install-octopi.sh`
+
+Installs (optionally):
+1) CancelObject			6) PrintTimeGenius
+2) Bed Visualizer		7) UI Customizer
+3) Firmware Updater
+4) Terminal Commands Extended:
+5) Active Filters Extended
+
+Change ustreamer camera resolution:
+```
+sudo nano /etc/systemd/system/cam_octoprint.service
+#change Exec as necessary then save
+sudo systemctl daemon-reload
+sudo systemctl restart cam_octoprint
+```
