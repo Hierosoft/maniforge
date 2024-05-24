@@ -8,7 +8,8 @@
 		"[python]":{
 			"diffEditor.ignoreTrimWhitespace": false,
 			"editor.formatOnType": true,
-			"editor.wordBasedSuggestions": false
+			"editor.wordBasedSuggestions": "off"
 		},
+		"editor.wordBasedSuggestions": "off",
 	}
 }
