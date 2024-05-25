@@ -12,7 +12,6 @@ got.py {sd_card_path}
 import os
 import sys
 import platform
-import subprocess
 import shutil
 
 if platform.system() == "Windows":
@@ -38,17 +37,13 @@ if os.path.isfile(os.path.join(REPOS_DIR, "hierosoft", "hierosoft",
                   "__init.py__")):
     sys.path.insert(0, os.path.join(REPOS_DIR), "hierosoft")
 
-from hierosoft.morebytes import (
+from hierosoft.morebytes import (  # noqa: E402
     ByteConf,
 )
-
-def echo0(*args):
-    print(*args, file=sys.stderr)
 
 
 def usage(sd_card_path="/mnt/sdf"):
     echo0(__doc__.format(sd_card_path=sd_card_path))
-
 
 
 def change_tft_conf_for_r2x(config_path, klipper=True,
@@ -66,7 +61,7 @@ def change_tft_conf_for_r2x(config_path, klipper=True,
     #   comment/hdkk7a8/?utm_source=share&utm_medium=web2x&context=3)
     #   so keep default_mode:1 (the default default_mode...)
     # min_temp:180
-    conf.set("min_temp", "170")
+    conf.set("min_temp", "168")
     # M115_GEOMETRY_REPORT supercedes manual settings:
     # size_min:X0 Y0 Z0
     # size_max:X235 Y235 Z250
@@ -93,8 +88,8 @@ def change_tft_conf_for_r2x(config_path, klipper=True,
     conf.set("M27_always_active", "1")
     # preheat_name_6:NYLON
     # preheat_temp_6:T250 B90
-    conf.set("preheat_name_6", "NYLON")
-    conf.set("preheat_temp_6", "T250 B90")
+    conf.set("preheat_name_6", "AAFPLA+")
+    conf.set("preheat_temp_6", "T190 B45")
     # TODO: change defaults according to a boolean setting:
     # fil_runout:0
     # fil_runout_inverted:1
@@ -117,12 +112,14 @@ def change_tft_conf_for_r2x(config_path, klipper=True,
     # custom_gcode_8:M105\n
     # custom_label_9:custom9
     # custom_gcode_9:M105\n
+    # TODO: Set based on boolean:
+    conf.set("event_led", "0")
     conf.save()
 
 
 def preload_card(sd_card_path,
         firmware_sub="Copy to SD Card root directory to update",
-        bin_name="BIGTREE_GD_TFT35_V3.0.27.x.bin",
+        bin_name="BIGTREE_TFT35_V3.0.27.x.bin",
         theme="THEME_Unified Menu Material theme",
         languages_sub="Language Packs",
         language_pack="language_en.ini", # doesn't matter, see docstring
@@ -181,6 +178,7 @@ def preload_card(sd_card_path,
     # Do all sanity checks before copying anything:
     firmware_dir = os.path.join(repo_dir, firmware_sub)
     bin_path = os.path.join(firmware_dir, bin_name)
+    dst_bin_path = os.path.join(sd_card_path, bin_name)
     if not os.path.isfile(bin_path):
         raise FileNotFoundError('"{}" does not exist.'.format(bin_path))
     echo0('[preload_card] * using "{}"'.format(bin_name))
@@ -228,6 +226,9 @@ def preload_card(sd_card_path,
     dst_config_path = os.path.join(sd_card_path, "config.ini")
     echo0('[preload_card] Copying "{}"...'
           ''.format(os.path.basename(bin_path)))
+    shutil.copy(bin_path, dst_bin_path)
+    echo0('[preload_card] Copying "{}"...'
+          ''.format(os.path.basename(config_path)))
     shutil.copy(config_path, dst_config_path)
     klipper = False
 
