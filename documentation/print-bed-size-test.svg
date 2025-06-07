@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="8.5in"
+   height="11in"
+   viewBox="0 0 215.9 279.4"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="print-bed-size-test.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.5"
+     inkscape:cx="419"
+     inkscape:cy="428"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#c0c0c0;fill-opacity:1;stroke-width:4.35599;stroke-linecap:round"
+       id="rect1014"
+       width="163"
+       height="248"
+       x="23.889078"
+       y="18.204744" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke-width:4.46481;stroke-linecap:round"
+       id="rect1016"
+       width="158.76753"
+       height="244.30331"
+       x="26.005907"
+       y="20.309725" />
+    <rect
+       style="fill:#c0c0c0;fill-opacity:1;stroke-width:4.46939;stroke-linecap:round"
+       id="rect234"
+       width="2.6713679"
+       height="150"
+       x="85.398804"
+       y="59.425488" />
+    <rect
+       style="fill:#c0c0c0;fill-opacity:1;stroke-width:3.64924;stroke-linecap:round"
+       id="rect950"
+       width="2.6713679"
+       height="100"
+       x="80.10714"
+       y="59.425488" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="210.13565"
+       y="-83.060448"
+       id="text1006"
+       transform="rotate(90)"
+       inkscape:transform-center-x="-1.0295674"
+       inkscape:transform-center-y="-12.84994"><tspan
+         sodipodi:role="line"
+         id="tspan1004"
+         style="stroke-width:0.264583"
+         x="210.13565"
+         y="-83.060448">150</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.264583"
+         x="210.13565"
+         y="-69.831322"
+         id="tspan1008" /></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="162.67932"
+       y="-76.214859"
+       id="text1012"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan1010"
+         style="stroke-width:0.264583"
+         x="162.67932"
+         y="-76.214859">100</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="135.96519"
+       y="-187.86298"
+       id="text1228"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan1226"
+         style="stroke-width:0.264583"
+         x="135.96519"
+         y="-187.86298">248</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="92.505333"
+       y="17.465605"
+       id="text1232"><tspan
+         sodipodi:role="line"
+         id="tspan1230"
+         style="stroke-width:0.264583"
+         x="92.505333"
+         y="17.465605">163</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:5.64444px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="75.104492"
+       y="-105.93334"
+       id="text300"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan298"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="75.104492"
+         y="-105.93334">Measure these to account for printer variance!</tspan></text>
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect458"
+       width="20"
+       height="1"
+       x="23.889078"
+       y="16.204744" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect512"
+       width="20"
+       height="1"
+       x="23.889078"
+       y="14.204743" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="32.34071"
+       y="29.955227"
+       id="text516"><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="32.34071"
+         y="29.955227"
+         id="tspan522">variance cutlines (2mm per black bar: 1mm thick 1mm spacing; cut on edge.</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="32.34071"
+         y="35.246887"
+         id="tspan564">inner offset edges are at .5 mm and so on)</tspan></text>
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect518"
+       width="20"
+       height="1"
+       x="43.88908"
+       y="16.704744" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect520"
+       width="20"
+       height="1"
+       x="43.88908"
+       y="14.704743" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect532"
+       width="20"
+       height="1"
+       x="-186.88908"
+       y="16.204744"
+       transform="scale(-1,1)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect534"
+       width="20"
+       height="1"
+       x="-186.88908"
+       y="14.204743"
+       transform="scale(-1,1)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect536"
+       width="20"
+       height="1"
+       x="-166.88907"
+       y="16.704744"
+       transform="scale(-1,1)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect538"
+       width="20"
+       height="1"
+       x="-166.88907"
+       y="14.704743"
+       transform="scale(-1,1)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect540"
+       width="20"
+       height="1"
+       x="-58.204742"
+       y="-20.889078"
+       transform="matrix(0,-1,-1,0,0,0)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect542"
+       width="20"
+       height="1"
+       x="-58.204742"
+       y="-22.889078"
+       transform="matrix(0,-1,-1,0,0,0)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect544"
+       width="20"
+       height="1"
+       x="-38.204742"
+       y="-20.389078"
+       transform="matrix(0,-1,-1,0,0,0)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect546"
+       width="20"
+       height="1"
+       x="-38.204742"
+       y="-22.389078"
+       transform="matrix(0,-1,-1,0,0,0)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect548"
+       width="20"
+       height="1"
+       x="226.20474"
+       y="-20.889078"
+       transform="rotate(90)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect550"
+       width="20"
+       height="1"
+       x="226.20474"
+       y="-22.889078"
+       transform="rotate(90)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect552"
+       width="20"
+       height="1"
+       x="246.20476"
+       y="-20.389078"
+       transform="rotate(90)" />
+    <rect
+       style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
+       id="rect554"
+       width="20"
+       height="1"
+       x="246.20476"
+       y="-22.389078"
+       transform="rotate(90)" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:5.64444px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="75.391876"
+       y="-131.80341"
+       id="text560"
+       transform="rotate(90)"><tspan
+         sodipodi:role="line"
+         id="tspan558"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="75.391876"
+         y="-131.80341">248x163 mm (MakerBot Replicator 2X bed)</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="75.391876"
+         y="-124.74786"
+         id="tspan562">at outside of gray line</tspan></text>
+    <path
+       id="rect691"
+       style="stroke-width:4.35599;stroke-linecap:round"
+       d="m 32.272252,21.790109 2.346101,2.346101 c -1.459644,0 -3.204048,0 -4.692202,0 z"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.787966;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+       d="M 32.272252,22.290108 V 26.93068"
+       id="path792" />
+    <path
+       id="path1348"
+       style="stroke-width:4.35599;stroke-linecap:round"
+       d="m 26.763238,27.283865 2.346101,-2.346101 c 0,1.459644 0,3.204048 0,4.692202 z"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.787966;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+       d="m 27.263237,27.283867 h 4.640572"
+       id="path1350" />
+  </g>
+</svg>
