@@ -27,8 +27,8 @@ M420 S1 ; Restore manual mesh instead of G29 re-probing (www.youtube.com/watch?v
 ; ^ NOTE that braces even in comments cause a parsing error in PrusaSlicer
 
 G92 E0 ; added by Poikilos
-; G1 X60.0 Y-0.5 Z0.32 F500.0; added by Poikilos
-G1 Y50 X-1.0 Z0.22 F3000.0; added by Poikilos
+; G1 X60.0 Y-0.5 Z0.32 F7200; added by Poikilos
+G1 Y50 X-1.0 Z0.22 F7200; added by Poikilos
 ; Purge line from "How to do a nozzle wipe before every print - Gcode Scripts part 2" (https://www.youtube.com/watch?v=6csbJ5965Bk) Nov 30, 2016 by Maker's Muse
 ; ^ NOTE that braces even in comments cause a parsing error in PrusaSlicer
 ; G1 Y-0.5 F500.0 ; move out of print volume
@@ -36,8 +36,18 @@ G1 Y50 X-1.0 Z0.22 F3000.0; added by Poikilos
 ; G1 X60.0 E9 F500.0 ; start purge
 ; G1 X100 E12.5 F500.0 ; finish purge line
 ; G1 X110 E18 F500.0 ; start purge (changed by Poikilos; doubled E)
-G1 Y110 F[travel_speed] ; start purge (changed by Poikilos; no E)
+; G1 Y110 F[travel_speed] ; start purge (changed by Poikilos; no E)  F[travel_speed] is way too slow for some reason (using mm/s as mm/min??)
+G1 Y110 F18000.0 ; Fast travel to start purge position (300 mm/s) (changed by Poikilos; no E)
 ; G1 X35 Y-2.0 E45 F500.0 ; finish purge line (changed to .75E per 8mm & longer total by Poikilos; E was 12.5, distance was ~30)
-G1 Y20 X-2.0 E45 F500.0 ; finish purge line (changed to longer total by Poikilos; E was 12.5, distance was ~30)
-G1 X-2.5 F250.0 ; get behind the bump to wipe more on the way (added by Poikilos)
+; G1 Y20 X-2.0 E45 F500.0 ; finish purge line (changed to longer total by Poikilos; E was 12.5, distance was ~30)
+; G1 Y20 X-2.0 Z0 E45 F3600.0
+; ^ oozes after gets on bed, so decelerate manually:
+G1 Y87.5 X-2.0 Z0 E9 F3600
+G1 Y65 X-2.0 Z0 E7 F1800
+G1 Y42.5 X-2.0 Z0 E4.5 F900
+G1 Y20 X-2.0 Z0 E1 F450
+
+G1 X-2.5 Z0.0 F3600.0 ; get behind the filament bump (or off edge of bed if allowed by configuration) to wipe more on the way (added by Poikilos)
+G1 X0 Z0.05 Y87 F18000.0 ; super quick wipe onto edge of bed diagonally for safety (knock off excess; added by Poikilos)
+G1 X0 Z0.05 F18000.0 ; wipe along edge of bed (added by Poikilos; formerly F3600)
 G92 E0 ; added by Poikilos
