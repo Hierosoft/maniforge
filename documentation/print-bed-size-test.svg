@@ -24,14 +24,14 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.5"
-     inkscape:cx="419"
-     inkscape:cy="428"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
+     inkscape:zoom="0.70710678"
+     inkscape:cx="521.1377"
+     inkscape:cy="627.91082"
+     inkscape:window-width="1572"
+     inkscape:window-height="754"
+     inkscape:window-x="182"
+     inkscape:window-y="108"
+     inkscape:window-maximized="0"
      inkscape:current-layer="layer1" />
   <defs
      id="defs2" />
@@ -132,7 +132,17 @@
          id="tspan298"
          style="font-size:5.64444px;stroke-width:0.264583"
          x="75.104492"
-         y="-105.93334">Measure these to account for printer variance!</tspan></text>
+         y="-105.93334">Measure 100 line to account for printer variance!</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="75.104492"
+         y="-98.877792"
+         id="tspan4346">Example: If only measures 99, add 1 x 2.48 (2.48 mm to width</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="75.104492"
+         y="-91.822243"
+         id="tspan4348">1.63 to height before cutting. )</tspan></text>
     <rect
        style="fill:#000000;stroke-width:8.33931;stroke-linecap:round"
        id="rect458"
