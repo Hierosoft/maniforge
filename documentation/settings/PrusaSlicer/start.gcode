@@ -45,7 +45,8 @@ G1 Y110 F18000.0 ; Fast travel to start purge position (300 mm/s) (changed by Po
 G1 Y87.5 X-2.0 Z0 E9 F3600
 G1 Y65 X-2.0 Z0 E7 F1800
 G1 Y42.5 X-2.0 Z0 E4.5 F900
-G1 Y20 X-2.0 Z0 E1 F450
+G1 Y20 X-2.0 Z0 E1 F450 ; about 9.42mm on front and back, and 8.37 on left and right would be taken by 230x150 glass on 248x163 bed: https://www.thingiverse.com/thing:7069486
+; (9.42mm varies based on whether adjustment nuts on back and front are both tightened by the same amount)
 
 G1 X-2.5 Z0.0 F3600.0 ; get behind the filament bump (or off edge of bed if allowed by configuration) to wipe more on the way (added by Poikilos)
 G1 X0 Z0.05 Y87 F18000.0 ; super quick wipe onto edge of bed diagonally for safety (knock off excess; added by Poikilos)
