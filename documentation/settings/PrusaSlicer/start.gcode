@@ -17,14 +17,23 @@
 ; ^ first_layer_bed_temperature
 M190 S[bed_temperature] ; set bed temp and wait
 ; ^ bed_temperature
-M109 S[first_layer_temperature_0] ; set nozzle temp and wait
+
+M104 S[first_layer_temperature_0] ; set nozzle temp *no wait*, will wait after probing
+
 M280 P0 S160 ; BLTouch alarm release
 G4 P100 ; delay for BLTouch
 G28 ; home
 ; G29 ; auto bed leveling
 ; G28 A  ; re-enable mesh leveling (same as M420 S or M420 S1; called here since G28 disables it)
+
 M420 S1 ; Restore manual mesh instead of G29 re-probing (www.youtube.com/watch?v=eF060dBEnfs)
 ; ^ NOTE that braces even in comments cause a parsing error in PrusaSlicer
+; BED_MESH_PROFILE LOAD=clamped_flashforge_glass_buildtak
+; BED_MESH_PROFILE LOAD=mesh1 ; 63 C
+; BED_MESH_PROFILE LOAD=mesh3 ; 110 C
+; BED_MESH_PROFILE LOAD=default ; 110 C (same as mesh3!)
+
+M109 S[first_layer_temperature_0] ; set nozzle temp and wait
 
 G92 E0 ; added by Poikilos
 ; G1 X60.0 Y-0.5 Z0.32 F7200; added by Poikilos
