@@ -15,7 +15,7 @@
 ; M106 S255 ; fan
 ; M190 S[first_layer_bed_temperature] ; set bed temp and wait
 ; ^ first_layer_bed_temperature
-M190 S[bed_temperature] ; set bed temp and wait
+M190 S[first_layer_bed_temperature] ; set bed temp and wait
 ; ^ bed_temperature
 
 M104 S[first_layer_temperature_0] ; set nozzle temp *no wait*, will wait after probing
@@ -32,6 +32,8 @@ M420 S1 ; Restore manual mesh instead of G29 re-probing (www.youtube.com/watch?v
 ; BED_MESH_PROFILE LOAD=mesh1 ; 63 C
 ; BED_MESH_PROFILE LOAD=mesh3 ; 110 C
 ; BED_MESH_PROFILE LOAD=default ; 110 C (same as mesh3!)
+; BED_MESH_PROFILE LOAD=magnetic-enomaker-PEI-smooth_side-[first_layer_bed_temperature]C
+; ^ requires z min of around -.24 on very warped beds, otherwise causes "Move out of range: ... ... -0.198 (71.056)"
 
 M109 S[first_layer_temperature_0] ; set nozzle temp and wait
 
