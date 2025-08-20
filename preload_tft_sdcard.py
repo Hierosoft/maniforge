@@ -37,6 +37,9 @@ if os.path.isfile(os.path.join(REPOS_DIR, "hierosoft", "hierosoft",
                   "__init.py__")):
     sys.path.insert(0, os.path.join(REPOS_DIR), "hierosoft")
 
+# from .find_hierosoft import hierosoft
+# ^ also works for submodules since changes sys.path
+
 from hierosoft.morebytes import (  # noqa: E402
     ByteConf,
 )
