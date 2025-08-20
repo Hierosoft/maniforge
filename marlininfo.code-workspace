@@ -11,5 +11,12 @@
 			"editor.wordBasedSuggestions": "off"
 		},
 		"editor.wordBasedSuggestions": "off",
+		"cSpell.words": [
+			"BuildTak",
+			"ENOMAKER",
+			"FlashForge",
+			"Poikilos",
+			"Prusa"
+		],
 	}
 }
