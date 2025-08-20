@@ -1,0 +1,21 @@
+[Unit]
+Description=MJPG-Streamer Service
+After=network.target dev-video0.device
+Wants=network.target dev-video0.device
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/mjpg-streamer/mjpg-streamer-experimental
+Environment="LD_LIBRARY_PATH=/home/pi/mjpg-streamer/mjpg-streamer-experimental"
+ExecStartPre=/bin/sh -c "lsof /dev/video0 | awk 'NR>1 {print \\$2}' | xargs -r kill -9 || true"
+ExecStart=/home/pi/mjpg-streamer/mjpg-streamer-experimental/mjpg_streamer -o "output_http.so -w /home/pi/mjpg-streamer/mjpg-streamer-experimental/www -p 8080" -i "input_uvc.so -d /dev/video0 -r 848x480 -f 2 -br 64"
+#-ex auto: not available on GUCEE
+#-br: brightness range is -64 to 64 on GUCEE
+# GUCEE mjpeg formats: 848x480, 1280x720, others
+ExecStop=/bin/sh -c "lsof /dev/video0 | awk 'NR>1 {print \\$2}' | xargs -r kill -9 || true"
+KillMode=control-group
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
