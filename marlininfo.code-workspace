@@ -12,11 +12,36 @@
 		},
 		"editor.wordBasedSuggestions": "off",
 		"cSpell.words": [
+			"9Crounding",
 			"BuildTak",
+			"columnspan",
+			"dant_shown",
+			"dnlh_shown",
+			"dnnh_shown",
+			"dwfnh_shown",
 			"ENOMAKER",
 			"FlashForge",
+			"gcfmesh",
+			"gcode",
+			"gcodefollower",
+			"Gustafson",
+			"HATCHBOX",
+			"hotend",
+			"Klipper",
+			"McMabers",
+			"Murach",
+			"padx",
+			"pady",
 			"Poikilos",
-			"Prusa"
-		],
+			"Prusa",
+			"prusaslicer",
+			"remi.lapeyre",
+			"Slic3r",
+			"temperaturegui",
+			"TIMELAPSE",
+			"tmprs",
+			"wraplength",
+			"Zeytinci"
+		]
 	}
 }
