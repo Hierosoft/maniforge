@@ -6,10 +6,14 @@ Get or pull a repo.
 
 This is submodule of linuxpreinstall hosted at
 <https://github.com/Poikilos/linux-preinstall>.
+
 This submodule is also present in
-<https://github.com/Poikilos/marlininfo>
+<https://github.com/Hierosoft/maniforge>
 in preload_tft_sdcard.py (since they are trivial and should make
-the script depend on linuxpreinstall).
+the script depend on linux-preinstall).
+- See also utilities-developer/getrepo in
+  github.com/Hierosoft/linux-preinstall (for automatic destination).
+
 
 '''
 

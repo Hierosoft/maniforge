@@ -1,10 +1,28 @@
 
 from __future__ import print_function
 from __future__ import division
+
+from decimal import Decimal
+import decimal
+import inspect
+import json
+import math
+import os
 import shutil
+import sys
+
+if sys.version_info.major >= 3:
+    from logging import getLogger
+else:
+    # Python 2
+    from hierosoft.logging2 import getLogger
+
 from maniforge import cast_by_type_string
+from maniforge.mfgcode import cmd_meta_dict, get_cmd_meta
 from maniforge.mfmath import getHMSFromS, getHMSMessageFromS
 from maniforge.mfpython import encVal
+
+logger = getLogger(__name__)
 
 
 class GCodeFollower:
@@ -351,7 +369,7 @@ class GCodeFollower:
         GCodeFollower.printSettingsDocumentation(print_callback=_saveLine)
 
     @staticmethod
-    def printSettingsDocumentation(print_callback=echo0):
+    def printSettingsDocumentation(print_callback=print):
         print_callback(
             "You can edit \"{}\" to change settings".format(
                 GCodeFollower._settingsPath
@@ -399,9 +417,9 @@ class GCodeFollower:
         # else: allow setting it to None.
         self._settings[name] = value
         if self._verbose:
-            echo0("  * {} set {} to {}"
-                  "".format(inspect.stack()[1][3], name,
-                            self.getVar(name)))
+            logger.debug("  * {} set {} to {}"
+                         .format(inspect.stack()[1][3], name,
+                                 self.getVar(name)))
 
     def getRangeVarName(self, name, i):
         return GCodeFollower._rangeNames[i] + "_" + name
@@ -430,7 +448,7 @@ class GCodeFollower:
         if prevent_exceptions:
             if result is None:
                 return None
-        # echo0(json.dumps(self._settings))
+        # logger.debug(json.dumps(self._settings))
         return cast_by_type_string(result, GCodeFollower._settings_types[name])
 
     def getRangeVar(self, name, i):
@@ -493,7 +511,7 @@ class GCodeFollower:
             # sort_keys=True)
 
     def loadSettings(self):
-        echo0("Loading settings...")
+        print("Loading settings...", file=sys.stderr)
         self.error = None
         if not os.path.isfile(GCodeFollower._settingsPath):
             print("No settings file \"{}\""
@@ -843,7 +861,7 @@ class GCodeFollower:
     def debug(self, msg):
         if not self._verbose:
             return
-        echo0("[debug] {}".format(msg))
+        logger.debug("[debug] {}".format(msg))
 
     def getBedSecRelTemp(self, S):
         '''
@@ -895,8 +913,8 @@ class GCodeFollower:
             # such as {'M': '104', 'S': '210'}
             S = meta.get('S')
             if S is None:
-                echo0('WARNING: S is None in "{}"'
-                      ''.format(cmd_meta))
+                logger.warning('WARNING: S is None in "{}"'
+                               .format(cmd_meta))
             else:
                 S = float(S)
                 self.setToolTemperature(S)
@@ -912,8 +930,8 @@ class GCodeFollower:
             # such as {'M': '109', 'S': '210'}
             S = meta.get('S')
             if S is None:
-                echo0('WARNING: S is None in "{}"'
-                      ''.format(cmd_meta))
+                logger.warning('WARNING: S is None in "{}"'
+                               .format(cmd_meta))
             else:
                 S = float(S)
                 heatUpTime = self.getToolSecRelTemp(S)
@@ -948,8 +966,8 @@ class GCodeFollower:
                 self._estS += S
                 debug("_estSec += {} dwell".format(S))
             else:
-                echo0('WARNING: S & P are None in "{}"'
-                      ''.format(cmd_meta))
+                logger.warning('WARNING: S & P are None in "{}"'
+                               .format(cmd_meta))
         elif f == "M420":
             # Get and/or set bed leveling state
             # such as {'M': '420', 'S': '1'}
@@ -1047,8 +1065,9 @@ class GCodeFollower:
                 if oldF is not None:
                     F = oldF
                 else:
-                    echo0("WARNING: The feed_rate is unknown at {}."
-                          "".format(cmd_meta))
+                    logger.warning(
+                        "WARNING: The feed_rate is unknown at {}."
+                        .format(cmd_meta))
                 return
             else:
                 F = float(F)
@@ -1083,9 +1102,9 @@ class GCodeFollower:
                       "".format(feedTime, eDiff, feedPerSec))
                 self.setEPos(E)
             else:
-                echo0('WARNING: Estimating "{}" is not possible since'
-                      ' there was no X, Y, Z, nor E movement.'
-                      ''.format(cmd_meta))
+                logger.warning('WARNING: Estimating "{}" is not possible since'
+                               ' there was no X, Y, Z, nor E movement.'
+                               .format(cmd_meta))
 
         elif f == "M107":
             # Fan off
@@ -1109,9 +1128,9 @@ class GCodeFollower:
             # Disable motors.
             pass
         else:
-            echo0("WARNING: The command isn't emulated for estimates"
-                  " or other uses: {}"
-                  "".format(cmd_meta))
+            logger.warning("WARNING: The command isn't emulated for estimates"
+                           " or other uses: {}"
+                           .format(cmd_meta))
         # Additional relevant commands:
         # M209: Set auto retract
         # M141: Set chamber temperature

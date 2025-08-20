@@ -5,10 +5,10 @@ import re
 
 MY_DIR = os.path.dirname(os.path.realpath(__file__))
 
-if os.path.isfile(os.path.join(MY_DIR, "marlininfo", "__init__.py")):
+if os.path.isfile(os.path.join(MY_DIR, "maniforge", "__init__.py")):
     sys.path.insert(0, MY_DIR)
 
-from marlininfo import main
+from maniforge.marlininfo import main  # noqa: E402
 
 if __name__ == '__main__':
     sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])

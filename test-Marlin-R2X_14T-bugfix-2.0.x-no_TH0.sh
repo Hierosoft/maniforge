@@ -26,7 +26,7 @@ END
         echo "  # add it or replace ~/.local/bin with /usr/local/bin"
     else
         echo "There is no deploy-marlin in `pwd`."
-        echo "Run ./$me again from the marlininfo repo root to show an example symlink command."
+        echo "Run ./$me again from the maniforge repo root to show an example symlink command."
     fi
     exit 1
 fi

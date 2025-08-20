@@ -21,15 +21,17 @@ if sys.version_info.major >= 3:
         print()
         print()
         sys.exit(1)
+    from logging import getLogger
 else:
     # Python 2
     import Tkinter as tk  # type:ignore
     import ttk  # type:ignore
+    from hierosoft.logging2 import getLogger
+
 
 from gcodefollower import (
     GCodeFollower,
     GCodeFollowerArgParser,
-    echo0,
     encVal,
     usage,
 )
@@ -49,6 +51,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
+logger = getLogger(__name__)
+
+
+
+
 gcode = None
 runParams = None
 
@@ -57,7 +64,7 @@ def echo1(msg):
     global runParams
     if not runParams.verbose:
         return
-    echo0(msg)
+    logger.info(msg)
 
 
 class ConfigurationFrame(ttk.Frame):
@@ -150,11 +157,12 @@ class ConfigurationFrame(ttk.Frame):
         # (Urban & Murach, 2016, p. 515)
         ok, err = self.checkSettingsAndShow()
         if err is not None:
-            echo0("Error: {}".format(err))
+            logger.error("Error: {}".format(err))
         if not ok:
-            echo0("^ Ignore settings errors above unless trying to"
-                  " run non-interactively, because the error"
-                  " occurred on startup.")
+            logger.error(
+                "^ Ignore settings errors above unless trying to"
+                " run non-interactively, because the error"
+                " occurred on startup.")
 
         self.pullSettings()  # Get the path even if temperature is bad.
         if not os.path.isfile(gcode._settingsPath):
@@ -262,12 +270,13 @@ class ConfigurationFrame(ttk.Frame):
 
     def _generateTower(self):
         try:
-            echo0("Calling gcode.generateTower...")
+            print("Calling gcode.generateTower...",
+                  file=sys.stderr)
             gcode.generateTower()
         except Exception as ex:
             self.echo(str(ex))
             raise ex
-        echo0("Done")
+        print("Done (ran gcode.generateTower)", file=sys.stderr)
 
 
 def main():

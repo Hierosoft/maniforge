@@ -121,7 +121,7 @@ The main goal was to improve bed adhesion and eliminate skipping on the extruder
 - [Simplified & Enhanced Air Scrubber for 3M Filter such as for MakerBot Replicator 2X](https://www.thingiverse.com/thing:4871456) by Poikilos
 
 #### Custom Z_MAX
-This part is not complete, but seems possible with Marlin bugfix-2.1.x (not bugfix-2.0.x) according to the issue page. A link to the closed MarlinFirmware/Marlin issue is at: <https://github.com/poikilos/marlininfo/issues/22>. This issue is also discussed in [documentation/manual.md](documentation/manual.md)
+This part is not complete, but seems possible with Marlin bugfix-2.1.x (not bugfix-2.0.x) according to the issue page. A link to the closed MarlinFirmware/Marlin issue is at: <https://github.com/Hierosoft/maniforge/issues/22>. This issue is also discussed in [documentation/manual.md](documentation/manual.md)
 
 
 If you place the screws differently, you'll have to modify the R2X_14T config's Z_MAX_POS value by the difference. If your endstop is higher, you will have to subtract. Note that the build volume will not match the manufacturer build volume either way. Making a mount that places the endstop all the way at the bottom may cause pulling or crushing of the wires that go to the bed (That issue may be solvable and allow increasing the build volume).
@@ -170,7 +170,7 @@ To make modifications that differ from the current state of the r2x_14t project 
 ## Development
 
 ### marlininfo
-The marlininfo module is a Python module for modifying and deploying Configurations regardless of version.
+The marlininfo submodule is a Python module for modifying and deploying Configurations regardless of version.
 
 In several variable names, "C_" or "c_" refers to Configuration.h
 and "C_A_" or "c_a_" refers to Configuration_adv.h

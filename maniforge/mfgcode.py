@@ -1,7 +1,13 @@
+from __future__ import print_function
 
+import sys
 
 from decimal import Decimal
-from logging import getLogger
+if sys.version_info.major >= 3:
+    from logging import getLogger
+else:
+    # Python 2
+    from hierosoft.logging2 import getLogger
 
 from maniforge import has_numbers
 from maniforge.mfmath import show_fewest

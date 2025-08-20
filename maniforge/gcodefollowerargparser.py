@@ -1,6 +1,17 @@
 from __future__ import print_function
 from __future__ import division
+import logging
+import sys
+
+if sys.version_info.major >= 3:
+    from logging import getLogger
+else:
+    # Python 2
+    from hierosoft.logging2 import getLogger
+
 from maniforge.gcodefollower import GCodeFollower
+
+logger = getLogger(__name__)
 
 
 def usage():
@@ -32,7 +43,11 @@ class GCodeFollowerArgParser():
             arg = sys.argv[argI]
             if arg == "--verbose":
                 self.verbose = True
-                echo0("* Verbose mode is enabled.")
+                logger.setLevel(logging.INFO)
+                logger.info("* Verbose mode is enabled.")
+            elif arg == "--debug":
+                self.verbose = True
+                logger.setLevel(logging.DEBUG)
             elif arg == "--help":
                 self.help = True
             elif arg.startswith("--"):

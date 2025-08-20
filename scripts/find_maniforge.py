@@ -6,8 +6,8 @@ import os
 import platform
 
 REPO_USER = "Poikilos"
-REPO_NAME = "marlininfo"
-MODULE_NAME = "marlininfo"  # See also import marlininfo statements
+REPO_NAME = "maniforge"
+MODULE_NAME = "maniforge"  # See also import maniforge statements
 
 GIT_SERVER= "https://github.com"
 
@@ -35,9 +35,9 @@ if sys.version_info.major < 3:
     ModuleNotFoundError = ImportError
 
 try:
-    import marlininfo
+    import maniforge
     # Don't mess with the path at all if it already works.
-    echo0("[{}] using sys.path's {}".format(CALLER_NAME, marlininfo.__file__))
+    echo0("[{}] using sys.path's {}".format(CALLER_NAME, maniforge.__file__))
 except ModuleNotFoundError:
     if os.path.isfile(os.path.join(nearbyRepo, MODULE_NAME, "__init__.py")):
         sys.path.insert(0, nearbyRepo)
@@ -50,10 +50,10 @@ except ModuleNotFoundError:
         # use the one in the python path (or fail)
         # print("There is no {}".format(os.path.join(thisRepo, MODULE_NAME)))
 
-    import marlininfo
+    import maniforge
 
     try:
-        import marlininfo
+        import maniforge
     except ImportError as ex:
         echo0("sys.path={}".format(sys.path))
         echo0(str(ex))

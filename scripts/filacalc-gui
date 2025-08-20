@@ -2,10 +2,10 @@
 import sys
 import re
 
-from find_marlininfo import marlininfo
+from find_maniforge import maniforge
 # ^ works for submodules too since changes sys.path
 
-from marlininfo.filacalc import (
+from maniforge.filacalc import (
     main,
 )
 

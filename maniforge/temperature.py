@@ -14,8 +14,6 @@ import threading
 from gcodefollower import (
     GCodeFollower,
     GCodeFollowerArgParser,
-    echo0,
-    echo1,
 )
 # import tk_cli_dummy as tk  # This is for synchronizing code between
 #                            # CLI and non-CLI versions.
@@ -143,10 +141,10 @@ def main():
         usage()
         return 0
     app = Application()
-    echo0("* scheduling")
+    print("* scheduling", file=sys.stderr)
     code = app.run()
     if code == 0:
-        echo0("* done scheduled tasks")
+        print("* done scheduled tasks", file=sys.stderr)
     return code
 
 

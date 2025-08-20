@@ -15,12 +15,20 @@ cd directory_of_stl_files_to_change_PERMANENTLY
 python resize-all.py 1.26237623752376
 
 '''
+from __future__ import print_function
 import sys
 import os
 import shlex
 import subprocess
 import shutil
 
+if sys.version_info.major >= 3:
+    from logging import getLogger
+else:
+    # Python 2
+    from hierosoft.logging2 import getLogger
+
+logger = getLogger(__name__)
 
 def echo0(*args):
     print(*args, file=sys.stderr)
@@ -101,7 +109,7 @@ def main():
     ROOT=".."
     if len(sys.argv) < 2:
         usage()
-        echo0("Error: You must specify a scale.")
+        logger.error("Error: You must specify a scale.")
         return 1
     return resize_all(float(sys.argv[1]), ROOT)
 

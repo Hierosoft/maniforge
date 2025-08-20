@@ -6,31 +6,7 @@ by Poikilos
 '''
 from __future__ import print_function
 from decimal import Decimal
-import os
 import re
-import sys
-import pathlib
-import shutil
-import shlex
-import git
-import platform
-from git import Repo
-
-from subprocess import (
-    Popen,
-)
-
-from .find_pycodetool import pycodetool  # noqa: F401
-# ^ also works for submodules since changes sys.path
-from .find_hierosoft import hierosoft
-# ^ also works for submodules since changes sys.path
-
-# from hierosoft.logging import (
-#     to_syntax_error,  # (path, lineN, msg, col=None)
-#     echo_SyntaxWarning,  # (path, lineN, msg, col=None)
-#     raise_SyntaxError,  # (path, lineN, msg, col=None)
-# )
-
 
 def cast_by_type_string(value, type_str):
     if value is None:

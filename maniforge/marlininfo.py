@@ -42,17 +42,34 @@ OPTIONS:
                         setting isn't enabled anywhere in this program
                         for the BTT mainboard).
 '''
+from __future__ import print_function
 import logging
 import os
 import platform
 import pathlib
+import shlex
 import shutil
+from subprocess import Popen
 import sys
 
 from git import Repo
-from logging import getLogger
+if sys.version_info.major >= 3:
+    from logging import getLogger
+else:
+    # Python 2
+    from hierosoft.logging2 import getLogger
 
 import git
+
+
+from .find_pycodetool import pycodetool  # noqa: F401
+# ^ also works for submodules since changes sys.path
+
+# from hierosoft.logging import (
+#     to_syntax_error,  # (path, lineN, msg, col=None)
+#     echo_SyntaxWarning,  # (path, lineN, msg, col=None)
+#     raise_SyntaxError,  # (path, lineN, msg, col=None)
+# )
 
 
 from pycodetool.parsing import (
@@ -861,7 +878,7 @@ R2X_14T_C_VALUES = {
     # ^ TODO: increase Z to 123 (as measured on screen by moving
     #   manually after homing; tried 115 before that) and see if is still ok.
     #   - Set to 0 until Marlin bug is fixed! See marlininfo issue
-    #     [#22](https://github.com/poikilos/marlininfo/issues/22)
+    #     [#22](https://github.com/Hierosoft/maniforge/issues/22)
     'EEPROM_SETTINGS': "",
     'SDSUPPORT': "", # deprecated, handled by HASMEDIA macro now? Back in e41dc27
     # 'NEOPIXEL_PIN': "",  # Not tried, but may be a way to rig builtin ones

@@ -7,12 +7,18 @@ Usage:
 got.py {sd_card_path}
 # where {sd_card_path} is the folder path of the SD card.
 '''
-
+from __future__ import print_function
 
 import os
 import sys
 import platform
 import shutil
+
+if sys.version_info.major >= 3:
+    from logging import getLogger
+else:
+    # Python 2
+    from hierosoft.logging2 import getLogger
 
 if platform.system() == "Windows":
     HOME = os.environ['USERPROFILE']
@@ -21,11 +27,7 @@ else:
     HOME = os.environ['HOME']
     USER = os.environ['USER']
 
-from marlininfo import (
-    echo0,
-)
-
-from marlininfo.getrepo import (
+from maniforge.getrepo import (
     get_or_pull,
     repo_flag_sub,
 )
@@ -44,15 +46,18 @@ from hierosoft.morebytes import (  # noqa: E402
     ByteConf,
 )
 
+logger = getLogger(__name__)
+
 
 def usage(sd_card_path="/mnt/sdf"):
-    echo0(__doc__.format(sd_card_path=sd_card_path))
+    print(__doc__.format(sd_card_path=sd_card_path), file=sys.stderr)
 
 
 def change_tft_conf_for_r2x(config_path, klipper=True,
                             X_BED_SIZE=242, Y_BED_SIZE=153):
-    echo0('[change_tft_conf_for_r2x] Editing "{}"...'
-          ''.format(os.path.basename(config_path)))
+    print('[change_tft_conf_for_r2x] Editing "{}"...'
+          .format(os.path.basename(config_path)),
+          file=sys.stderr)
     conf = ByteConf()
     conf.load(config_path)
     conf.set("status_screen", "1")
@@ -65,7 +70,7 @@ def change_tft_conf_for_r2x(config_path, klipper=True,
     #   so keep default_mode:1 (the default default_mode...)
     # min_temp:180
     conf.set("min_temp", "168")
-    # M115_GEOMETRY_REPORT supercedes manual settings:
+    # M115_GEOMETRY_REPORT supersedes manual settings:
     # size_min:X0 Y0 Z0
     # size_max:X235 Y235 Z250
     # TODO: change from default z_speed:S500 N1000 F2000
@@ -87,7 +92,7 @@ def change_tft_conf_for_r2x(config_path, klipper=True,
     # level_feedrate:XY6000 Z6000
     # inverted_axis:X0 Y0 Z0 LY0
     # probing_z_raise:20.0
-    # TODO: For Voron, change from default z_steppers_alignment:0
+    # TODO: For VORON, change from default z_steppers_alignment:0
     conf.set("M27_always_active", "1")
     # preheat_name_6:NYLON
     # preheat_temp_6:T250 B90
@@ -157,14 +162,14 @@ def preload_card(sd_card_path,
     '''
     # TODO: non-R2X settings
 
-    echo0("[preload_card] * downloading data for {}".format(sd_card_path))
+    logger.warning("[preload_card] * downloading data for {}".format(sd_card_path))
     if not os.path.exists(sd_card_path):
         usage()
-        echo0('Error: "{}" does not exist.'.format(sd_card_path))
+        logger.error('Error: "{}" does not exist.'.format(sd_card_path))
         return 1
     if not os.path.isdir(sd_card_path):
         usage()
-        echo0('Error: "{}" is not a directory.'.format(sd_card_path))
+        logger.error('Error: "{}" is not a directory.'.format(sd_card_path))
         return 1
     repos_dir = os.path.join(HOME, "Downloads", "git", "bigtreetech")
     if not os.path.isdir(repos_dir):
@@ -173,10 +178,10 @@ def preload_card(sd_card_path,
     repo_url = "https://github.com/bigtreetech/BIGTREETECH-TouchScreenFirmware.git"
     code = get_or_pull(repo_url, repo_dir)
     if code != 0:
-        echo0("[preload_card] get_or_pull...FAILED (error code {} {})"
+        logger.error("[preload_card] get_or_pull...FAILED (error code {} {})"
               "".format(type(code).__name__, code))
         return code
-    echo0("[preload_card] get_or_pull...OK")
+    print("[preload_card] get_or_pull...OK")
 
     # Do all sanity checks before copying anything:
     firmware_dir = os.path.join(repo_dir, firmware_sub)
@@ -184,14 +189,14 @@ def preload_card(sd_card_path,
     dst_bin_path = os.path.join(sd_card_path, bin_name)
     if not os.path.isfile(bin_path):
         raise FileNotFoundError('"{}" does not exist.'.format(bin_path))
-    echo0('[preload_card] * using "{}"'.format(bin_name))
+    print('[preload_card] * using "{}"'.format(bin_name))
     theme_path = None
     dst_model_sub_path = None
     if theme is not None:
         theme_path = os.path.join(firmware_dir, theme, theme_model_sub)
         if not os.path.isdir(theme_path):
             raise FileNotFoundError('"{}" does not exist.'.format(theme_path))
-        echo0('[preload_card] * using "{}"'.format(theme))
+        print('[preload_card] * using "{}"'.format(theme))
         dst_model_sub_path = os.path.join(sd_card_path, theme_model_sub)
 
     '''
@@ -215,7 +220,7 @@ def preload_card(sd_card_path,
     # ^ # must be the correctly-named sub (such as /mnt/SDCARD/TFT35)!
     if theme_path is not None:
         parent = os.path.dirname(theme_path)
-        echo0('[preload_card] Copying "{}/{}"...'
+        print('[preload_card] Copying "{}/{}"...'
               ''.format(os.path.basename(parent), os.path.basename(theme_path)))
         # distutils.dir_util.copy_tree
         shutil.copytree(
@@ -227,10 +232,10 @@ def preload_card(sd_card_path,
     shutil.copy(language_path, os.path.join(sd_card_path, language_pack)
     '''
     dst_config_path = os.path.join(sd_card_path, "config.ini")
-    echo0('[preload_card] Copying "{}"...'
+    print('[preload_card] Copying "{}"...'
           ''.format(os.path.basename(bin_path)))
     shutil.copy(bin_path, dst_bin_path)
-    echo0('[preload_card] Copying "{}"...'
+    print('[preload_card] Copying "{}"...'
           ''.format(os.path.basename(config_path)))
     shutil.copy(config_path, dst_config_path)
     klipper = False
@@ -240,7 +245,7 @@ def preload_card(sd_card_path,
         klipper=klipper,
     )
 
-    echo0(
+    print(
         'Saved "{}" (to compare, run `meld "{}" "{}"` if meld is in your path)'
         ''.format(
             os.path.basename(dst_config_path),
@@ -323,11 +328,12 @@ def main():
     if error is not None:
         usage()
 
-        echo0('Error: You appear to be running from the repo'
-              ' ({})'
-              ' but should run from an SD card or insert one with'
-              ' got.py.'
-              ''.format(error))
+        logger.error(
+            'Error: You appear to be running from the repo'
+            ' ({})'
+            ' but should run from an SD card or insert one with'
+            ' got.py.'
+            .format(error))
         return 1
 
     return preload_card(sd_card_path, theme=None)
