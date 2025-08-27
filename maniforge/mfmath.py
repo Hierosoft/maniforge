@@ -1,5 +1,3 @@
-
-
 from decimal import Decimal
 import math
 
@@ -31,35 +29,50 @@ python_round = round
 
 def round_nearest_d(*args):
     '''
-    This is a Decimal version of round_nearest. See round_nearest for
-    documentation.
+    Decimal version of round_nearest. Rounds a Decimal value to the specified precision.
+
+    Sequential arguments:
+    value -- a float or Decimal value to round.
+    precision (optional) -- the number of decimal places to keep (can be negative).
     '''
     if len(args) == 1:
         x = args[0]
+        if isinstance(x, float):
+            x = Decimal(str(x))
+        if not isinstance(x, Decimal):
+            raise TypeError("The value must be a float or Decimal.")
         i, f = divmod(x, 1)
         return int(i + ((f >= 0.5) if (x > 0) else (f > 0.5)))
     elif len(args) == 2:
         if not isinstance(args[1], int):
             raise TypeError("precision must be an int.")
         precision = args[1]
-        # return python_round(args[0], precision)
-        multiplier = Decimal(10 ** precision)
         x = args[0]
         if isinstance(x, float):
-            x = Decimal(x)
+            x = Decimal(str(x))
         if not isinstance(x, Decimal):
             raise TypeError("The value must be a float or Decimal.")
-        increased = Decimal(x * multiplier)
-        return Decimal(round_nearest_d(increased)) / Decimal(multiplier)
+        if precision >= 0:
+            multiplier = Decimal(10 ** precision)
+            increased = x * multiplier
+            rounded = int(increased + (Decimal('0.5') if increased >= 0 else Decimal('-0.5')))
+            return Decimal(rounded) / multiplier
+        else:
+            divisor = Decimal(10 ** -precision)
+            divided = x / divisor
+            rounded = int(divided + (Decimal('0.5') if divided >= 0 else Decimal('-0.5')))
+            return Decimal(rounded) * divisor
     else:
-        ValueError(
-            "round_nearest only takes 1 or 2 arguments:"
+        raise ValueError(
+            "round_nearest_d only takes 1 or 2 arguments:"
             " (value [, precision])"
         )
 
 
 def round_nearest(*args):
-    '''
+    '''Rounds a float value to the specified number of decimal places,
+    matching JavaScript's round10 function (Math.round behavior).
+
     This function circumvents the new Python 3 behavior where round uses
     "banker's rounding" to "limit the accumulation of errors when
     summing a list of rounded integers" (according to remi.lapeyre on
@@ -82,28 +95,30 @@ def round_nearest(*args):
 
     Sequential arguments:
     value -- a float value to round.
-    precision (optional) -- the number of decimal places to keep (uses
-        Python's builtin round function which uses banker's rounding in
-        Python 3). If not provided, value is rounded to a whole number
-        manually (without Python's builtin round function).
+    precision (optional) -- the number of decimal places to keep (can be negative).
     '''
     if len(args) == 1:
         x = args[0]
         i, f = divmod(x, 1)
         return int(i + ((f >= 0.5) if (x > 0) else (f > 0.5)))
     elif len(args) == 2:
-        precision = args[1]
-        if not isinstance(args[1], int):
+        value, precision = args
+        if not isinstance(precision, int):
             raise ValueError("precision must be an int.")
-        # return python_round(args[0], precision)
-        multiplier = 10 ** precision
-        increased = args[0] * multiplier
-        return round_nearest(increased) / multiplier
+        if precision >= 0:
+            multiplier = 10 ** precision
+            increased = value * multiplier
+            return int(increased + (0.5 if increased >= 0 else -0.5)) / multiplier
+        else:
+            divisor = 10 ** -precision
+            divided = value / divisor
+            return int(divided + (0.5 if divided >= 0 else -0.5)) * divisor
     else:
-        ValueError(
+        raise ValueError(
             "round_nearest only takes 1 or 2 arguments:"
             " (value [, precision])"
         )
+
 
 round = round_nearest
 

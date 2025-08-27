@@ -727,3 +727,426 @@ Aug 19 13:31:55 buzzy systemd[1]: mjpg-streamer.service: Job mjpg-streamer.servi
 ```
 We are not talking about overheating anymore, focus on these problems.
 
+## [pressure advance]
+Convert this to a wxPython program. Construct the filename field automatically whenever fields are edited if an "auto" checkbox below the filename edit box is checked (and construct the name when auto becomes checked). Instead of download, just save the file using a wx save file dialog defaulting to os expanduser ~/gcode/tests if present otherwise expand ~/gcode but if that doesn't exist then expand ~. Each time a file is saved, generated a preset with all fields. Use the filename, but instead of appending .gcode append .json. Make a presets drop-down box. If a preset is selected, load the json file. Store each preset json file in expanduser ~/.config/poikilospressureadvance/presets. Make the program modular and utilize the poikilospressureadvance/gcodefollower/init.py submodule (assume it it present and don't change it):
+
+- paste gcodefollower.py (formerly `gcodefollower/__init__.py`)
+
+Don't use placeholder code. The code where you said it was a placeholder is the core feature set! Translate the code as I said, referring to the files attached to the project, index.html and pressure_linear_advance.js especially. Instead of using the poikilospressureadvance folder, name the folder maniforge. Rename gcode_generator to pressureadvance.py, settings.py to slicersettings.py, Settings to SlicerSettings, ui_components.py to slicerwx.py, preset_manager.py to slicerpresets.py and assume all of the files are in a module called maniforge. Then rename main.py to pressure-advance.test. You are taking the html page along for the ride. Don't do that. Fully convert to wx and get rid of the wx.html2 dependency. Use wx.glcanvas.GLCanvas for the canvas. Generate the filename as follows: pa_pattern-214x214-210C-60C@10-50mms-0to1.1-step.025-r6.5at45 where 214x214 is bed size, 210 is extruder temperature, 60 is bed temperature, 10 is first layer speed, 50 is speed, 0 to 1.1 is start and end pressure advance, step.025 is step between 0 and 1.1, r6.5 is retraction length, 45 is retraction speed.
+
+Change the round_nearest import to `from maniforge.mfmath import round_nearest`. Rename slicersettings.py to slicerpreset.py and the class from SlicerSettings to SlicerPreset. Also fix:
+```
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 198, in create_setting_field
+    ctrl = wx.TextCtrl(self.panel, value=str(getattr(self.settings, attr)), style=control_type)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: TextCtrl(): arguments did not match any overloaded call:
+  overload 1: too many arguments
+  overload 2: argument 'style' has unexpected type 'sip.wrappertype'
+```
+The constructor documentation for TextCtrl is:
+> __init__ (self, parent, id=ID_ANY, value=’’, pos=DefaultPosition, size=DefaultSize, style=0, validator=DefaultValidator, name=TextCtrlNameStr)
+> Constructor, creating and showing a text control.
+> Parameters:
+> parent (wx.Window) – Parent window. Should not be None.
+> id (wx.WindowID) – Control identifier. A value of -1 denotes a default value.
+> value (string) – Default text value.
+> pos (wx.Point) – Text control position.
+> size (wx.Size) – Text control size.
+> style (long) – Window style. See wx.TextCtrl.
+> validator (wx.Validator) – Window validator.
+> name (string) – Window name.
+> . . .
+> The horizontal scrollbar (wx``wx.HSCROLL`` style flag) will only be created for multi-line text controls. Without a horizontal scrollbar, text lines that don’t fit in the control’s size will be wrapped (but no newline character is inserted). Single line controls don’t have a horizontal scrollbar, the text is automatically scrolled so that the insertion point is always visible.
+whereas you probably didn't mean to use style:
+> This class supports the following styles:
+> wx.TE_PROCESS_ENTER: The control will generate the event wxEVT_TEXT_ENTER that can be handled by the program. Otherwise, i.e. either if this style not specified at all, or it is used, but there is no event handler for this event or the event handler called wx.Event.Skip to avoid overriding the default handling, pressing Enter key is either processed internally by the control or used to activate the default button of the dialog, if any.
+> wx.TE_PROCESS_TAB: Normally, TAB key is used for keyboard navigation and pressing it in a control switches focus to the next one. With this style, this won’t happen and if the TAB is not otherwise processed (e.g. by wxEVT_CHAR event handler), a literal TAB character is inserted into the control. Notice that this style has no effect for single-line text controls when using wxGTK.
+> wx.TE_MULTILINE: The text control allows multiple lines. If this style is not specified, line break characters should not be used in the controls value.
+> wx.TE_PASSWORD: The text will be echoed as asterisks.
+> wx.TE_READONLY: The text will not be user-editable.
+> wx.TE_RICH: Use rich text control under MSW, this allows having more than 64KB of text in the control. This style is ignored under other platforms and it is recommended to use wx.TE_RICH2 instead of it under MSW.
+> wx.TE_RICH2: Use rich text control version 2.0 or higher under MSW, this style is ignored under other platforms. Note that this style may be turned on automatically even if it is not used explicitly when creating a text control with a long (i.e. much more than 64KiB) initial text, as creating the control would simply fail in this case under MSW if neither this style nor wx.TE_RICH is used.
+> wx.TE_AUTO_URL: Highlight the URLs and generate the TextUrlEvents when mouse events occur over them.
+> wx.TE_NOHIDESEL: By default, the Windows text control doesn’t show the selection when it doesn’t have focus - use this style to force it to always show it. It doesn’t do anything under other platforms.
+> wx.HSCROLL: A horizontal scrollbar will be created and used, so that text won’t be wrapped.
+> wx.TE_NO_VSCROLL: For multiline controls only: vertical scrollbar will never be created. This limits the amount of text which can be entered into the control to what can be displayed in it under wxMSW but not under wxGTK or wxOSX. Currently not implemented for the other platforms.
+> wx.TE_LEFT: The text in the control will be left-justified (default).
+> wx.TE_CENTRE: The text in the control will be centered (wxMSW, wxGTK, wxOSX).
+> wx.TE_RIGHT: The text in the control will be right-justified (wxMSW, wxGTK, wxOSX).
+> wx.TE_DONTWRAP: Same as wx.HSCROLL style: don’t wrap at all, show horizontal scrollbar instead.
+> wx.TE_CHARWRAP: For multiline controls only: wrap the lines too long to be shown entirely at any position (wxUniv, wxGTK, wxOSX).
+> wx.TE_WORDWRAP: For multiline controls only: wrap the lines too long to be shown entirely at word boundaries (wxUniv, wxMSW, wxGTK, wxOSX).
+> wx.TE_BESTWRAP: For multiline controls only: wrap the lines at word boundaries or at any other character if there are words longer than the window width (this is the default).
+> TE_CAPITALIZE: On PocketPC and Smartphone, causes the first letter to be capitalized.
+>
+> Note that alignment styles (wx``wx.TE_LEFT``, wx.TE_CENTRE and wx.TE_RIGHT) can be changed dynamically after control creation on wxMSW, wxGTK and wxOSX. wx.TE_READONLY, wx.TE_PASSWORD and wrapping styles can be dynamically changed under wxGTK but not wxMSW. The other styles can be only set during control creation.
+
+Change the round_nearest import to from maniforge.mfmath import round_nearest. Rename slicersettings.py to slicerpreset.py and the class from SlicerSettings to SlicerPreset. Also fix:
+`   File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 198, in create_setting_field  ctrl = wx.TextCtrl(self.panel, value=str(getattr(self.settings, attr)), style=control_type)  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  TypeError: TextCtrl(): arguments did not match any overloaded call:  overload 1: too many arguments  overload 2: argument 'style' has unexpected type 'sip.wrappertype'       `
+The constructor documentation for TextCtrl is:
+> **\_\_init\_\_** _(self, parent, id=ID\_ANY, value=’’, pos=DefaultPosition, size=DefaultSize, style=0, validator=DefaultValidator, name=TextCtrlNameStr)_
+> Constructor, creating and showing a text control.
+> Parameters:
+> -   **parent** ([_wx.Window_](https://docs.wxpython.org/wx.Window.html#wx.Window "wx.Window")) – Parent window. Should not be `None`.
+> -   **id** (_wx.WindowID_) – Control identifier. A value of -1 denotes a default value.
+> -   **value** (_string_) – Default text value.
+> -   **pos** ([_wx.Point_](https://docs.wxpython.org/wx.Point.html#wx.Point "wx.Point")) – Text control position.
+> -   **size** ([_wx.Size_](https://docs.wxpython.org/wx.Size.html#wx.Size "wx.Size")) – Text control size.
+> -   **style** (_long_) – Window style. See [wx.TextCtrl](https://docs.wxpython.org/wx.TextCtrl.html#wx-textctrl).
+> -   **validator** ([_wx.Validator_](https://docs.wxpython.org/wx.Validator.html#wx.Validator "wx.Validator")) – Window validator.
+> -   **name** (_string_) – Window name.
+>
+> Note that alignment styles (wxwx.TE\_LEFT, wx.TE\_CENTRE and wx.TE\_RIGHT) can be changed dynamically after control creation on wxMSW, wxGTK and wxOSX. wx.TE\_READONLY, wx.TE\_PASSWORD and wrapping styles can be dynamically changed under wxGTK but not wxMSW. The other styles can be only set during control creation.
+
+
+You have to check the type in on_field_change and use the correct call depending on the widget type. For example, if type of event.GetEventObject() is a wx.Choice, the correct way to get the value is event.GetString()
+
+I said event.GetString() and I meant it. widget.GetString in the case of wx.Choice requires the index. Also, try to fix round_nearest so the maximum recursion depth is not exceeded. If I do:
+```
+        try:
+            return round_nearest(increased) / multiplier
+        except RecursionError:
+            print(f"increased={increased}, multiplier={multiplier}, original={original}")
+            raise
+```
+The output is
+```
+increased=0.0001, multiplier=0.001, original=(0.1, -3)
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 223, in on_field_change
+    self.validate_and_update()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 256, in validate_and_update
+    gcode = "\n".join(errors) if errors else self.generator.generate_gcode()
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 174, in generate_gcode
+    z_hop()
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 132, in z_hop
+    move(z=state['cur_z'] + self.settings.zhop_height, comment="z hop")
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 109, in move
+    cmd.append(f"Z{self.round10(z, self.settings.Z_round)}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 13, in round10
+    return round_nearest(value, decimals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/mfmath.py", line 71, in round_nearest
+    return _round_nearest(*args)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/mfmath.py", line 115, in _round_nearest
+    return round_nearest(increased) / multiplier
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/mfmath.py", line 70, in round_nearest
+    set_original(args)
+RecursionError: maximum recursion depth exceeded
+```
+
+So, if precision is negative handle that using a separate int-based algorithm and round as necessary to match the behavior of the usage in the original html+JavaScript program.
+
+Don't use round or you will end up with banker's rounding. If ones place precision is required, do
+```
+int(increased+.5)
+```
+
+```
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 232, in update_filename
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 185, in generate_filename
+RecursionError: maximum recursion depth exceeded
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 228, in partial_apport_excepthook
+    return apport_excepthook(binary, exc_type, exc_obj, exc_tb)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 79, in apport_excepthook
+    binary = os.path.realpath(binary)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 435, in realpath
+RecursionError: maximum recursion depth exceeded
+Original exception was:
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+    self.update_filename()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 232, in update_filename
+    self.settings.filename = self.settings.generate_filename()
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 185, in generate_filename
+    return (f"pa_pattern-{self.bed_x}x{self.bed_y_value()}-"
+                                       ^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 223, in on_field_change
+    self.validate_and_update()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 256, in validate_and_update
+    gcode = "\n".join(errors) if errors else self.generator.generate_gcode()
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 141, in generate_gcode
+    add_gcode(self.settings.start_gcode_text(replace=True))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 135, in start_gcode_text
+    gcode = re.sub(r'M104 S0.*?\n', '', gcode)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/__init__.py", line 186, in sub
+    return _compile(pattern, flags).sub(repl, string, count)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 228, in partial_apport_excepthook
+    return apport_excepthook(binary, exc_type, exc_obj, exc_tb)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 79, in apport_excepthook
+    binary = os.path.realpath(binary)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 435, in realpath
+  File "<frozen posixpath>", line 459, in _joinrealpath
+  File "<frozen posixpath>", line 63, in isabs
+RecursionError: maximum recursion depth exceeded
+Original exception was:
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 223, in on_field_change
+    self.validate_and_update()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 256, in validate_and_update
+    gcode = "\n".join(errors) if errors else self.generator.generate_gcode()
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 141, in generate_gcode
+    add_gcode(self.settings.start_gcode_text(replace=True))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 135, in start_gcode_text
+    gcode = re.sub(r'M104 S0.*?\n', '', gcode)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/__init__.py", line 186, in sub
+    return _compile(pattern, flags).sub(repl, string, count)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+```
+
+When "round" is selected:
+```
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 228, in partial_apport_excepthook
+RecursionError: maximum recursion depth exceeded
+
+Original exception was:
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 221, in on_field_change
+RecursionError: maximum recursion depth exceeded
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 269, in validate_and_update
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 27, in validate
+RecursionError: maximum recursion depth exceeded
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 228, in partial_apport_excepthook
+    return apport_excepthook(binary, exc_type, exc_obj, exc_tb)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 79, in apport_excepthook
+    binary = os.path.realpath(binary)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 435, in realpath
+RecursionError: maximum recursion depth exceeded
+
+Original exception was:
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+    self.validate_and_update()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 269, in validate_and_update
+    valid, errors = self.generator.validate()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 27, in validate
+    for key, value in self.settings.to_dict().items():
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 144, in start_gcode_text
+    gcode = re.sub(pattern, '', gcode, flags=re.MULTILINE)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/__init__.py", line 186, in sub
+    return _compile(pattern, flags).sub(repl, string, count)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+    self.validate_and_update()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 271, in validate_and_update
+    gcode = "\n".join(errors) if errors else self.generator.generate_gcode()
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 141, in generate_gcode
+    add_gcode(self.settings.start_gcode_text(replace=True))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 148, in start_gcode_text
+    gcode = '\n'.join(line for line in lines if not re.match(pattern, line))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 148, in <genexpr>
+    gcode = '\n'.join(line for line in lines if not re.match(pattern, line))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 228, in partial_apport_excepthook
+    return apport_excepthook(binary, exc_type, exc_obj, exc_tb)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 79, in apport_excepthook
+    binary = os.path.realpath(binary)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 435, in realpath
+  File "<frozen posixpath>", line 459, in _joinrealpath
+  File "<frozen posixpath>", line 63, in isabs
+RecursionError: maximum recursion depth exceeded
+
+Original exception was:
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 144, in start_gcode_text
+    gcode = re.sub(pattern, '', gcode, flags=re.MULTILINE)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/__init__.py", line 186, in sub
+    return _compile(pattern, flags).sub(repl, string, count)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+    self.validate_and_update()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 271, in validate_and_update
+    gcode = "\n".join(errors) if errors else self.generator.generate_gcode()
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 141, in generate_gcode
+    add_gcode(self.settings.start_gcode_text(replace=True))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 148, in start_gcode_text
+    gcode = '\n'.join(line for line in lines if not re.match(pattern, line))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 148, in <genexpr>
+    gcode = '\n'.join(line for line in lines if not re.match(pattern, line))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 144, in start_gcode_text
+    gcode = re.sub(pattern, '', gcode, flags=re.MULTILINE)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/__init__.py", line 186, in sub
+    return _compile(pattern, flags).sub(repl, string, count)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/__init__.py", line 283, in _compile
+    flags = flags.value
+            ^^^^^^^^^^^
+  File "/usr/lib/python3.12/enum.py", line 212, in __get__
+    return self.fget(instance)
+           ^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+    self.validate_and_update()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 271, in validate_and_update
+    gcode = "\n".join(errors) if errors else self.generator.generate_gcode()
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 141, in generate_gcode
+    add_gcode(self.settings.start_gcode_text(replace=True))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 148, in start_gcode_text
+    gcode = '\n'.join(line for line in lines if not re.match(pattern, line))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/slicerpreset.py", line 148, in <genexpr>
+    gcode = '\n'.join(line for line in lines if not re.match(pattern, line))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/__init__.py", line 167, in match
+    return _compile(pattern, flags).match(string)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/re/__init__.py", line 298, in _compile
+    if not _compiler.isstring(pattern):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+```
+
+It is not a circular symlink, and there is no need to do recursion the way you have. It isn't apport's fault either, you just made illogical code, that's all. Look again at the original JavaScript code (Ellis Pressure advance) and at wxPython (and other Python) documentation and examples and do it correctly. The problem isn't in my environment, nor with changes I made to your code. It is your fault.
+
+```
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 228, in partial_apport_excepthook
+RecursionError: maximum recursion depth exceeded
+Original exception was:
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 221, in on_field_change
+RecursionError: maximum recursion depth exceeded
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 269, in validate_and_update
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 27, in validate
+RecursionError: maximum recursion depth exceeded
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 228, in partial_apport_excepthook
+    return apport_excepthook(binary, exc_type, exc_obj, exc_tb)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 79, in apport_excepthook
+    binary = os.path.realpath(binary)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 435, in realpath
+RecursionError: maximum recursion depth exceeded
+Original exception was:
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+    self.validate_and_update()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 269, in validate_and_update
+    valid, errors = self.generator.validate()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 27, in validate
+    for key, value in self.settings.to_dict().items():
+                      ^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+    self.validate_and_update()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 271, in validate_and_update
+    gcode = "\n".join(errors) if errors else self.generator.generate_gcode()
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 167, in generate_gcode
+    move(x=x_offset, y=y_offset, f=self.settings.speed_travel, comment="move to start")
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 105, in move
+    cmd.append(f"X{self.round10(x, self.settings.XY_round)}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 13, in round10
+    return round_nearest(value, decimals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 228, in partial_apport_excepthook
+    return apport_excepthook(binary, exc_type, exc_obj, exc_tb)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 79, in apport_excepthook
+    binary = os.path.realpath(binary)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 435, in realpath
+  File "<frozen posixpath>", line 459, in _joinrealpath
+  File "<frozen posixpath>", line 63, in isabs
+RecursionError: maximum recursion depth exceeded
+Original exception was:
+Traceback (most recent call last):
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 222, in on_field_change
+    self.validate_and_update()
+  File "/home/owner/git/maniforge/maniforge/slicerwx.py", line 271, in validate_and_update
+    gcode = "\n".join(errors) if errors else self.generator.generate_gcode()
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 167, in generate_gcode
+    move(x=x_offset, y=y_offset, f=self.settings.speed_travel, comment="move to start")
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 105, in move
+    cmd.append(f"X{self.round10(x, self.settings.XY_round)}")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/owner/git/maniforge/maniforge/pressureadvance.py", line 13, in round10
+    return round_nearest(value, decimals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RecursionError: maximum recursion depth exceeded
+```
+
+

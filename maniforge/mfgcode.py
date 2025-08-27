@@ -152,7 +152,7 @@ def get_cmd_meta(cmd):
             # arg.strip() == "TIMELAPSE_TAKE_FRAME":
             # or TIMELAPSE_RENDER, BED_MESH_PROFILE, etc
             assert i == 0, \
-                "misplaced macro {} in {}".format(repr(arg), parts)
+                "misplaced macro {} in {} ({})".format(repr(arg), cmd, parts)
             print("Warning: allowing literal \"{}\""
                   " (assuming it is a Klipper-style macro)"
                   .format(arg))

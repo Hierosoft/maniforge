@@ -20,17 +20,19 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
 ]
-# dependencies = [
+dependencies = [
+#     "GitPython",  # It is *much* faster to apt install python3-git
+#     "wxPython",  # It is *much* faster to apt install  python3-wxgtk4.0
 #     "requests",
 #     'importlib-metadata; python_version<"3.8"',
-# ]
+]
 dynamic = ["version"]
 
 # [project.optional-dependencies]
 # pdf = ["ReportLab>=1.2", "RXP"]
 
 [project.scripts]
-TowerConfigurationCLI = "gcodefollower.temperature:main"
-TowerConfiguration = "gcodefollower.temperaturegui:main"
-resize-all = "gcodefollower.gcfmesh:main"
+TowerConfigurationCLI = "maniforge.temperature:main"
+TowerConfiguration = "maniforge.temperaturegui:main"
+resize-all = "maniforge.gcfmesh:main"
 # ^ originally from Poikilos' remix of [Pathfinder 2e Condition Rings](https://www.thingiverse.com/thing:4097267)

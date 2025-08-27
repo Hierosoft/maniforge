@@ -8,6 +8,24 @@ The mod utilizes the BIGTREETECH SKR V1.4 Turbo and most of the hardware from th
 
 For usage and further details, see the Service Manual: [documentation/manual.md](https://github.com/poikilos/r2x_14t/blob/main/documentation/manual.md).
 
+The pressure advance features are based on [Ellis' Pressure Advance / Linear Advance Calibration Tool](https://ellis3dp.com/Pressure_Linear_Advance_Tool/).
+- Howto: [documentation/pressure_advance_or_linear_advance/pattern_method.md](documentation/pressure_advance_or_linear_advance/pattern_method.md)
+  - based on <https://ellis3dp.com/Print-Tuning-Guide/articles/pressure_linear_advance/pattern_method.html>
+
+
+## Requirements
+If you don't want to build wxPython and GitPython (You probably don't), install your distro's binaries such as via:
+```
+sudo apt install -y python3-wxgtk4.0 python3-git
+```
+...and then you must include site packages:
+```
+python3 -m venv --system-site-packages .venv
+```
+or if you already created your virtual environment, edit your .venv/pyvenv.cfg and add:
+```
+include-system-site-packages = true
+```
 
 ## How to use
 If you are not compiling Marlin nor flashing/configuring a TFT, you can still use this project. See:
