@@ -12,6 +12,12 @@ The pressure advance features are based on [Ellis' Pressure Advance / Linear Adv
 - Howto: [documentation/pressure_advance_or_linear_advance/pattern_method.md](documentation/pressure_advance_or_linear_advance/pattern_method.md)
   - based on <https://ellis3dp.com/Print-Tuning-Guide/articles/pressure_linear_advance/pattern_method.html>
 
+> Ellis' Pressure Advance / Linear Advance Calibration Tool
+> - Original <a href="https://marlinfw.org/tools/lin_advance/k-factor.html">Marlin calibration tool</a> by <a href="https://github.com/Sineos/k-factorjs">Sineos.</a> Heavily modified/rewritten by <a href="https://github.com/AndrewEllis93">Andrew Ellis.</a>
+> - The old "lines" version of this tool has been **deprecated**. It's still available <a href="https://ellis3dp.com/Pressure_Linear_Advance_Tool/lines_method_deprecated/">here</a> if you prefer it.
+
+-<https://ellis3dp.com/Pressure_Linear_Advance_Tool/>
+
 
 ## Requirements
 If you don't want to build wxPython and GitPython (You probably don't), install your distro's binaries such as via:
