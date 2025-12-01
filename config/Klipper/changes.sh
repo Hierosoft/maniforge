@@ -8,9 +8,11 @@ mv display-not-emulated.cfg hardware-display-not-emulated.cfg
 mv display-emulated.cfg hardware-display-emulated.cfg
 mv creatorpro.cfg hardware-main-creatorpro.cfg
 mv cancel.cfg macros-cancel.cfg
+mv printer-FFCP.cfg printer-creatorpro.cfg
 mv build-mesh.cfg macros-mesh-management.cfg
 mv voronlegacy-A3S-non-integrated-39mm-motors-not-recommended.cfg hardware-main-voronlegacy-A3S-non-integrated-39mm-motors-not-recommended.cfg
 mv printer.UNUSED-last-MakerBotR2X_BTTSKR14Turbo.cfg hardware-main-UNUSED-MakerBotR2X_BTTSKR14Turbo.cfg
+mv printer-VORONLegacy.cfg printer-Voron_Legacy.cfg
 mv print_start-voronlegacy-see-start_end_macros-instead.cfg macros-UNUSED-print_start-voronlegacy-see-start_end_macros-instead.cfg
 mv pressure-advance-FlexionHT.cfg macros-pressure-advance-FlexionHT.cfg
 mv load-unload-voronlegacy.cfg macros-load-unload-voronlegacy.cfg
