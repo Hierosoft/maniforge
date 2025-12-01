@@ -65,3 +65,6 @@ sed -i 's|include start-end-macros.cfg|include macros-main.cfg|g' printer.cfg
 sed -i 's|M420.cfg|include macros-M420.cfg|g' printer.cfg
 sed -i 's|M600.cfg|include macros-M600.cfg|g' printer.cfg
 sed -i 's|M601.cfg|include macros-M601.cfg|g' printer.cfg
+# fix a bug caused by a WIP version of this script:
+sed -i 's|include include|include|g' printer.cfg
+sed -i 's|include include|include|g' printer-Voron_Legacy.cfg
